@@ -2,7 +2,7 @@
 
 The Permit Status application is a configuration of ArcGIS for Server and a JavaScript application that allows the public to locate permitted activities, and permit applications in their community.
 
-![Image of Permit Status application](https://raw.github.com/Esri/permit-status/master/permit-status.png "Permit Status application")
+![Image of Permit Status application](https://raw.github.com/Esri/permit-status-app/master/permit-status-app.png "Permit Status application")
 
 ## Features
 
@@ -30,6 +30,7 @@ Esri's sample services can be used with this repository to extend the applicatio
 
 * ArcGIS for Desktop 10.1 - Standard or Advanced - [About](http://www.esri.com/software/arcgis/arcgis-for-desktop)
 * ArcGIS for Server 10.1 - Standard or Advanced - [About](http://www.esri.com/software/arcgis/arcgisserver)
+* Local Government Information Model for Local Government Implementations - [About](http://www.arcgis.com/home/item.html?id=5f799e6d23d94e25b5aaaf2a58e63fb1)
 * Microsoft ASP.NET Framework 4.0 available from the [Microsoft website](http://www.microsoft.com/en-us/download/details.aspx?id=17851)
 
 ## Resources
@@ -69,7 +70,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 A copy of the license is available in the repository's
-[license.txt](https://raw.github.com/Esri/configurable-place-finder/master/license.txt) file.
+[license.txt](https://raw.github.com/Esri/permit-status-app/master/license.txt) file.
 
 [](Esri Tags: State-Government State Government Permit Status)
 [](Esri Language: JavaScript)
