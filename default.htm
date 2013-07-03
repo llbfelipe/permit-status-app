@@ -1,0 +1,271 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <!-- | Version 10.1.1 | Copyright 2012 Esri | | Licensed under the Apache
+        License, Version 2.0 (the "License"); | you may not use this file except
+        in compliance with the License. | You may obtain a copy of the License
+        at | | http://www.apache.org/licenses/LICENSE-2.0 | | Unless required by
+        applicable law or agreed to in writing, software | distributed under the
+        License is distributed on an "AS IS" BASIS, | WITHOUT WARRANTIES OR CONDITIONS
+        OF ANY KIND, either express or implied. | See the License for the specific
+        language governing permissions and | limitations under the License. -->
+    <title>Permit Status</title>
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <link rel="shortcut icon" href="images/favicon.ico" />
+    <link id="stylesheet" href='http://serverapi.arcgisonline.com/jsapi/arcgis/3.4/js/dojo/dojox/mobile/themes/iPhone/iPhone.css'
+        rel='stylesheet' />
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.4/js/esri/css/esri.css" />
+    <link href="styles/permitStatus.css" rel="stylesheet" type="text/css" />
+    <link rel="Stylesheet" id="dynamicStyleSheet" />
+    <link rel="apple-touch-icon" href="images/logo.png" />
+    <link rel="apple-touch-icon-precomposed" href="images/logo.png" />
+    <script type="text/javascript">
+            var dojoConfig = {
+                async: false,
+                parseOnLoad: true,
+                mblHideAddressBar: false,
+                packages: [{
+                    name: "js",
+                    location: location.pathname.replace(/\/[^/]+$/, '') + '/js'
+                }]
+            };
+    </script>
+    <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.4compact">
+    </script>
+    <script type="text/javascript" src="js/baseMapGallery.js"></script>
+    <script type="text/javascript" src="js/modernizr-2.5.3.js"></script>
+    <script type="text/javascript" src="js/locator.js"></script>
+    <script type="text/javascript" src="js/utils.js"></script>
+    <script type="text/javascript" src="js/homePage.js"></script>
+    <script type="text/javascript" src="js/parsewebmap.js"></script>
+</head>
+<body onorientationchange="OrientationChanged();">
+        <div id="mapView" class="fullHeightWidth">
+            <div id="map" class="fullHeightWidth"></div>
+            <div id="map1" style="width: 0px; height: 0px;"></div>
+        </div>
+        <div id="divSplashScreenContainer" class="divSplashScreenContainer" style="display: none;">
+            <table class="fullHeightWidth">
+                <tr align="center" valign="middle">
+                    <td>
+                        <div id="divSplashScreenContent" class="divSplashScreenContent">
+                            <table class="fullWidth">
+                                <tr>
+                                    <td>
+                                        <div id="divSplashContainer" class="divSplashContainer">
+                                            <div id="divSplashContent" class="divSplashContent"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center">
+                                        <div class="customButton" onclick="HideSplashScreenMessage();">
+                                            <div class="customButtonInner">
+                                                <table class="fullHeightWidth">
+                                                    <tr>
+                                                        <td align="center" valign="middle">
+                                                            <center>OK</center>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="divLogo" class="divLogo">
+            <table class="fullHeightWidth" cellpadding="2px" cellspacing="2px">
+                <tr align="left" class="trLogo">
+                    <td valign="top">
+                        <img id="imgApp" class="imgApp" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="divApplicationHeader" align="right">
+            <table cellpadding="0px" cellspacing="0px" class="tableHeader">
+                <tr>
+                    <td id="lblAppName" class="lblAppName" align="left"></td>
+                    <td align="right">
+                        <table>
+                            <tr>
+                                <td align="center" id="tdSearch" class="tdHeader">
+                                    <img alt="Settings" src="images/locate.png" class="imgOptions" title="Search" onclick="ShowLocateContainer();" />
+                                </td>
+                                <td align="center" id="tdGeolocation" class="tdHeader">
+                                    <img alt="Settings" src="images/gps.png" class="imgOptions" title="Locate" onclick="ShowMyLocation();" />
+                                </td>
+                                <td align="center" id="tdBaseMap"></td>
+                                <td align="center" class="tdHeader">
+                                    <img src="images/imgsocialmedia.png" class="imgOptions" title="Share" onclick="ShareLink(true);" />
+                                </td>
+                                <td align="center" id="help" class="tdHeader">
+                                    <img src="images/help.png" title="Help" id="imgHelp" class="imgOptions" />
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="divAddressContainer" align="center" class="divAddressContainer" style="display: none">
+            <table class="fullHeightWidth">
+                <tr align="center" valign="middle">
+                    <td>
+                        <div id="divAddressContent" class="divAddressContent hideContainerHeight">
+                            <table class="tblHeader">
+                                <tr class="trContentHeader" align="center">
+                                    <td class="tdHeader tdAddressContentHeader" align="left">Search</td>
+                                    <td class="tdClose" align="right">
+                                        <img src="images/close.png" class="imgOptions" title="Close" style="padding: 0px" onclick="HideAddressContainer();" />
+                                    </td>
+                                </tr>
+                            </table>
+                            <div id="divAddressResultContainer" class="divAddressResultContainer">
+                                <table cellpadding="0" cellspacing="0" class="fullWidth">
+                                    <tr>
+                                        <td>
+                                            <table class="tblAddressResultContainer">
+                                                <tr>
+                                                    <td id="tdSearchAddress" class="tdSearchByAddress" onclick="ShowAddressSearchView();"></td>
+                                                    <td id="tdSearchLocation" class="tdSearchByUnSelectedLocation" onclick="ShowLocationSearchView();"></td>
+                                                    <td id="tdSearchPermit" class="tdSearchByUnSelectedPermit" onclick="ShowPermitSearchView();"></td>
+                                                    <td id="tdImglocate">
+                                                        <img id="imgLocate" src="images/locate.png" class="imgLocate" title="Locate" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr id="trBreadCrumbs" class="trBreadCrumbs">
+                                        <td>
+                                            <table cellpadding="0" cellspacing="0" style="width: 98%">
+                                                <tr>
+                                                    <td align="left" id="tdBreadCrumbs"></td>
+                                                    <td align="right">
+                                                        <img src="images/close.png" class="imgBreadCrumbs" title="Close" onclick="ClearBreadCrumbs();" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td id="tdAddressSearch" align="left">
+                                            <div id="divAddressPlaceHolder" class="divAddressPlaceHolder" align="left">
+                                                <input type="text" id="txtAddress" class="txtAddress" onfocus="if(this.setSelectionRange)this.setSelectionRange(this.value.length, this.value.length);" />
+                                            </div>
+                                            <div id="divAddressList" class="divAddressList">
+                                                <div id="divAddressScrollContainer" class="divAddressScrollContainer" align="left">
+                                                    <div id="divAddressScrollContent" class="divAddressScrollContent">
+                                                        <table id="tblAddressResults" cellpadding="0" cellspacing="0" class="fullWidth"></table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <table class="fullHeightWidth">
+                                                <tr>
+                                                    <td align="center">
+                                                        <img id="imgSearchLoader" src="images/loader.gif" class="imgSearchLoader" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="divLayerContainer" class="divLayerContainer hideContainerHeight">
+            <div id="divLayerHolder" class="divLayerHolder">
+                <div id="divLayerContainerHolder" style="position: relative">
+                    <div id="divLayerContentHolder" class="divLayerContentHolder">
+                        <div id="layerList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="divAppContainer" class="divAppContainer hideContainerHeight">
+            <div id="divAppHolder" class="divAppHolder">
+                <div id="divAppContent">
+                    <table cellpadding="0px" cellspacing="0px">
+                        <tr>
+                            <td>
+                                <table cellpadding="2px" cellspacing="2px">
+                                    <tr>
+                                        <td align="center" colspan="3">Share this map</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="tdHeaderIcons" align="center" id="tdFacebook">
+                                            <img title="Facebook" class="imgShare" id="imgFacebook" src="images/img_facebook.png" onclick="Share('facebook')" />
+                                        </td>
+                                        <td class="tdHeaderIcons" align="center" id="tdTwitter">
+                                            <img title="Twitter" class="imgShare" id="imgTwitter" src="images/img_twitter.png" onclick="Share('twitter')" />
+                                        </td>
+                                        <td class="tdHeaderIcons" align="center" id="tdMail">
+                                            <img title="Email" class="imgShare" id="imgMail" src="images/img_email.png" onclick="Share('mail')" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="divInfoContainer" align="center" class="divInfoContainer opacityHideAnimation">
+            <table cellpadding="0px" cellspacing="0px" class="fullHeightWidth">
+                <tr align="center" valign="middle">
+                    <td>
+                        <div align="left" id="divInfoContent" class="hideContainer divInfoContent">
+                            <table id="tblHeader" class="tblHeader" style="padding: 1px" cellpadding="0px" cellspacing="0px">
+                                <tr class="trContentHeader" align="center">
+                                    <td align="left" id="tdLabel" class="tdLabel"> <span id="tdInfoHeader" class="tdInfoHeader"></span>
+
+                                    </td>
+                                    <td id="tdImages">
+                                        <table cellpadding="0px" cellspacing="0px" align="right">
+                                            <tr>
+                                                <td id="tdList" style="display: none;" align="right">
+                                                    <img src="images/back.png" class="imgOptions" title="List" onclick="" />
+                                                </td>
+                                                <td align="right">
+                                                    <img src="images/close.png" class="infoOptions" title="Close" style="cursor: pointer;" onclick="HideInfoContainer();" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div align="center" id="divPermitDataScrollContainer" class="divPermitDataScrollContainer">
+                                <div id="divPermitScrollContent" class="divPermitScrollContent"></div>
+                            </div>
+                            <div id="divInfoDetails" class="divInfoDetails" style="color: #fff;">
+                                <div id="divInfoDetailsScroll" class="divInfoDetailsScroll">
+                                    <table id="tblInfoDetails" class="tblInfoDetails" cellpadding="0px" cellspacing="0px"></table>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="divLoadingIndicator" class="divLoadingIndicator" style="display: none;">
+            <table cellpadding="0px" cellspacing="0px" class="fullHeightWidth">
+                <tr align="center" valign="middle">
+                    <td>
+                        <img src="images/loader.gif" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

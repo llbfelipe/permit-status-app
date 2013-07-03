@@ -1,0 +1,215 @@
+﻿
+
+/* This file contains the mobile specific style settings for "Permit Status" template */
+/*
+ | Version 10.1.1
+ | Copyright 2012 Esri
+ |
+ | Licensed under the Apache License, Version 2.0 (the "License");
+ | you may not use this file except in compliance with the License.
+ | You may obtain a copy of the License at
+ |
+ |    http://www.apache.org/licenses/LICENSE-2.0
+ |
+ | Unless required by applicable law or agreed to in writing, software
+ | distributed under the License is distributed on an "AS IS" BASIS,
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ | See the License for the specific language governing permissions and
+ | limitations under the License.
+ */
+/* The common settings for the styles are defined in "permitStatus.css" */
+/* Use this file to perform the following: */
+/* 1.  Set the body styles                        - { Style(s) to look for: html, body } */
+/* 2.  Set styles for icons, buttons and header
+       styles                                     - { Style(s) to look for: customButton,imgOptions,imgShare,tdHeader}*/
+
+/* 3.  Set the styles for search container        - { Style(s) to look for: divAddressContent, txtAddress, divAddressPlaceHolder, imgLocate,
+                                                                            imgBreadCrumbs, divAddressScrollContent, tdSearchByAddress, tdSearchByUnSelectedLocation,
+                                                                            tdSearchByUnSelectedPermit, tdSearchByUnSelectedAddress, tdSearchByLocation, 
+                                                                            tdSearchByPermit, tdSubAddress}*/
+/* 4.  Set the styles for basemap container       - { Style(s) to look for: divLayerContainer,divLayerHolder,selectedBaseMap}*/
+/* 5.  Set the styles for info window             - { Style(s) to look for: divInfoContainer, divInfoContent, infoOptions, trRowHeight,cursorPointer,tdBreak}*/
+/* 6.  Set the styles for esri slider             - { Style(s) to look for: esriSimpleSlider}*/
+
+/*---------------------------------------------------------------------------------------------------------------*/
+/* Styles for body*/
+body, html
+{
+    font-size: 11px !important;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/*Styles for icons*/
+
+.customButton
+{
+    height: 25px !important;
+}
+
+.imgOptions
+{
+    height: 30px !important;
+    width: 30px !important;
+    vertical-align: middle;
+    padding: 0px 5px 0px 0px;
+    cursor: pointer !important;
+}
+
+.imgShare
+{
+    height: 30px !important;
+    width: 30px !important;
+    cursor: pointer;
+}
+
+.tdHeader
+{
+    width: 50px;
+    font-weight: bolder;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/*Styles for address container*/
+
+.divAddressContent
+{
+    z-index: 1002;
+    position: absolute;
+    top: 60px;
+    right: 15px;
+    width: 300px;
+    background-color: #585858;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
+}
+
+.txtAddress
+{
+    height: 30px !important;
+    font-size: 11px !important;
+    line-height: 30px;
+}
+
+.divAddressPlaceHolder
+{
+    width: 282px;
+}
+
+.imgLocate
+{
+    height: 30px !important;
+    width: 30px !important;
+    vertical-align: middle;
+    top: 45px;
+    right: 25px;
+}
+
+.imgBreadCrumbs
+{
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+.divAddressScrollContent
+{
+    height: 135px;
+}
+
+.tdSearchByAddress, .tdSearchByUnSelectedLocation, .tdSearchByUnSelectedPermit, .tdSearchByUnSelectedAddress, .tdSearchByLocation, .tdSearchByPermit
+{
+    width: 70px;
+}
+
+.tdSubAddress
+{
+    width: 250px;
+    height: 20px;
+}
+
+.bottomborder
+{
+    height: 20px;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/*Styles for basemap container*/
+
+.divLayerContainer
+{
+    position: absolute;
+    top: 60px;
+    right: 15px;
+    width: 260px;
+    z-index: 1000;
+}
+
+.divLayerHolder
+{
+    width: 260px;
+    height: 115px;
+    background: rgba(0,0,0,0.9);
+    -pie-background: rgba(0,0,0,0.9);
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    behavior: url("styles/PIE.htc");
+}
+
+.selectedBaseMap
+{
+    -webkit-box-shadow: 0 0 15px #63BA65;
+    -moz-box-shadow: 0 0 15px #63BA65;
+    box-shadow: 0 0 15px #63BA65;
+    filter: progid:DXImageTransform.Microsoft.Glow(color='#8EAE21', Strength='4');
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/*Styles for infowindow content*/
+
+.divInfoContainer
+{
+    z-index: 1002;
+}
+
+.divInfoContent
+{
+    z-index: 1002;
+    background-color: transparent;
+    height: 100%;
+}
+
+.infoOptions
+{
+    height: 30px !important;
+    width: 30px !important;
+    vertical-align: middle;
+    padding-left: 2px;
+    padding-right: 3px;
+    cursor: pointer;
+}
+
+.trRowHeight
+{
+    height: 20px;
+}
+
+.cursorPointer
+{
+    cursor: pointer;
+}
+
+.tdBreak
+{
+    word-wrap: break-word;
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+/* esri slider style*/
+
+.esriSimpleSlider
+{
+    top: 90px !important;
+}
+
