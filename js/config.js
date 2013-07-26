@@ -1,24 +1,24 @@
-﻿/** @license
-| Version 10.1.1
-| Copyright 2012 Esri
-|
-| Licensed under the Apache License, Version 2.0 (the "License");
-| you may not use this file except in compliance with the License.
-| You may obtain a copy of the License at
-|
-|    http://www.apache.org/licenses/LICENSE-2.0
-|
-| Unless required by applicable law or agreed to in writing, software
-| distributed under the License is distributed on an "AS IS" BASIS,
-| WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-| See the License for the specific language governing permissions and
-| limitations under the License.
-*/
+﻿/*
+ | Version 10.2
+ | Copyright 2013 Esri
+ |
+ | Licensed under the Apache License, Version 2.0 (the "License");
+ | you may not use this file except in compliance with the License.
+ | You may obtain a copy of the License at
+ |
+ |    http://www.apache.org/licenses/LICENSE-2.0
+ |
+ | Unless required by applicable law or agreed to in writing, software
+ | distributed under the License is distributed on an "AS IS" BASIS,
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ | See the License for the specific language governing permissions and
+ | limitations under the License.
+ */
 dojo.provide("js.config");
 dojo.declare("js.config", null, {
 
     // This file contains various configuration settings for "Permit Status" template
-    // 
+    //
     // Use this file to perform the following:
     //
     // 1.  Specify application Name                      - [ Tag(s) to look for: ApplicationName ]
@@ -37,7 +37,7 @@ dojo.declare("js.config", null, {
     // 10d.Customize info-Popup size                     - [ Tag(s) to look for: InfoPopupHeight, InfoPopupWidth ]
     // 10e.Customize data formatting                     - [ Tag(s) to look for: ShowNullValueAs, FormatDateAs ]
     // 11. Customize address search settings             - [ Tag(s) to look for: LocatorSettings]
-    // 12. Set URL for geometry service                  - [ Tag(s) to look for: GeometryService ]  
+    // 12. Set URL for geometry service                  - [ Tag(s) to look for: GeometryService ]
     // 13. Specify URLs for map sharing                  - [ Tag(s) to look for: MapSharingOptions,TinyURLServiceURL, TinyURLResponseAttribute, FacebookShareURL, TwitterShareURL, ShareByMailLink ]
 
     // ------------------------------------------------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ dojo.declare("js.config", null, {
     // BASEMAP SETTINGS
     // ------------------------------------------------------------------------------------------------------------------------
     // Set baseMap layers
-    // Please note: All base maps need to use the same spatial reference. By default, on application start the first basemap will be loaded 
+    // Please note: All base maps need to use the same spatial reference. By default, on application start the first basemap will be loaded
 
     BaseMapLayers: [{
         Key: "topoMap",
@@ -128,7 +128,7 @@ dojo.declare("js.config", null, {
 
     // Configure operational layers:
 
-    //  ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point. 
+    //  ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point.
     //	ListFieldName: Attribute to be displayed in the InfoWindow when there are multiple permits at a particular point
     //	SearchField: Attribute that will be displayed when user searches for a particular permit.
     //	PermitType:  Attribute based on which the permit results will be grouped
@@ -295,14 +295,14 @@ dojo.declare("js.config", null, {
     // INFO-POPUP SETTINGS
     // ------------------------------------------------------------------------------------------------------------------------
 
-    // Info-popup is a popup dialog that gets displayed on selecting a feature 
+    // Info-popup is a popup dialog that gets displayed on selecting a feature
     // Set the content to be displayed on the info-Popup. Define labels, field values, field types and field formats
 
     // Set size of the info-Popup - select maximum height and width in pixels (not applicable for tabbed info-Popup)
     //minimum height should be 270 for the info-popup in pixels
     InfoPopupHeight: 310,
 
-    //minimum width should be 330 for the info-popup in pixels 
+    //minimum width should be 330 for the info-popup in pixels
     InfoPopupWidth: 330,
 
     // Set string value to be shown for null or blank values
@@ -316,7 +316,7 @@ dojo.declare("js.config", null, {
 
     // ------------------------------------------------------------------------------------------------------------------------
     // ADDRESS SEARCH SETTINGS
-    // ------------------------------------------------------------------------------------------------------------------------  
+    // ------------------------------------------------------------------------------------------------------------------------
     // Set locator settings such as locator symbol, size, zoom level, display fields, match score
     LocatorSettings: {
         DefaultLocatorSymbol: "images/redpushpin.png",

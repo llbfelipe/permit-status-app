@@ -1,19 +1,19 @@
-﻿/** @license
-| Version 10.1.1
-| Copyright 2012 Esri
-|
-| Licensed under the Apache License, Version 2.0 (the "License");
-| you may not use this file except in compliance with the License.
-| You may obtain a copy of the License at
-|
-|    http://www.apache.org/licenses/LICENSE-2.0
-|
-| Unless required by applicable law or agreed to in writing, software
-| distributed under the License is distributed on an "AS IS" BASIS,
-| WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-| See the License for the specific language governing permissions and
-| limitations under the License.
-*/
+﻿/*
+ | Version 10.2
+ | Copyright 2013 Esri
+ |
+ | Licensed under the Apache License, Version 2.0 (the "License");
+ | you may not use this file except in compliance with the License.
+ | You may obtain a copy of the License at
+ |
+ |    http://www.apache.org/licenses/LICENSE-2.0
+ |
+ | Unless required by applicable law or agreed to in writing, software
+ | distributed under the License is distributed on an "AS IS" BASIS,
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ | See the License for the specific language governing permissions and
+ | limitations under the License.
+ */
 dojo.require("dojo.window");
 dojo.require("dojo.date.locale");
 dojo.require("dojox.mobile.View");
@@ -31,18 +31,18 @@ dojo.require("esri.arcgis.utils");
 var map; //variable to store map object
 var isiOS = false;
 var isBrowser = false; //This variable is set to true when the app is running on desktop browsers
-var isMobileDevice = false; //This variable is set to true when the app is running on mobile device 
+var isMobileDevice = false; //This variable is set to true when the app is running on mobile device
 var isTablet = false; //This variable is set to true when the app is running on tablets
 
 var zoomLevel; //variable to store the zoom level
 var baseMapLayers; //Variable for storing base map layers
 var showNullValueAs; //variable to store the default value for replacing null values
-var mapSharingOptions; //variable for storing the tiny service URL 
-var geometryService; //variable to store the Geometry service 
+var mapSharingOptions; //variable for storing the tiny service URL
+var geometryService; //variable to store the Geometry service
 var tempGraphicsLayerId = "tempGraphicsLayerID"; //variable to store temporary graphics layer id
 var infoPopupHeight; //variable used for storing the info window height
 var infoPopupWidth; //variable used for storing the info window width
-var mapPoint; //variable to store map point 
+var mapPoint; //variable to store map point
 var formatDateAs; //variable to store date format
 var selectedMapPoint; // variable to store selected map point
 var locatorMarkupSymbol;
@@ -144,7 +144,7 @@ function Init() {
                         // Clear any staged search
                         clearTimeout(stagedSearch);
                         if (dojo.byId("txtAddress").value.trim().length > 0) {
-                            // Stage a new search, which will launch if no new searches show up 
+                            // Stage a new search, which will launch if no new searches show up
                             // before the timeout
                             stagedSearch = setTimeout(function () {
                                 dojo.byId("imgSearchLoader").style.display = "block";

@@ -1,7 +1,7 @@
 <%@ WebHandler Language="C#" Class="proxy" %>
 /*
- | Version 10.1.1
- | Copyright 2012 Esri
+ | Version 10.2
+ | Copyright 2013 Esri
  |
  | Licensed under the Apache License, Version 2.0 (the "License");
  | you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ using System.Web.Caching;
 /// the proxy.config file to determine properties of the server.
 /// </summary>
 public class proxy : IHttpHandler {
-  
+
     public void ProcessRequest (HttpContext context) {
 
         HttpResponse response = context.Response;
@@ -53,23 +53,23 @@ public class proxy : IHttpHandler {
         //    else
         //        uri += "?token=" + token;
         //}
-        		
+
         System.Net.HttpWebRequest req = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(uri);
-        
+
         //code added to use default credentails for authenticating the request via proxy
         req.UseDefaultCredentials = true;
         req.Credentials = System.Net.CredentialCache.DefaultCredentials;
-        
+
         req.Method = context.Request.HttpMethod;
         req.ServicePoint.Expect100Continue = false;
-                
+
         // Set body of request for POST requests
         if (context.Request.InputStream.Length > 0)
         {
             byte[] bytes = new byte[context.Request.InputStream.Length];
             context.Request.InputStream.Read(bytes, 0, (int)context.Request.InputStream.Length);
             req.ContentLength = bytes.Length;
-            
+
             string ctype = context.Request.ContentType;
             if (String.IsNullOrEmpty(ctype)) {
               req.ContentType = "application/x-www-form-urlencoded";
@@ -77,13 +77,13 @@ public class proxy : IHttpHandler {
             else {
               req.ContentType = ctype;
             }
-            
+
             using (Stream outputStream = req.GetRequestStream())
             {
                 outputStream.Write(bytes, 0, bytes.Length);
             }
         }
-    
+
         // Send the request to the server
         System.Net.WebResponse serverResponse = null;
         try
@@ -98,7 +98,7 @@ public class proxy : IHttpHandler {
             response.End();
             return;
         }
-        
+
         // Set up the response to the client
         if (serverResponse != null) {
             response.ContentType = serverResponse.ContentType;
@@ -106,7 +106,7 @@ public class proxy : IHttpHandler {
             {
 
                 // Text response
-                if (serverResponse.ContentType.Contains("text") || 
+                if (serverResponse.ContentType.Contains("text") ||
                     serverResponse.ContentType.Contains("json"))
                 {
                     using (StreamReader sr = new StreamReader(byteStream))
@@ -135,7 +135,7 @@ public class proxy : IHttpHandler {
         }
         response.End();
     }
- 
+
     public bool IsReusable {
         get {
             return false;
@@ -166,11 +166,11 @@ public class proxy : IHttpHandler {
         {
             if (e is ApplicationException)
                 throw e;
-            
+
             // just return an empty string at this point
             // -- may want to throw an exception, or add to a log file
         }
-        
+
         return string.Empty;
     }
 }
@@ -255,7 +255,7 @@ public class ProxyConfig
             {
                 if (String.Compare(uri, su.Url, StringComparison.InvariantCultureIgnoreCase) == 0)
                     return su.Token;
-                
+
             }
         }
 

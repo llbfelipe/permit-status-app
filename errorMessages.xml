@@ -1,7 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
- | Version 10.1.1
- | Copyright 2012 Esri
+ | Version 10.2
+ | Copyright 2013 Esri
  |
  | Licensed under the Apache License, Version 2.0 (the "License");
  | you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
  | limitations under the License.
 -->
 <Messages>
-  <addressToLocate>Enter address to locate.</addressToLocate>    
-  <permitToLocate>Enter permit number to locate.</permitToLocate>
-  <countyToLocate>Enter county to locate.</countyToLocate>
-  <tinyURLEngine>Bitly API is not able to generate tiny URL.</tinyURLEngine>
-  <geoLocation>You are currently outside the supported area.</geoLocation>
-  <geolocationTimeout>Request timed out.</geolocationTimeout>
-  <geolocationPositionUnavailable>Position unavailable.</geolocationPositionUnavailable>
-  <geolocationPermissionDenied>Permission denied.</geolocationPermissionDenied>
-  <geolocationUnKnownError>Unknown error.</geolocationUnKnownError>
-  <unableToLocatePermit>Permit not found at specified location.</unableToLocatePermit> 
-  <invalidSearch>No results found</invalidSearch>
-  <noPermitFound>No permits found</noPermitFound>
+    <addressToLocate>Enter address to locate.</addressToLocate>
+    <permitToLocate>Enter permit number to locate.</permitToLocate>
+    <countyToLocate>Enter county to locate.</countyToLocate>
+    <tinyURLEngine>Bitly API is not able to generate tiny URL.</tinyURLEngine>
+    <geoLocation>You are currently outside the supported area.</geoLocation>
+    <geolocationTimeout>Request timed out.</geolocationTimeout>
+    <geolocationPositionUnavailable>Position unavailable.</geolocationPositionUnavailable>
+    <geolocationPermissionDenied>Permission denied.</geolocationPermissionDenied>
+    <geolocationUnKnownError>Unknown error.</geolocationUnKnownError>
+    <unableToLocatePermit>Permit not found at specified location.</unableToLocatePermit>
+    <invalidSearch>No results found</invalidSearch>
+    <noPermitFound>No permits found</noPermitFound>
 </Messages>

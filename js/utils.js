@@ -1,19 +1,19 @@
-﻿/** @license
-| Version 10.1.1
-| Copyright 2012 Esri
-|
-| Licensed under the Apache License, Version 2.0 (the "License");
-| you may not use this file except in compliance with the License.
-| You may obtain a copy of the License at
-|
-|    http://www.apache.org/licenses/LICENSE-2.0
-|
-| Unless required by applicable law or agreed to in writing, software
-| distributed under the License is distributed on an "AS IS" BASIS,
-| WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-| See the License for the specific language governing permissions and
-| limitations under the License.
-*/
+﻿/*
+ | Version 10.2
+ | Copyright 2013 Esri
+ |
+ | Licensed under the Apache License, Version 2.0 (the "License");
+ | you may not use this file except in compliance with the License.
+ | You may obtain a copy of the License at
+ |
+ |    http://www.apache.org/licenses/LICENSE-2.0
+ |
+ | Unless required by applicable law or agreed to in writing, software
+ | distributed under the License is distributed on an "AS IS" BASIS,
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ | See the License for the specific language governing permissions and
+ | limitations under the License.
+ */
 var orientationChange = false; //variable for setting the flag on orientation
 var tinyResponse; //variable for storing the response from tiny URL api
 var tinyUrl; //variable for storing the tiny URL
@@ -390,7 +390,7 @@ function ShowInfoWindowDetails(geometry, attributes, featureLength, layer, mapPo
     SetViewDetailsHeight();
 }
 
-//Create table row 
+//Create table row
 function CreateTableRow(tr, displayName, value) {
     var tdDisplayText = document.createElement("td");
     tdDisplayText.innerHTML = displayName;
@@ -668,7 +668,7 @@ function SetPermitDataHeight() {
     CreateScrollbar(dojo.byId("divPermitDataScrollContainer"), dojo.byId("divPermitScrollContent"));
 }
 
-//Get the extent based on the map point 
+//Get the extent based on the map point
 function CalculateMapExtent(mapPoint) {
     var width = map.extent.getWidth();
     var height = map.extent.getHeight();
@@ -1136,5 +1136,5 @@ function CreateScrollbar(container, content) {
             scrolling = false;
         }, 100);
     }
-    //touch scrollbar end 
+    //touch scrollbar end
 }

@@ -1,9 +1,6 @@
-﻿
-
-/* This file contains the mobile specific style settings for "Permit Status" template */
-/*
- | Version 10.1.1
- | Copyright 2012 Esri
+﻿/*
+ | Version 10.2
+ | Copyright 2013 Esri
  |
  | Licensed under the Apache License, Version 2.0 (the "License");
  | you may not use this file except in compliance with the License.
@@ -17,6 +14,7 @@
  | See the License for the specific language governing permissions and
  | limitations under the License.
  */
+/* This file contains the mobile specific style settings for "Permit Status" template */
 /* The common settings for the styles are defined in "permitStatus.css" */
 /* Use this file to perform the following: */
 /* 1.  Set the body styles                        - { Style(s) to look for: html, body } */
@@ -25,7 +23,7 @@
 
 /* 3.  Set the styles for search container        - { Style(s) to look for: divAddressContent, txtAddress, divAddressPlaceHolder, imgLocate,
                                                                             imgBreadCrumbs, divAddressScrollContent, tdSearchByAddress, tdSearchByUnSelectedLocation,
-                                                                            tdSearchByUnSelectedPermit, tdSearchByUnSelectedAddress, tdSearchByLocation, 
+                                                                            tdSearchByUnSelectedPermit, tdSearchByUnSelectedAddress, tdSearchByLocation,
                                                                             tdSearchByPermit, tdSubAddress}*/
 /* 4.  Set the styles for basemap container       - { Style(s) to look for: divLayerContainer,divLayerHolder,selectedBaseMap}*/
 /* 5.  Set the styles for info window             - { Style(s) to look for: divInfoContainer, divInfoContent, infoOptions, trRowHeight,cursorPointer,tdBreak}*/
