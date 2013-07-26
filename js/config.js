@@ -1,4 +1,5 @@
-﻿/*
+﻿/*global dojo */
+/*
  | Version 10.2
  | Copyright 2013 Esri
  |
@@ -129,15 +130,15 @@ dojo.declare("js.config", null, {
     // Configure operational layers:
 
     //  ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point.
-    //	ListFieldName: Attribute to be displayed in the InfoWindow when there are multiple permits at a particular point
-    //	SearchField: Attribute that will be displayed when user searches for a particular permit.
-    //	PermitType:  Attribute based on which the permit results will be grouped
-    //	SearchQuery: Query based on which the operational layers will be searched.
+    //  ListFieldName: Attribute to be displayed in the InfoWindow when there are multiple permits at a particular point
+    //  SearchField: Attribute that will be displayed when user searches for a particular permit.
+    //  PermitType:  Attribute based on which the permit results will be grouped
+    //  SearchQuery: Query based on which the operational layers will be searched.
     //  InfoWindowHeader: Choose content/fields for the info window header
     //  InfoWindowContent: Choose content/fields for the info window
-    //	ServiceURL: URL of the layer.
-    //	isDynamicMapService: Control flag to choose if the operational layers should be added as a dynamic map service layer or a feature layer ,
-    //	InfoWindowData: Info-popup is a popup dialog that gets displayed on selecting a feature
+    //  ServiceURL: URL of the layer.
+    //  isDynamicMapService: Control flag to choose if the operational layers should be added as a dynamic map service layer or a feature layer ,
+    //  InfoWindowData: Info-popup is a popup dialog that gets displayed on selecting a feature
     //  DisplayText: Field used for displaying the Text instead of alias names
     //  FieldName: Field used for getting the details of the particular service feature
 
@@ -189,9 +190,9 @@ dojo.declare("js.config", null, {
                 DisplayText: "Receive_Date:",
                 FieldName: "${Receive_Date}"
             }, {
-                 DisplayText: "County:",
-                 FieldName: "${County}"
-             }]
+                DisplayText: "County:",
+                FieldName: "${County}"
+            }]
         },
         ERP_8441: {
             ListDisplayText: "Permit Number",
