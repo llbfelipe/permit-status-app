@@ -28,4 +28,7 @@
     <unableToLocatePermit>Permit not found at specified location.</unableToLocatePermit>
     <invalidSearch>No results found</invalidSearch>
     <noPermitFound>No permits found</noPermitFound>
+    <dataNotFound>Data for '${0}' layer could not be populated</dataNotFound>
+    <invalidServiceType>Service type specified as '${0}'. Supported service types are 'dynamic', 'feature', 'tiled' only.</invalidServiceType>
+    <layerLoadError>Unable to load the layer completely. The error from rest end is-</layerLoadError>
 </Messages>

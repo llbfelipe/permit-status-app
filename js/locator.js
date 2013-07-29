@@ -19,19 +19,19 @@ var permitLayerCounter = 0;
 var queryExecutedCount = 0;
 var permitArray = [];
 var countyGeometry;
-var addressSearchFlag = false;
 var isPermitNumberSearched = false;
 
 //Locate address
-function Locate() {
-    if (dojo.byId("tdSearchAddress").className.trim() == "tdSearchByAddress") {
-        dojo.empty(dojo.byId('tblAddressResults'));
-        RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
-        if (dojo.byId("txtAddress").value.trim() == '') {
-            dojo.byId("imgSearchLoader").style.display = "none";
-            dojo.empty(dojo.byId('tblAddressResults'));
-            RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
-            if (dojo.byId("txtAddress").value != "") {
+
+function ValidateLocateType() {
+    if (Trim(dojo.dom.byId("tdSearchAddress").className) == "tdSearchByAddress") {
+        dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+        RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
+        if (Trim(dojo.dom.byId("txtAddress").value) == '') {
+            dojo.dom.byId("imgSearchLoader").style.display = "none";
+            dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+            RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
+            if (dojo.dom.byId("txtAddress").value != "") {
                 alert(messages.getElementsByTagName("addressToLocate")[0].childNodes[0].nodeValue);
             }
             return;
@@ -40,15 +40,26 @@ function Locate() {
             GetLocation();
         }
     }
-    if (dojo.byId("tdSearchLocation").className == "tdSearchByLocation") {
-        if (dojo.byId('txtAddress').value.trim() == '') {
-            dojo.byId("imgSearchLoader").style.display = "none";
-            dojo.empty(dojo.byId('tblAddressResults'));
-            RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
-            if (dojo.byId("txtAddress").value != "") {
-                alert(messages.getElementsByTagName("countyToLocate")[0].childNodes[0].nodeValue);
+    if (dojo.dom.byId("tdSearchLocation").className == "tdSearchByLocation") {
+        if ((Trim(dojo.dom.byId('txtAddress').value) == '')) {
+            if ((dojo.dom.byId("divBreadCrumbs").style.display == "none")) {
+                dojo.dom.byId("imgSearchLoader").style.display = "none";
+                dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+                RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
+                if (dojo.dom.byId("txtAddress").value != "") {
+                    alert(messages.getElementsByTagName("countyToLocate")[0].childNodes[0].nodeValue);
+                }
+                return;
+            } else {
+                var lastNode;
+                dojo._base.array.forEach(dojo.query(".spanBreadCrumbs", dojo.dom.byId("tdBreadCrumbs")), function (node) {
+                    lastNode = node;
+                });
+                selectedMapPoint = null;
+                map.infoWindow.hide();
+                var countyGeometry = new esri.geometry.Extent(parseFloat(lastNode.getAttribute("countyExtentxmin")), parseFloat(lastNode.getAttribute("countyExtentymin")), parseFloat(lastNode.getAttribute("countyExtentxmax")), parseFloat(lastNode.getAttribute("countyExtentymax")), map.spatialReference);
+                ShowLocatedCountyOnMap(countyGeometry, null);
             }
-            return;
         } else if (countyLayerData.UseGeocoderService) {
             isAddressSearched = false;
             GetLocation();
@@ -57,11 +68,11 @@ function Locate() {
             LocateCounty();
         }
     } else if (dojo.byId("tdSearchPermit").className == "tdSearchByPermit") {
-        if (dojo.byId('txtAddress').value.trim() == '') {
-            dojo.byId("imgSearchLoader").style.display = "none";
-            dojo.empty(dojo.byId('tblAddressResults'));
-            RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
-            if (dojo.byId("txtAddress").value != "") {
+        if (Trim(dojo.dom.byId('txtAddress').value) == '') {
+            dojo.dom.byId("imgSearchLoader").style.display = "none";
+            dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+            RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
+            if (dojo.dom.byId("txtAddress").value != "") {
                 alert(messages.getElementsByTagName("permitToLocate")[0].childNodes[0].nodeValue);
             }
             return;
@@ -76,43 +87,58 @@ function Locate() {
 }
 
 //Get candidate results for searched address/location
+
 function GetLocation() {
     permitArray = [];
-    dojo.byId("imgSearchLoader").style.display = "block";
-    var thisSearchTime = lastSearchTime = (new Date()).getTime();
-    var address = [];
+    dojo.dom.byId("imgSearchLoader").style.display = "block";
+    ShowTransparentContainer();
+    thisSearchTime = lastSearchTime = (new Date()).getTime();
+
+    if (!isAddressSearched) {
+        dojo.dom.byId('txtAddress').setAttribute("defaultLocation", dojo.dom.byId('txtAddress').value);
+    }
+    else {
+        dojo.dom.byId('txtAddress').setAttribute("defaultAddress", dojo.dom.byId('txtAddress').value);
+    }
     SetAddressResultsHeight();
-    var locator = new esri.tasks.Locator(locatorSettings.Locators[0].LocatorURL);
+    var locator = new esri.tasks.Locator(responseObject.LocatorSettings.Locators[0].LocatorURL);
     locator.outSpatialReference = map.spatialReference;
 
     var params = {};
     var searchExtent;
     if (!isAddressSearched) {
         if (!countyGeometry) {
-            for (var bMap = 0; bMap < baseMapLayers.length; bMap++) {
-                if (map.getLayer(baseMapLayers[bMap].Key).visible) {
-                    searchExtent = map.getLayer(baseMapLayers[bMap].Key).fullExtent;
+            if (isWebMap) {
+                searchExtent = map.getLayer(baseMapId).fullExtent;
+            } else {
+                for (bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
+                    if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
+                        searchExtent = map.getLayer(responseObject.BaseMapLayers[bMap].Key).fullExtent;
+                    }
                 }
             }
         } else {
             searchExtent = countyGeometry;
         }
     } else {
-        for (var bMap = 0; bMap < baseMapLayers.length; bMap++) {
-            if (map.getLayer(baseMapLayers[bMap].Key).visible) {
-                searchExtent = map.getLayer(baseMapLayers[bMap].Key).fullExtent;
+        if (isWebMap) {
+            searchExtent = map.getLayer(baseMapId).fullExtent;
+        } else {
+            for (bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
+                if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
+                    searchExtent = map.getLayer(responseObject.BaseMapLayers[bMap].Key).fullExtent;
+                }
             }
         }
     }
-
     params["f"] = "json";
-    params[locatorSettings.Locators[0].LocatorParamaters.SearchField] = dojo.byId('txtAddress').value;
-    params[locatorSettings.Locators[0].LocatorParamaters.SpatialReferenceField] = ((map.spatialReference.wkid) ? ("{wkid:" + map.spatialReference.wkid + "}") : ("{wkt:" + map.spatialReference.wkt + "}"));
-    params[locatorSettings.Locators[0].LocatorParamaters.SearchResultField] = locatorSettings.Locators[0].CandidateFields;
-    params[locatorSettings.Locators[0].LocatorParamaters.SearchCountField] = locatorSettings.Locators[0].MaxResults;
-    params[locatorSettings.Locators[0].LocatorParamaters.SearchBoundaryField] = dojo.toJson(searchExtent);
+    params[responseObject.LocatorSettings.Locators[0].LocatorParamaters.SearchField] = dojo.dom.byId('txtAddress').value;
+    params[responseObject.LocatorSettings.Locators[0].LocatorParamaters.SpatialReferenceField] = ((map.spatialReference.wkid) ? ("{wkid:" + map.spatialReference.wkid + "}") : ("{wkt:" + map.spatialReference.wkt + "}"));
+    params[responseObject.LocatorSettings.Locators[0].LocatorParamaters.SearchResultField] = responseObject.LocatorSettings.Locators[0].CandidateFields;
+    params[responseObject.LocatorSettings.Locators[0].LocatorParamaters.SearchCountField] = responseObject.LocatorSettings.Locators[0].MaxResults;
+    params[responseObject.LocatorSettings.Locators[0].LocatorParamaters.SearchBoundaryField] = dojo.toJson(searchExtent);
     esri.request({
-        url: locatorSettings.Locators[0].LocatorURL,
+        url: responseObject.LocatorSettings.Locators[0].LocatorURL,
         content: params,
         callbackParamName: "callback",
         load: function (candidates) {
@@ -131,7 +157,8 @@ function GetLocation() {
             }
         },
         error: function (err) {
-            dojo.byId("imgSearchLoader").style.display = "none";
+            dojo.dom.byId("imgSearchLoader").style.display = "none";
+            HideTransparentContainer();
             LocatorErrBack(err.message);
             HideProgressIndicator();
         }
@@ -139,77 +166,86 @@ function GetLocation() {
 }
 
 //Populate candidate address list in address container
-function ShowLocation(candidates) {
-    dojo.empty(dojo.byId('tblAddressResults'));
-    RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
-    var fieldValues = isAddressSearched ? locatorSettings.Locators[0].LocatorFieldValues : locatorSettings.Locators[0].CountyFields.Value;
-    var fieldName = isAddressSearched ? locatorSettings.Locators[0].LocatorFieldName : locatorSettings.Locators[0].CountyFields.FieldName;
-    if (candidates.length > 0) {
-        var table = dojo.byId("tblAddressResults");
-        var tBody = document.createElement("tbody");
-        table.appendChild(tBody);
-        table.cellSpacing = 0;
-        table.cellPadding = 0;
-        var candidatesLength = false;
-        for (var i = 0; i < candidates.length; i++) {
-            var candidate = candidates[i];
-            for (j in fieldValues) {
-                if ((candidate.feature.attributes[fieldName].toUpperCase() == fieldValues[j].toUpperCase()) && (candidate.feature.attributes[locatorSettings.Locators[0].AddressMatchScore.Field] > locatorSettings.Locators[0].AddressMatchScore.Value)) {
-                    var tr = document.createElement("tr");
-                    tBody.appendChild(tr);
-                    var td1 = document.createElement("td");
-                    td1.innerHTML = candidate.name;
-                    td1.align = "left";
-                    td1.className = 'bottomborder';
-                    td1.style.cursor = "pointer";
-                    td1.setAttribute("x", candidate.feature.geometry.x);
-                    td1.setAttribute("y", candidate.feature.geometry.y);
-                    td1.setAttribute("countyExtentxmin", candidates[i].extent.xmin);
-                    td1.setAttribute("countyExtentymin", candidates[i].extent.ymin);
-                    td1.setAttribute("countyExtentxmax", candidates[i].extent.xmax);
-                    td1.setAttribute("countyExtentymax", candidates[i].extent.ymax);
-                    td1.onclick = function () {
-                        if (!isMobileDevice) {
-                            map.infoWindow.hide();
-                        }
-                        mapPoint = new esri.geometry.Point(this.getAttribute("x"), this.getAttribute("y"), map.spatialReference);
 
-                        if (!isAddressSearched) {
-                            var countyExtent = new esri.geometry.Extent(parseFloat(this.getAttribute("countyExtentxmin")), parseFloat(this.getAttribute("countyExtentymin")), parseFloat(this.getAttribute("countyExtentxmax")), parseFloat(this.getAttribute("countyExtentymax")), map.spatialReference);
-                            dojo.byId("txtAddress").value = this.innerHTML;
-                            dojo.byId('txtAddress').setAttribute("defaultLocation", this.innerHTML);
-                            ShowLocatedCountyOnMap(countyExtent, this.innerHTML)
-                        } else {
-                            dojo.byId("txtAddress").value = this.innerHTML;
-                            dojo.byId('txtAddress').setAttribute("defaultAddress", this.innerHTML);
-                            LocateAddressOnMap(mapPoint);
-                        }
-                        SetAddressResultsHeight();
+function ShowLocation(candidates) {
+    dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+    RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
+    var fieldValues = isAddressSearched ? responseObject.LocatorSettings.Locators[0].LocatorFieldValues : responseObject.LocatorSettings.Locators[0].CountyFields.Value;
+    var fieldName = isAddressSearched ? responseObject.LocatorSettings.Locators[0].LocatorFieldName : responseObject.LocatorSettings.Locators[0].CountyFields.FieldName;
+    if (candidates.length > 0) {
+        if (dojo.dom.byId("txtAddress").value != "") {
+            var table = dojo.dom.byId("tblAddressResults");
+            var tBody = document.createElement("tbody");
+            table.appendChild(tBody);
+            table.cellSpacing = 0;
+            table.cellPadding = 0;
+            var candidatesLength = false;
+            for (var i = 0; i < candidates.length; i++) {
+                var candidate = candidates[i];
+                for (j = 0; j < fieldValues.length; j++) {
+                    if ((candidate.feature.attributes[fieldName].toUpperCase() == fieldValues[j].toUpperCase()) && (candidate.feature.attributes[responseObject.LocatorSettings.Locators[0].AddressMatchScore.Field] > responseObject.LocatorSettings.Locators[0].AddressMatchScore.Value)) {
+                        var tr = document.createElement("tr");
+                        tBody.appendChild(tr);
+                        var tdCandidate = document.createElement("td");
+                        tdCandidate.innerHTML = candidate.name;
+                        tdCandidate.align = "left";
+                        tdCandidate.className = 'bottomBorder';
+                        tdCandidate.style.cursor = "pointer";
+                        tdCandidate.setAttribute("x", candidate.feature.geometry.x);
+                        tdCandidate.setAttribute("y", candidate.feature.geometry.y);
+                        tdCandidate.setAttribute("countyExtentxmin", candidates[i].extent.xmin);
+                        tdCandidate.setAttribute("countyExtentymin", candidates[i].extent.ymin);
+                        tdCandidate.setAttribute("countyExtentxmax", candidates[i].extent.xmax);
+                        tdCandidate.setAttribute("countyExtentymax", candidates[i].extent.ymax);
+                        tdCandidate.onclick = function () {
+                            if (!isMobileDevice) {
+                                map.infoWindow.hide();
+                            }
+                            mapPoint = new esri.geometry.Point(this.getAttribute("x"), this.getAttribute("y"), map.spatialReference);
+                            if (!isAddressSearched) {
+                                countyExtent = new esri.geometry.Extent(parseFloat(this.getAttribute("countyExtentxmin")), parseFloat(this.getAttribute("countyExtentymin")), parseFloat(this.getAttribute("countyExtentxmax")), parseFloat(this.getAttribute("countyExtentymax")), map.spatialReference);
+                                dojo.dom.byId("txtAddress").value = "";
+                                dojo.dom.byId('txtAddress').setAttribute("defaultLocation", "");
+                                ShowLocatedCountyOnMap(countyExtent, this.innerHTML);
+                            } else {
+                                dojo.dom.byId("txtAddress").value = this.innerHTML;
+                                dojo.dom.byId('txtAddress').setAttribute("defaultAddress", this.innerHTML);
+                                LocateAddressOnMap(mapPoint);
+                            }
+                            SetAddressResultsHeight();
+                        };
+                        tr.appendChild(tdCandidate);
+                        candidatesLength = true;
                     }
-                    tr.appendChild(td1);
-                    candidatesLength = true;
                 }
+                dojo.dom.byId("imgSearchLoader").style.display = "none";
+                HideTransparentContainer();
             }
-            dojo.byId("imgSearchLoader").style.display = "none";
+            if (!candidatesLength) {
+                LocatorErrBack();
+            }
+            SetAddressResultsHeight();
         }
-        if (!candidatesLength) {
-            LocatorErrBack();
-        }
-        SetAddressResultsHeight();
     } else {
         LocatorErrBack();
     }
 }
 
 //Locate searched address on map with pushpin graphic
+
 function LocateAddressOnMap(mapPoint) {
     ShowProgressIndicator();
     selectedMapPoint = null;
+    featureID = infoWindowLayerID = searchFeatureID = searchInfoWindowLayerID = point = null;
     map.infoWindow.hide();
-    ClearGraphics();
-    for (var bMap = 0; bMap < baseMapLayers.length; bMap++) {
-        if (map.getLayer(baseMapLayers[bMap].Key).visible) {
-            var bmap = baseMapLayers[bMap].Key;
+    ClearGraphics(tempGraphicsLayerId);
+    if (isWebMap) {
+        var bmap = baseMapId;
+    } else {
+        for (var bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
+            if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
+                var bmap = responseObject.BaseMapLayers[bMap].Key;
+            }
         }
     }
     if (!map.getLayer(bmap).fullExtent.contains(mapPoint)) {
@@ -221,9 +257,9 @@ function LocateAddressOnMap(mapPoint) {
         return;
     }
     if (mapPoint) {
-        map.setLevel(locatorSettings.Locators[0].ZoomLevel);
+        map.setLevel(responseObject.ZoomLevel);
         map.centerAt(mapPoint);
-        var locatorMarkupSymbol = new esri.symbol.PictureMarkerSymbol(locatorSettings.DefaultLocatorSymbol, locatorSettings.MarkupSymbolSize.width, locatorSettings.MarkupSymbolSize.height);
+        var locatorMarkupSymbol = new esri.symbol.PictureMarkerSymbol(responseObject.LocatorSettings.DefaultLocatorSymbol, responseObject.LocatorSettings.MarkupSymbolSize.width, responseObject.LocatorSettings.MarkupSymbolSize.height);
         var graphic = new esri.Graphic(mapPoint, locatorMarkupSymbol, {
             "Locator": true
         }, null);
@@ -234,15 +270,17 @@ function LocateAddressOnMap(mapPoint) {
 }
 
 //Get candidate results for searched county
+
 function LocateCounty() {
     var thisSearchTime = lastSearchTime = (new Date()).getTime();
     mapPoint = null;
-    dojo.byId("imgSearchLoader").style.display = "block";
+    dojo.dom.byId("imgSearchLoader").style.display = "block";
+    ShowTransparentContainer();
     SetAddressResultsHeight();
 
     var queryTask = new esri.tasks.QueryTask(countyLayerData.ServiceURL);
     var query = new esri.tasks.Query();
-    query.where = dojo.string.substitute(countyLayerData.SearchQuery, [dojo.byId("txtAddress").value.trim().toUpperCase()]);
+    query.where = dojo.string.substitute(countyLayerData.SearchQuery, [Trim(dojo.dom.byId("txtAddress").value).toUpperCase()]);
     if (isCountySearched) {
         query.geometry = countyGeometry;
         query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_WITHIN;
@@ -257,348 +295,252 @@ function LocateCounty() {
         if (featureSet.features.length > 0) {
             FetchCountyResults(featureSet.features);
         } else {
-            dojo.empty(dojo.byId('tblAddressResults'));
-            RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
+            dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+            RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
             LocatorErrBack();
         }
     });
 }
 
 //Get candidate results for searched permit
+
 function LocatePermitNumber() {
+    dojo.dom.byId('txtAddress').setAttribute("defaultPermit", dojo.dom.byId("txtAddress").value);
+    lastSearchString = Trim(dojo.dom.byId("txtAddress").value);
     isCountySearched = false;
     permitArray = [];
     mapPoint = null;
-    dojo.empty(dojo.byId('tblAddressResults'));
-    RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
+    dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+    RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
     SetAddressResultsHeight();
-
-    for (var index in permitResultData) {
-        permitLayerCounter++;
-        FetchPermitResults(permitResultData[index], null, index);
+    for (index = 0; index < permitResultData.length; index++) {
+        FetchPermitResults(permitResultData[index], null, permitResultData[index].Title);
     }
 }
 
 //Query a layer to fetch permit data
+
 function FetchPermitResults(layer, polygonGeometry, index) {
     permitArray = [];
-    dojo.byId("imgSearchLoader").style.display = "block";
+    dojo.dom.byId("imgSearchLoader").style.display = "block";
+    ShowTransparentContainer();
     var queryTask = new esri.tasks.QueryTask(layer.ServiceURL);
     var query = new esri.tasks.Query();
     if (!isCountySearched) {
-        query.where = dojo.string.substitute(layer.SearchQuery, [dojo.byId("txtAddress").value.trim().toUpperCase()]);
+        query.where = dojo.string.substitute(layer.SearchQuery, [Trim(dojo.dom.byId("txtAddress").value).toUpperCase()]);
     } else {
         query.geometry = polygonGeometry;
         query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_CONTAINS;
     }
-    var permitType;
-    layer.PermitType.replace(/\$\{([^\s\:\}]+)(?:\:([^\s\:\}]+))?\}/g, function (match, key) {
-        permitType = key;
-    });
-    query.groupByFieldsForStatistics = [permitType];
-    var permitNumber;
-    layer.SearchField.replace(/\$\{([^\s\:\}]+)(?:\:([^\s\:\}]+))?\}/g, function (match, key) {
-        permitNumber = key;
-    });
-    var statisticDefinition = new esri.tasks.StatisticDefinition();
-    statisticDefinition.statisticType = "count";
-    statisticDefinition.onStatisticField = permitNumber;
-    statisticDefinition.outStatisticFieldName = "TotalCount";
 
-    query.outStatistics = [statisticDefinition];
     query.outSpatialReference = map.spatialReference;
     query.returnGeometry = false;
     query.outFields = ["*"];
     queryTask.execute(query, function (featureSet) {
-        queryExecutedCount++;
-        for (var num in featureSet.features) {
-            for (var j in featureSet.features[num].attributes) {
-                if (!featureSet.features[num].attributes[j]) {
-                    featureSet.features[num].attributes[j] = showNullValueAs;
-                }
-            }
-            permitArray.push({
-                attr: featureSet.features[num],
-                name: dojo.string.substitute(layer.PermitType, featureSet.features[num].attributes),
-                index: index,
-                layerID: layer
-            });
-        }
-
-        permitArray.sort(function (a, b) {
-            var nameA = a.name.toLowerCase(),
-                nameB = b.name.toLowerCase()
-            if (nameA < nameB) //sort string ascending
-                return -1
-            else return 1
-        });
-        if (permitLayerCounter == queryExecutedCount) {
-            if (permitArray.length > 0) {
-                PopulatePermitsInGroup(permitArray);
-            } else {
-                LocatorErrBack(messages.getElementsByTagName("noPermitFound")[0].childNodes[0].nodeValue);
-                HideProgressIndicator();
-            }
-            dojo.byId("imgSearchLoader").style.display = "none";
-            isPermitNumberSearched = false;
-        }
+        PopulatePermitData(featureSet, layer, index);
+    }, function (err) {
+        alert(dojo.string.substitute(messages.getElementsByTagName("dataNotFound")[0].childNodes[0].nodeValue, [layer.Title]));
+        PopulatePermitData();
     });
 }
 
-//Categorize permits in respective groups
-function PopulatePermitsInGroup(arrPermitTypes) {
-    dojo.empty(dojo.byId('tblAddressResults'));
-    var table = dojo.byId("tblAddressResults");
+function PopulatePermitData(featureSet, layer, index) {
+    queryExecutedCount++;
+    var thisSearchTime = lastSearchTime = (new Date()).getTime();
+    if (thisSearchTime < lastSearchTime) {
+        return;
+    }
+    if (featureSet) {
+        if (featureSet.features.length > 0) {
+            for (var num in featureSet.features) {
+                for (var j in featureSet.features[num].attributes) {
+                    if (!featureSet.features[num].attributes[j]) {
+                        featureSet.features[num].attributes[j] = responseObject.ShowNullValueAs;
+                    }
+                }
+                permitArray.push({
+                    attr: featureSet.features[num],
+                    fields: featureSet.fields,
+                    index: index,
+                    layerID: layer
+                });
+            }
+        }
+    }
+    if (permitResultData.length == queryExecutedCount) {
+        if (permitArray.length > 0) {
+            queryExecutedCount = 0;
+            PopulatePermits(permitArray);
+        } else {
+            queryExecutedCount = 0;
+            LocatorErrBack(messages.getElementsByTagName("noPermitFound")[0].childNodes[0].nodeValue);
+            HideProgressIndicator();
+        }
+        dojo.dom.byId("imgSearchLoader").style.display = "none";
+        isPermitNumberSearched = false;
+    }
+
+}
+
+//Populate candidate permit list in address container
+
+function PopulatePermits(permitArray) {
+    dojo['dom-construct'].empty(dojo.byId('tblAddressResults'));
+    RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
+    dojo.dom.byId("imgSearchLoader").style.display = "none";
+    HideTransparentContainer();
+    var table = dojo.dom.byId("tblAddressResults");
     var tBody = document.createElement("tbody");
     table.appendChild(tBody);
+    table.cellSpacing = table.cellPadding = 0;
 
-    var groupArray = [];
-    for (var p = 0; p < arrPermitTypes.length; p++) {
-        if (groupArray[arrPermitTypes[p].name]) {
-            groupArray[arrPermitTypes[p].name].push(p);
-        } else {
-            groupArray[arrPermitTypes[p].name] = [];
-            groupArray[arrPermitTypes[p].name].push(p);
-        }
-    }
-
-    for (var q in groupArray) {
-        if (groupArray[q].length > 1) {
-            for (var r in groupArray[q]) {
-                arrPermitTypes[groupArray[q][r]]["group"] = [];
-                arrPermitTypes[groupArray[q][r]]["group"] = true;
-            }
-        }
-    }
-
-    for (var permitType in arrPermitTypes) {
-        if (arrPermitTypes.length > 0) {
-            var tr = document.createElement("tr");
-            tBody.appendChild(tr);
-            var tdPermitType = document.createElement("td");
-            tr.appendChild(tdPermitType);
-            for (var j in arrPermitTypes[permitType].attr.attributes) {
-                if (!arrPermitTypes[permitType].attr.attributes[j]) {
-                    arrPermitTypes[permitType].attr.attributes[j] = showNullValueAs;
-                }
-            }
-
-            if (arrPermitTypes[permitType].group) {
-                pType = dojo.string.substitute(arrPermitTypes[permitType].layerID.PermitType, arrPermitTypes[permitType].attr.attributes) + "-" + arrPermitTypes[permitType].index;
-            } else {
-                pType = dojo.string.substitute(arrPermitTypes[permitType].layerID.PermitType, arrPermitTypes[permitType].attr.attributes);
-            }
-
-            tr.setAttribute("permitType", dojo.string.substitute(arrPermitTypes[permitType].layerID.PermitType, arrPermitTypes[permitType].attr.attributes));
-
-            tr.setAttribute("layerURL", arrPermitTypes[permitType].layerID.ServiceURL);
-            tr.setAttribute("layerKey", arrPermitTypes[permitType].index);
-            tr.setAttribute("pType", permitType);
-
-            var tNode = document.createTextNode(pType + " (" + arrPermitTypes[permitType].attr.attributes.TotalCount + ")");
-
-            var permitTypeField;
-            arrPermitTypes[permitType].layerID.PermitType.replace(/\$\{([^\s\:\}]+)(?:\:([^\s\:\}]+))?\}/g, function (match, key) {
-                permitTypeField = key;
-            });
-            tr.setAttribute("permitTypeField", permitTypeField);
-            tr.setAttribute("layerSearchQuery", arrPermitTypes[permitType].layerID.SearchQuery);
-            tr.setAttribute("layerSearchField", arrPermitTypes[permitType].layerID.SearchField);
-            tdPermitType.appendChild(tNode);
-            tdPermitType.className = 'bottomborder';
-            tdPermitType.style.cursor = "pointer";
-
-            var tbl = document.createElement("table");
-            tdPermitType.appendChild(tbl);
-            var tBodySub = document.createElement("tbody");
-            tBodySub.setAttribute("tbodyPermitType", dojo.string.substitute(arrPermitTypes[permitType].layerID.PermitType, arrPermitTypes[permitType].attr.attributes));
-            tBodySub.setAttribute("tbodyLayerKey", arrPermitTypes[permitType].index);
-            tBodySub.id = "tbody" + tBodySub.getAttribute("tbodyLayerKey") + tBodySub.getAttribute("tbodyPermitType");
-            tbl.appendChild(tBodySub);
-
-            tbl.setAttribute("tblPermitType", dojo.string.substitute(arrPermitTypes[permitType].layerID.PermitType, arrPermitTypes[permitType].attr.attributes));
-            tbl.setAttribute("tblLayerKey", arrPermitTypes[permitType].index);
-            tbl.id = "tbl" + tbl.getAttribute("tblLayerKey") + tbl.getAttribute("tblPermitType");
-            tbl.style.display = 'none';
-            tbl.cellSpacing = tbl.cellPadding = 0;
-
-            tr.onclick = function () {
-                ShowSubAddressList(this, arrPermitTypes);
-            }
-        }
-    }
-    dojo.byId("imgSearchLoader").style.display = "none";
-    SetAddressResultsHeight();
-    HideProgressIndicator();
-}
-
-//Display list of permits which fall within a particular type
-function ShowSubAddressList(trThis, arrPermitTypes) {
-    var topPos = dojo.coords(dojo.byId('divAddressScrollContainerscrollbar_handle')).t;
-    dojo.byId("imgSearchLoader").style.display = "block";
-    var _this = trThis;
-    var typ = trThis.getAttribute("permitType");
-    var tblType = trThis.getAttribute("layerKey") + trThis.getAttribute("permitType");
-    if (dojo.byId("tbl" + tblType).style.display == 'none') {
-        dojo.empty(dojo.byId("tbody" + tblType));
-        var queryTask = new esri.tasks.QueryTask(trThis.getAttribute("layerURL"));
-        var query = new esri.tasks.Query();
-        if (trThis.getAttribute("permitType") == showNullValueAs) {
-            query.where = trThis.getAttribute("permitTypeField") + " IS NULL" + " AND (" + dojo.string.substitute(trThis.getAttribute("layerSearchQuery"), [dojo.byId("txtAddress").value.trim().toUpperCase()]) + ")";
-        } else if (isCountySearched) {
-            query.where = trThis.getAttribute("permitTypeField") + " = " + "'" + trThis.getAttribute("permitType") + "'";
-            query.geometry = countyGeometry;
-            query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_CONTAINS;
-        } else {
-            query.where = trThis.getAttribute("permitTypeField") + " = " + "'" + trThis.getAttribute("permitType") + "'" + " AND (" + dojo.string.substitute(trThis.getAttribute("layerSearchQuery"), [dojo.byId("txtAddress").value.trim().toUpperCase()]) + ")";
-        }
-        query.outSpatialReference = map.spatialReference;
-        query.returnGeometry = false;
-        query.outFields = ["*"];
-        queryTask.execute(query, function (featureSet) {
-            for (var index in featureSet.features) {
-                var tr2 = document.createElement("tr");
-                dojo.byId("tbody" + tblType).appendChild(tr2);
-                var td2 = document.createElement("td");
-                tr2.appendChild(td2);
-                td2.id = _this.getAttribute("permitType") + '-' + index;
-                td2.className = 'tdSubAddress';
-                if (isMobileDevice) {
-                    td2.style.width = (dojo.window.getBox().w - 50) + "px";
-                }
-                td2.innerHTML = dojo.string.substitute(_this.getAttribute("layerSearchField"), featureSet.features[index].attributes);
-                td2.title = 'Click to Locate';
-                td2.setAttribute("layerQueryURL", _this.getAttribute("layerURL"));
-                td2.setAttribute("layerSearchQuery", _this.getAttribute("layerSearchQuery"));
-                td2.onclick = function (evt) { //on-click function for address list
-                    ShowProgressIndicator();
-                    map.infoWindow.hide();
-                    HideAddressContainer();
-                    dojo.byId("txtAddress").value = this.innerHTML;
-                    if (isCountySearched) {
-                        dojo.byId('txtAddress').setAttribute("defaultLocation", this.innerHTML);
-                    } else {
-                        dojo.byId('txtAddress').setAttribute("defaultPermit", this.innerHTML);
-                    }
-                    lastSearchString = dojo.byId("txtAddress").value.trim();
-                    var queryTask = new esri.tasks.QueryTask(this.getAttribute("layerQueryURL"));
-                    var query = new esri.tasks.Query();
-                    query.where = dojo.string.substitute(this.getAttribute("layerSearchQuery"), [this.innerHTML.trim().toUpperCase()]);
-                    query.outSpatialReference = map.spatialReference;
-                    query.returnGeometry = true;
-                    query.outFields = ["*"];
-                    queryTask.execute(query, function (featureSet) {
-                        searchFeatureID = featureSet.features[0].attributes[shareQuery.split("${0}")[0].split(" =")[0]];
-                        searchInfoWindowLayerID = arrPermitTypes[_this.getAttribute('pType')].index;
-                        addressSearchFlag = true;
-                        var permitGeometry = featureSet.features[0].geometry;
-                        if (permitGeometry.type == 'polygon') {
-                            var mapPoint = permitGeometry.getExtent().getCenter();
-                        } else {
-                            var mapPoint = new esri.geometry.Point(Number(permitGeometry.x), Number(permitGeometry.y), map.spatialReference);
-                        }
-                        LocatePermitOnMap(mapPoint, featureSet.features[0].attributes, arrPermitTypes[_this.getAttribute('pType')].layerID, featureSet.fields);
-                        setTimeout(function () {
-                            HideProgressIndicator();
-                        }, 500);
-                    });
-                }
-            }
-            ToggleGroupDisplay(tblType);
-            SetAddressResultsHeight();
-            dojo.byId("imgSearchLoader").style.display = "none";
-            dojo.byId('divAddressScrollContainerscrollbar_handle').style.top = '0px';
-            if (topPos > 5) {
-                dojo.byId('divAddressScrollContainerscrollbar_handle').style.top = (topPos - 5) + 'px';
-            } else {
-                dojo.byId('divAddressScrollContainerscrollbar_handle').style.top = topPos + "px";
-            }
-
-            var topPos = dojo.coords(dojo.byId('divAddressScrollContainerscrollbar_handle')).t;
-            dojo.byId('divAddressScrollContainerscrollbar_handle').style.top = topPos + 'px';
+    var arrPermits = [];
+    for (var i = 0; i < permitArray.length; i++) {
+        arrPermits.push({
+            attributes: permitArray[i],
+            searchDisplayField: permitArray[i].layerID.SearchDisplayField,
+            name: dojo.string.substitute(permitArray[i].layerID.SearchDisplayField, permitArray[i].attr.attributes)
         });
-
-    } else {
-        ToggleGroupDisplay(tblType);
-        SetAddressResultsHeight();
-        dojo.byId("imgSearchLoader").style.display = "none";
     }
+
+    arrPermits.sort(function (a, b) {
+        var nameA = a.name.toLowerCase(),
+            nameB = b.name.toLowerCase()
+        if (nameA < nameB) //sort string ascending
+            return -1
+        else return 1
+    });
+
+
+    for (var i = 0; i < arrPermits.length; i++) {
+        var tr = document.createElement("tr");
+        tBody.appendChild(tr);
+        var td1 = document.createElement("td");
+        td1.innerHTML = arrPermits[i].name;
+        td1.align = "left";
+        td1.className = 'bottomBorder';
+        td1.style.cursor = "pointer";
+        td1.setAttribute("index", i);
+        var defaultPermit = arrPermits[i].attributes.attr.attributes[arrPermits[i].searchDisplayField.split("$")[1].split("{")[1].split("}")[0]];
+        td1.setAttribute("defaultPermit", defaultPermit);
+        td1.onclick = function () {
+            FetchPermitData(this, arrPermits);
+        };
+        tr.appendChild(td1);
+    }
+    SetAddressResultsHeight();
 }
 
-//Expand/collapse group in permit search results
-function ToggleGroupDisplay(permitType) {
-    var table = dojo.byId("tbl" + permitType);
-    if (table.style.display == "none") {
-        table.style.display = "block";
+//Fetch data for the selected permit
+
+function FetchPermitData(pThis, arrPermits) {
+    var queryTask, query, permitGeometry, objID, i;
+    ShowProgressIndicator();
+    map.infoWindow.hide();
+    if (!isCountySearched) {
+        dojo.dom.byId("txtAddress").value = pThis.getAttribute("defaultPermit");
+        dojo.dom.byId('txtAddress').setAttribute("defaultPermit", pThis.getAttribute("defaultPermit"));
     } else {
-        table.style.display = "none";
+        dojo.dom.byId("txtAddress").value = "";
+        dojo.dom.byId('txtAddress').setAttribute("defaultLocation", "");
     }
+    lastSearchString = Trim(dojo.dom.byId("txtAddress").value);
+    for (i = 0; i < arrPermits[pThis.getAttribute("index")].attributes.fields.length; i++) {
+        if (arrPermits[pThis.getAttribute("index")].attributes.fields[i].type == "esriFieldTypeOID") {
+            objID = arrPermits[pThis.getAttribute("index")].attributes.fields[i].name;
+            break;
+        }
+    }
+    searchFeatureID = arrPermits[pThis.getAttribute("index")].attributes.attr.attributes[objID];
+    searchInfoWindowLayerID = arrPermits[pThis.getAttribute("index")].attributes.index;
+    addressSearchFlag = true;
+
+    queryTask = new esri.tasks.QueryTask(arrPermits[pThis.getAttribute("index")].attributes.layerID.ServiceURL);
+    query = new esri.tasks.Query();
+    query.where = objID + "='" + searchFeatureID + "'";
+    query.outSpatialReference = map.spatialReference;
+    query.returnGeometry = true;
+    query.outFields = ["*"];
+    queryTask.execute(query, function (featureSet) {
+        permitGeometry = featureSet.features[0].geometry;
+        if (permitGeometry.type == 'polygon') {
+            mapPoint = permitGeometry.getExtent().getCenter();
+        } else {
+            mapPoint = new esri.geometry.Point(Number(permitGeometry.x), Number(permitGeometry.y), map.spatialReference);
+        }
+        LocatePermitOnMap(mapPoint, featureSet.features[0].attributes, arrPermits[pThis.getAttribute("index")].attributes.layerID, featureSet.fields);
+    });
 }
 
 //Populate candidate county list in address container
+
 function FetchCountyResults(featureset) {
     var thisSearchTime = lastSearchTime = (new Date()).getTime();
     if (thisSearchTime < lastSearchTime) {
         return;
     }
-    dojo.empty(dojo.byId('tblAddressResults'));
-    RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
-    dojo.byId("imgSearchLoader").style.display = "none";
+    dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+    RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
+    dojo.dom.byId("imgSearchLoader").style.display = "none";
+    HideTransparentContainer();
     if (featureset.length > 0) {
-        var table = dojo.byId("tblAddressResults");
-        var tBody = document.createElement("tbody");
-        table.appendChild(tBody);
-        table.cellSpacing = 0;
-        table.cellPadding = 0;
-        var featureSet = [];
-        for (var i = 0; i < featureset.length; i++) {
-            featureSet.push({
-                attributes: featureset[i].attributes,
-                name: dojo.string.substitute(countyLayerData.CountyDisplayField, featureset[i].attributes)
-            });
-        }
-
-        featureSet.sort(function (a, b) {
-            var nameA = a.name.toLowerCase(),
-                nameB = b.name.toLowerCase()
-            if (nameA < nameB) //sort string ascending
-                return -1
-            else return 1
-        });
-
-        for (var i = 0; i < featureSet.length; i++) {
-            var tr = document.createElement("tr");
-            tBody.appendChild(tr);
-            var td1 = document.createElement("td");
-            td1.innerHTML = dojo.string.substitute(countyLayerData.CountyDisplayField, featureset[i].attributes);
-            td1.align = "left";
-            td1.className = 'bottomborder';
-            td1.style.cursor = "pointer";
-            td1.setAttribute("index", i);
-            td1.onclick = function () {
-                map.infoWindow.hide();
-                dojo.byId("txtAddress").value = this.innerHTML;
-                dojo.byId('txtAddress').setAttribute("defaultLocation", this.innerHTML);
-                lastSearchString = dojo.byId("txtAddress").value.trim();
-                var attr = featureSet[this.getAttribute("index")].attributes;
-                LocateCountyOnMap(attr);
+        if (dojo.byId("txtAddress").value != "") {
+            var table = dojo.byId("tblAddressResults");
+            var tBody = document.createElement("tbody");
+            table.appendChild(tBody);
+            table.cellSpacing = 0;
+            table.cellPadding = 0;
+            var featureSet = [];
+            for (var i = 0; i < featureset.length; i++) {
+                featureSet.push({
+                    attributes: featureset[i].attributes,
+                    name: dojo.string.substitute(countyLayerData.CountyDisplayField, featureset[i].attributes)
+                });
             }
-            tr.appendChild(td1);
+
+            featureSet.sort(function (a, b) {
+                var nameA = a.name.toLowerCase(),
+                    nameB = b.name.toLowerCase()
+                if (nameA < nameB) //sort string ascending
+                    return -1
+                else return 1
+            });
+
+            for (var i = 0; i < featureSet.length; i++) {
+                var tr = document.createElement("tr");
+                tBody.appendChild(tr);
+                var td1 = document.createElement("td");
+                td1.innerHTML = dojo.string.substitute(countyLayerData.CountyDisplayField, featureSet[i].attributes);
+                td1.align = "left";
+                td1.className = 'bottomBorder';
+                td1.style.cursor = "pointer";
+                td1.setAttribute("index", i);
+                td1.onclick = function () {
+                    map.infoWindow.hide();
+                    dojo.dom.byId("txtAddress").value = this.innerHTML;
+                    dojo.dom.byId('txtAddress').setAttribute("defaultLocation", this.innerHTML);
+                    lastSearchString = Trim(dojo.dom.byId("txtAddress").value);
+                    var attr = featureSet[this.getAttribute("index")].attributes;
+                    LocateCountyOnMap(attr);
+                }
+                tr.appendChild(td1);
+            }
+            isCountySearched = false;
+            SetAddressResultsHeight();
         }
-        SetAddressResultsHeight();
-        isCountySearched = false;
-        SetAddressResultsHeight();
     } else {
         LocatorErrBack();
     }
 }
 
 //Display error message when locator service fails or does not return any data
+
 function LocatorErrBack(errorMessage) {
-    dojo.empty(dojo.byId('tblAddressResults'));
-    RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
-    dojo.byId("imgSearchLoader").style.display = "none";
-    var table = dojo.byId("tblAddressResults");
+    dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+    RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
+    dojo.dom.byId("imgSearchLoader").style.display = "none";
+    HideTransparentContainer();
+    var table = dojo.dom.byId("tblAddressResults");
     var tBody = document.createElement("tbody");
     table.appendChild(tBody);
     table.cellSpacing = 0;
@@ -608,19 +550,18 @@ function LocatorErrBack(errorMessage) {
     var td = document.createElement("td");
     td.innerHTML = errorMessage ? errorMessage : messages.getElementsByTagName("invalidSearch")[0].childNodes[0].nodeValue;
     td.align = "left";
-    td.className = 'bottomborder';
+    td.className = 'bottomBorder';
     td.style.cursor = "default";
     tr.appendChild(td);
 }
 
 //Query the selected county to fetch the geometry
+
 function LocateCountyOnMap(attributes) {
     isCountySearched = true;
     permitArray = [];
-    dojo.empty(dojo.byId('tblAddressResults'));
-    RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
-    dojo.byId("imgSearchLoader").style.display = "block";
-
+    dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+    RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
     var queryTask = new esri.tasks.QueryTask(countyLayerData.ServiceURL);
     var query = new esri.tasks.Query();
     var countyName = countyLayerData.SearchQuery.split(" LIKE")[0];
@@ -629,69 +570,102 @@ function LocateCountyOnMap(attributes) {
     query.returnGeometry = true;
     query.outFields = ["*"];
     queryTask.execute(query, function (featureSet) {
-        dojo.empty(dojo.byId('tblAddressResults'));
-        ShowLocatedCountyOnMap(featureSet.features[0].geometry, attributes[countyName])
+        dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+        ShowLocatedCountyOnMap(featureSet.features[0].geometry, attributes[countyName]);
     });
 }
 
 //Locate searched county on map and add it to the breadcrumbs
+
 function ShowLocatedCountyOnMap(geometry, locationName) {
     if (!isMobileDevice) {
         ShowProgressIndicator();
-    }
-    else {
-        dojo.byId("imgSearchLoader").style.display = "block";
+    } else {
+        dojo.dom.byId("imgSearchLoader").style.display = "block";
+        ShowTransparentContainer();
     }
     isCountySearched = true;
 
     if (geometry) {
         countyGeometry = geometry.getExtent();
         map.setExtent(countyGeometry);
+        HideProgressIndicator();
     }
-    for (var index in permitResultData) {
-        permitLayerCounter++;
-        FetchPermitResults(permitResultData[index], countyGeometry, index);
+    for (var index = 0; index < permitResultData.length; index++) {
+        FetchPermitResults(permitResultData[index], countyGeometry, permitResultData[index].Title);
     }
-
-    dojo.byId("trBreadCrumbs").style.display = "block";
-    if (dojo.byId("tdBreadCrumbs").innerHTML.trim() != "") {
-        if (dojo.byId("tdBreadCrumbs").innerHTML != locationName.split(",")[0]) {
-            dojo.byId("tdBreadCrumbs").innerHTML = dojo.byId("tdBreadCrumbs").innerHTML + " > " + locationName.split(",")[0];
+    if (locationName) {
+        dojo.dom.byId("divBreadCrumbs").style.display = "block";
+        span = document.createElement("span");
+        dojo.dom.byId("tdBreadCrumbs").appendChild(span);
+        span.setAttribute("countyExtentxmin", countyGeometry.xmin);
+        span.setAttribute("countyExtentymin", countyGeometry.ymin);
+        span.setAttribute("countyExtentxmax", countyGeometry.xmax);
+        span.setAttribute("countyExtentymax", countyGeometry.ymax);
+        span.setAttribute("locationName", locationName);
+        if (dojo.query(".spanBreadCrumbs", dojo.dom.byId("tdBreadCrumbs")).length > 0) {
+            span.className = "spanBreadCrumbs";
+            span.setAttribute("index", dojo.query(".spanBreadCrumbs", dojo.dom.byId("tdBreadCrumbs")).indexOf(span));
+            span.innerHTML = " > " + locationName.split(",")[0];
+        } else {
+            span.className = "spanBreadCrumbs";
+            span.innerHTML = locationName.split(",")[0];
+            span.setAttribute("index", dojo.query(".spanBreadCrumbs", dojo.dom.byId("tdBreadCrumbs")).indexOf(span));
+            SetAddressResultsHeight();
         }
-    } else {
-        dojo.byId("tdBreadCrumbs").innerHTML = locationName.split(",")[0];
+        span.onclick = function () {
+            NavigateBreadCrumbs(this);
+        };
+    }
+}
+
+function NavigateBreadCrumbs(pThis) {
+    countyGeometry = new esri.geometry.Extent(parseFloat(pThis.getAttribute("countyExtentxmin")), parseFloat(pThis.getAttribute("countyExtentymin")), parseFloat(pThis.getAttribute("countyExtentxmax")), parseFloat(pThis.getAttribute("countyExtentymax")), map.spatialReference);
+    map.setExtent(countyGeometry);
+    for (var index = 0; index < permitResultData.length; index++) {
+        FetchPermitResults(permitResultData[index], countyGeometry, permitResultData[index].Title);
+    }
+    var list = dojo.dom.byId("tdBreadCrumbs");
+    items = list.getElementsByTagName("span");
+    var itemsLength = items.length;
+    if (items.length) {
+        for (var i = itemsLength - 1; i >= 0; i--) {
+            if (i > pThis.getAttribute("index")) {
+                dojo.destroy(items[i]);
+            }
+        }
     }
 }
 
 //Clear breadcrumbs container
+
 function ClearBreadCrumbs() {
-    dojo.byId("trBreadCrumbs").style.display = "none";
-    dojo.byId("tdBreadCrumbs").innerHTML = "";
-    permitLayerCounter = 0;
+    dojo.dom.byId("divBreadCrumbs").style.display = "none";
+    dojo.dom.byId("tdBreadCrumbs").innerHTML = "";
     queryExecutedCount = 0;
     countyGeometry = null;
-    dojo.byId("imgSearchLoader").style.display = "none";
-    dojo.empty(dojo.byId('tblAddressResults'));
-    RemoveScrollBar(dojo.byId('divAddressScrollContainer'));
+    dojo.dom.byId("imgSearchLoader").style.display = "none";
+    HideTransparentContainer();
+    dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+    RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
     isCountySearched = false;
 }
 
 //Locate searched permit on map and display the infowindow for the same
+
 function LocatePermitOnMap(mapPoint, attributes, layerID, fields) {
-    setTimeout(function () {
-        if (mapPoint) {
-            if (!isMobileDevice) {
-                map.setExtent(mapPoint);
-                ShowInfoWindowDetails(mapPoint, attributes, null, layerID, null, fields);
-            } else {
-                ShowMobileInfoWindow(mapPoint, attributes, layerID, fields);
-            }
+    if (mapPoint) {
+        if (!isMobileDevice) {
+            map.setExtent(mapPoint);
+            ShowInfoWindowDetails(mapPoint, attributes, null, layerID, null, fields);
+        } else {
+            ShowMobileInfoWindow(mapPoint, attributes, layerID, fields);
         }
-    }, 500);
+    }
     if (!isMobileDevice) {
-        if (dojo.coords("divAddressContent").h > 0) {
-            dojo.replaceClass("divAddressContent", "hideContainerHeight", "showContainerHeight");
-            dojo.byId('divAddressContent').style.height = '0px';
+        if (dojo['dom-geometry'].getMarginBox("divAddressContent").h > 0) {
+            dojo['dom-class'].replace("divAddressContent", "hideContainerHeight", "showContainerHeight");
+            dojo.dom.byId('divAddressContent').style.height = '0px';
         }
     }
     if (isMobileDevice) {
@@ -700,12 +674,15 @@ function LocatePermitOnMap(mapPoint, attributes, layerID, fields) {
 }
 
 //Display the current location of the user
+
 function ShowMyLocation() {
+    var geometryService = new esri.tasks.GeometryService(responseObject.GeometryService);
     map.getLayer(tempGraphicsLayerId).clear();
     HideBaseMapLayerContainer();
     HideShareAppContainer();
     HideAddressContainer();
-    var cTimeout = 8000 /* ms */, cBackupTimeout = 16000
+    var cTimeout = 8000 /* ms */,
+        cBackupTimeout = 16000
     backupTimeoutTimer = setTimeout(function () {
         alert(messages.getElementsByTagName("geolocationPositionUnavailable")[0].childNodes[0].nodeValue);
     }, cBackupTimeout);
@@ -722,9 +699,13 @@ function ShowMyLocation() {
         graphicCollection.addPoint(mapPoint);
         map.infoWindow.hide();
         geometryService.project([graphicCollection], map.spatialReference, function (newPointCollection) {
-            for (var bMap = 0; bMap < baseMapLayers.length; bMap++) {
-                if (map.getLayer(baseMapLayers[bMap].Key).visible) {
-                    var bmap = baseMapLayers[bMap].Key;
+            if (isWebMap) {
+                var bmap = baseMapId;
+            } else {
+                for (var bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
+                    if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
+                        var bmap = responseObject.BaseMapLayers[bMap].Key;
+                    }
                 }
             }
             if (!map.getLayer(bmap).fullExtent.contains(newPointCollection[0].getPoint(0))) {
@@ -735,70 +716,88 @@ function ShowMyLocation() {
                 alert(messages.getElementsByTagName("geoLocation")[0].childNodes[0].nodeValue);
                 return;
             }
+            selectedMapPoint = null;
+            map.infoWindow.hide();
             mapPoint = newPointCollection[0].getPoint(0);
-            map.setLevel(locatorSettings.Locators[0].ZoomLevel);
+            map.setLevel(responseObject.ZoomLevel);
             map.centerAt(mapPoint);
-            var locatorMarkupSymbol = new esri.symbol.PictureMarkerSymbol(locatorSettings.DefaultLocatorSymbol, locatorSettings.MarkupSymbolSize.width, locatorSettings.MarkupSymbolSize.height);
+            var locatorMarkupSymbol = new esri.symbol.PictureMarkerSymbol(responseObject.LocatorSettings.DefaultLocatorSymbol, responseObject.LocatorSettings.MarkupSymbolSize.width, responseObject.LocatorSettings.MarkupSymbolSize.height);
             var graphic = new esri.Graphic(mapPoint, locatorMarkupSymbol, {
                 "Locator": true
             }, null);
             map.getLayer(tempGraphicsLayerId).add(graphic);
             HideProgressIndicator();
+        }, function (error) {
+            alert(error.message);
         });
     },
-    function (error) {
-        clearTimeout(backupTimeoutTimer);
-        HideProgressIndicator();
-        switch (error.code) {
-            case error.TIMEOUT:
-                alert(messages.getElementsByTagName("geolocationTimeout")[0].childNodes[0].nodeValue);
-                break;
-            case error.POSITION_UNAVAILABLE:
-                alert(messages.getElementsByTagName("geolocationPositionUnavailable")[0].childNodes[0].nodeValue);
-                break;
-            case error.PERMISSION_DENIED:
-                alert(messages.getElementsByTagName("geolocationPermissionDenied")[0].childNodes[0].nodeValue);
-                break;
-            case error.UNKNOWN_ERROR:
-                alert(messages.getElementsByTagName("geolocationUnKnownError")[0].childNodes[0].nodeValue);
-                break;
-        }
-    }, {
-        timeout: cTimeout
-    });
+        function (error) {
+            clearTimeout(backupTimeoutTimer);
+            HideProgressIndicator();
+            switch (error.code) {
+                case error.TIMEOUT:
+                    alert(messages.getElementsByTagName("geolocationTimeout")[0].childNodes[0].nodeValue);
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert(messages.getElementsByTagName("geolocationPositionUnavailable")[0].childNodes[0].nodeValue);
+                    break;
+                case error.PERMISSION_DENIED:
+                    alert(messages.getElementsByTagName("geolocationPermissionDenied")[0].childNodes[0].nodeValue);
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert(messages.getElementsByTagName("geolocationUnKnownError")[0].childNodes[0].nodeValue);
+                    break;
+            }
+        }, {
+            timeout: cTimeout
+        });
 }
 
 //Query the features while sharing infowindow
+
 function ShareInfoWindow() {
     ShowProgressIndicator();
-    for (var index in permitResultData) {
-        if (index == sharedLayerID) {
+    for (var index = 0; index < permitResultData.length; index++) {
+        if (permitResultData[index].Title == searchInfoWindowLayerID) {
             var layerIndex = index;
             var queryTask = new esri.tasks.QueryTask(permitResultData[index].ServiceURL);
-            var query = new esri.tasks.Query();
-            query.where = shareQuery.split("${0}")[0] + sharedFeatureID + shareQuery.split("${0}")[1];
-            query.outFields = ["*"];
-            query.outSpatialReference = map.spatialReference;
-            query.returnGeometry = true;
-            queryTask.execute(query, function (features) {
-                if (features.features[0].geometry.type == "point") {
-                    mapPoint = features.features[0].geometry;
-                } else {
-                    mapPoint = features.features[0].geometry.getExtent().getCenter();
-                }
-                setTimeout(function () {
-                    for (var i in features.features[0].attributes) {
-                        if (!features.features[0].attributes[i]) {
-                            features.features[0].attributes[i] = showNullValueAs;
+            esri.request({
+                url: permitResultData[index].ServiceURL + "?f=json",
+                load: function (data) {
+                    for (var p = 0; p < data.fields.length; p++) {
+                        if (data.fields[p].type == "esriFieldTypeOID") {
+                            var objID = data.fields[p].name;
+                            break;
                         }
                     }
-                    if (!isMobileDevice) {
-                        ShowInfoWindowDetails(features.features[0].geometry, features.features[0].attributes, null, permitResultData[layerIndex], mapPoint, features.fields);
-                    } else {
-                        ShowMobileInfoWindow(mapPoint, features.features[0].attributes, permitResultData[layerIndex], features.fields);
-                    }
-                }, 500);
+                    var query = new esri.tasks.Query();
+                    query.where = objID + "=" + searchFeatureID;
+                    query.outFields = ["*"];
+                    query.outSpatialReference = map.spatialReference;
+                    query.returnGeometry = true;
+                    queryTask.execute(query, function (features) {
+                        if (features.features[0].geometry.type == "point") {
+                            mapPoint = features.features[0].geometry;
+                        } else {
+                            mapPoint = features.features[0].geometry.getExtent().getCenter();
+                        }
+                        for (var i in features.features[0].attributes) {
+                            if (!features.features[0].attributes[i]) {
+                                features.features[0].attributes[i] = responseObject.ShowNullValueAs;
+                            }
+                        }
+                        if (!isMobileDevice) {
+                            ShowInfoWindowDetails(features.features[0].geometry, features.features[0].attributes, null, permitResultData[layerIndex], mapPoint, features.fields);
+                        } else {
+                            ShowMobileInfoWindow(mapPoint, features.features[0].attributes, permitResultData[layerIndex], features.fields);
+                        }
+                    });
+                },
+                error: function (err) {
+                    alert(err.message);
+                }
             });
+            break;
         }
     }
     HideProgressIndicator();
