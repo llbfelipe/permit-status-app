@@ -53,7 +53,7 @@ dojo.declare("js.InfoWindow", [esri.InfoWindowBase], {
     },
 
     setTitle: function (title, callbackHandler) {
-        dojo.empty(this._title);
+        dojo['dom-construct'].empty(this._title);
         var titleNode = document.createTextNode(title);
         this._title.appendChild(titleNode);
         this._imgDetails = dojo.create("img", {
