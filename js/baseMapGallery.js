@@ -17,29 +17,32 @@
 //Create BaseMap components
 
 function CreateBaseMapComponent() {
-    AddBaseMapLayers();
+    var baseMapURL = 0;
+    var baseMapURLCount = 0;
+    for (var i = 0; i < responseObject.BaseMapLayers.length; i++) {
+        if (responseObject.BaseMapLayers[i].MapURL) {
+            map.addLayer(CreateBaseMapLayer(responseObject.BaseMapLayers[i].MapURL, responseObject.BaseMapLayers[i].Key, (i == 0) ? true : false));
+            if (baseMapURLCount == 0) {
+                baseMapURL = i;
+            }
+            baseMapURLCount++;
+        }
+    }
     var layerList = dojo.byId('layerList');
     for (var i = 0; i < Math.ceil(responseObject.BaseMapLayers.length / 2); i++) {
-        var previewDataRow = document.createElement("tr");
-
-        if (responseObject.BaseMapLayers[(i * 2) + 0]) {
+        if (responseObject.BaseMapLayers[(i * 2) + 0] && responseObject.BaseMapLayers[(i * 2) + 0].MapURL) {
             var layerInfo = responseObject.BaseMapLayers[(i * 2) + 0];
             layerList.appendChild(CreateBaseMapElement(layerInfo));
         }
-
-        if (responseObject.BaseMapLayers[(i * 2) + 1]) {
+        if (responseObject.BaseMapLayers[(i * 2) + 1] && responseObject.BaseMapLayers[(i * 2) + 1].MapURL) {
             layerInfo = responseObject.BaseMapLayers[(i * 2) + 1];
             layerList.appendChild(CreateBaseMapElement(layerInfo));
         }
     }
-    dojo['dom-class'].add(dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[0].Key), "selectedBaseMap");
-}
 
-// Add BaseMap layers to the map
-
-function AddBaseMapLayers() {
-    for (var i = 0; i < responseObject.BaseMapLayers.length; i++) {
-        map.addLayer(CreateBaseMapLayer(responseObject.BaseMapLayers[i].MapURL, responseObject.BaseMapLayers[i].Key, (i == 0) ? true : false));
+    if (baseMapURLCount >= 1) {
+        dojo['dom-class'].add(dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[baseMapURL].Key), "selectedBaseMap");
+        map.getLayer(responseObject.BaseMapLayers[baseMapURL].Key).show();
     }
 }
 
@@ -83,16 +86,18 @@ function ChangeBaseMap(spanControl) {
     var key = spanControl.getAttribute('layerId');
 
     for (var i = 0; i < responseObject.BaseMapLayers.length; i++) {
-        dojo['dom-class'].remove(dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[i].Key), "selectedBaseMap");
-        if (dojo.isIE) {
-            dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[i].Key).style.marginTop = "0px";
-            dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[i].Key).style.marginLeft = "0px";
-            dojo.dom.byId("spanBaseMapText" + responseObject.BaseMapLayers[i].Key).style.marginTop = "0px";
-        }
-        if (responseObject.BaseMapLayers[i].Key == key) {
-            dojo['dom-class'].add(dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[i].Key), "selectedBaseMap");
-            layer = map.getLayer(responseObject.BaseMapLayers[i].Key);
-            layer.show();
+        if (responseObject.BaseMapLayers[i].MapURL) {
+            dojo['dom-class'].remove(dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[i].Key), "selectedBaseMap");
+            if (dojo.isIE) {
+                dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[i].Key).style.marginTop = "0px";
+                dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[i].Key).style.marginLeft = "0px";
+                dojo.dom.byId("spanBaseMapText" + responseObject.BaseMapLayers[i].Key).style.marginTop = "0px";
+            }
+            if (responseObject.BaseMapLayers[i].Key == key) {
+                dojo['dom-class'].add(dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[i].Key), "selectedBaseMap");
+                layer = map.getLayer(responseObject.BaseMapLayers[i].Key);
+                layer.show();
+            }
         }
     }
 }
@@ -101,9 +106,11 @@ function ChangeBaseMap(spanControl) {
 
 function HideMapLayers() {
     for (var i = 0; i < responseObject.BaseMapLayers.length; i++) {
-        var layer = map.getLayer(responseObject.BaseMapLayers[i].Key);
-        if (layer) {
-            layer.hide();
+        if (responseObject.BaseMapLayers[i].MapURL) {
+            var layer = map.getLayer(responseObject.BaseMapLayers[i].Key);
+            if (layer) {
+                layer.hide();
+            }
         }
     }
 }

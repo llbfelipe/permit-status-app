@@ -18,22 +18,22 @@
 /* Use this file to perform the following: */
 
 /* 1.  Set the body styles                      - { Style(s) to look for: html, body, fullHeightWidth, fullWidth } */
-/* 2.  Set styles for splash screen             - { Style(s) to look for: divSplashScreenContainer,divSplashScreenContent,divSplashScreenDialogContent,divSplashContainer,
-                                                                          divSplashContent,customButton,customButtonInner } */
+/* 2.  Set styles for splash screen             - { Style(s) to look for: divSplashScreenContainer, divSplashScreenContent, divSplashScreenDialogContent, divSplashContainer,
+                                                                          divSplashContent, customButton, customButtonInner } */
 /* 3.  Set the styles for animations            - { Style(s) to look for: showContainer, hideContainer, hideContainerHeight, showContainerHeight, opacityHideAnimation,
                                                                           hideContainerHeight, showContainerHeight, esriLogo}*/
-/* 4.  Set the styles for share container       - { Style(s) to look for: divAppContainer,divAppHolder}*/
-/* 5.  Set the styles for application header    - { Style(s) to look for: tableHeader,imgOptions,imgApp,divLogo,trLogo,divApplicationHeader,lblAppName}*/
+/* 4.  Set the styles for share container       - { Style(s) to look for: divAppContainer, divAppHolder}*/
+/* 5.  Set the styles for application header    - { Style(s) to look for: tableHeader, imgOptions, imgApp, divLogo, trLogo, divApplicationHeader, lblAppName}*/
 /* 6.  Set the styles for search container      - { Style(s) to look for: divAddressScrollContainer, divAddressScrollContent, tblHeader, divAddressPlaceHolder, txtAddress,
-                                                                          imgLocate,divAddressList,bottomBorder,tdSearchByAddress,tdSearchByUnSelectedAddress,
-                                                                          tdSearchByLocation,tdSearchByUnSelectedLocation, tdSearchByPermit, tdSearchByUnSelectedPermit,
+                                                                          imgLocate, divFreezeAddressContainer, divAddressList, bottomBorder, tdSearchByAddress, tdSearchByUnSelectedAddress,
+                                                                          tdSearchByLocation, tdSearchByUnSelectedLocation, tdSearchByPermit, tdSearchByUnSelectedPermit,
                                                                           imgSearchLoader, tdDisplayField}*/
 /* 7.Set the Styles for BaseMap Container       - { Style(s) to look for: basemapThumbnail,baseMapContainerNode,basemapLabel,divLayerContentHolder}*/
 /* 8.  Set the styles for info window           - { Style(s) to look for: divInfoContainer, divTriangle, dj_ie .divInfoWindowContainer,divInfoWindowContainer .container,
                                                                           imgInfoWindow, divInfoContainer, divDetails, divPermitScrollContent, divInfoDetailsScroll,divPermitDataScrollContainer
                                                                           tdInfoHeader,divInfoDetails, spanContentText, title, divInfoWindowContainer .content, divInfoWindowContainer .title,
                                                                           tdBreak, tdLabel }*/
-/* 9. Set the Styles for custom scrollbar       - { Style(s) to look for: scrollbar_track,scrollbar_handle,scrollbar_container,scrollbar_content}*/
+/* 9. Set the Styles for custom scrollbar       - { Style(s) to look for: scrollbar_track, scrollbar_handle, scrollbar_container, scrollbar_content}*/
 /* 10. Set the styles for loading indicator     - { Style(s) to look for: divLoadingIndicator}*/
 /*11. Styles for esri slider                    - { Style(s) to look for: esriSimpleSliderHomeButton}*/
 
@@ -386,23 +386,6 @@ body, html
     border-bottom: 1px solid white;
 }
 
-.tdSubAddress
-{
-    color: White;
-    padding-left: 10px;
-    cursor: pointer;
-}
-
-.tdSubAddressSelected
-{
-    background-color: Black;
-}
-
-.tdSubAddress:hover
-{
-    background-color: Black;
-}
-
 .tdSearchByAddress
 {
     margin-left: 10px;
@@ -715,6 +698,11 @@ body, html
     vertical-align: middle;
     padding-left: 7px;
     width: 98%;
+}
+
+.tdBreakAll
+{
+    word-break:break-all;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
