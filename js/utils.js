@@ -80,6 +80,11 @@ function ExecuteQueryTask(index, mapPoint) {
     query.outSpatialReference = map.spatialReference;
     query.returnGeometry = true;
     query.geometry = ExtentFromPoint(mapPoint);
+    var permitName;
+    searchSettings[index].ListFieldName.replace(/\$\{([^\s\:\}]+)(?:\:([^\s\:\}]+))?\}/g, function (match, key) {
+        permitName = key;
+    });
+    query.orderByFields = [permitName];
     query.outFields = ["*"];
     queryTask.execute(query, function (result) {
         counter++;
@@ -94,6 +99,7 @@ function ExecuteQueryTask(index, mapPoint) {
         }
         if (counter == searchSettings.length) {
             if (featureArray.length > 0) {
+                currentExtent = map.extent;
                 if (!isMobileDevice) {
                     if (featureArray.length == 1) {
                         dojo.dom.byId("tdList").style.display = "none";
@@ -107,7 +113,7 @@ function ExecuteQueryTask(index, mapPoint) {
                     }
                 } else {
                     HideProgressIndicator();
-                    ShowMobileInfoDetails(mapPoint, featureArray, featureArray[0].attr.geometry);
+                    ShowMobileInfoDetails(mapPoint, featureArray, featureArray[0].attr.geometry, featureArray[0].attr);
                 }
             } else {
                 map.infoWindow.hide();
@@ -120,7 +126,7 @@ function ExecuteQueryTask(index, mapPoint) {
 
 //Display InfoWindow for mobile device on search
 
-function ShowMobileInfoWindow(mapPoint, attributes, layerID, fields) {
+function ShowMobileInfoWindow(mapPoint, attributes, layerID, fields, features) {
     ClearGraphics(tempGraphicsLayerId);
     map.infoWindow.setTitle("");
     map.infoWindow.setContent("");
@@ -128,19 +134,15 @@ function ShowMobileInfoWindow(mapPoint, attributes, layerID, fields) {
     point = selectedMapPoint;
     map.infoWindow.resize(225, 65);
     currentExtent = map.extent;
-    var zoomDeferred = map.centerAndZoom(selectedMapPoint, responseObject.ZoomLevel);
-    map.infoWindow.hide();
-    zoomDeferred.then(function () {
-        SetInfoWindowPosition(selectedMapPoint, false);
-    });
+    SetMobileInfoWindowPosition(mapPoint, selectedMapPoint, features);
     for (var i in attributes) {
         if (!attributes[i]) {
             attributes[i] = responseObject.ShowNullValueAs;
         }
     }
     try {
-        map.infoWindow.setTitle(TrimString(dojo.string.substitute(permitResultData[layerID].InfoWindowTitleField, attributes), 15));
-        map.infoWindow.setContent(TrimString(dojo.string.substitute(permitResultData[layerID].MobileCalloutContentField, attributes), 15));
+        map.infoWindow.setTitle(TrimString(dojo.string.substitute(permitResultData[layerID].InfoWindowHeader, attributes), 15));
+        map.infoWindow.setContent(TrimString(dojo.string.substitute(permitResultData[layerID].InfoWindowContent, attributes), 15));
     } catch (e) {
         alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
     }
@@ -153,7 +155,7 @@ function ShowMobileInfoWindow(mapPoint, attributes, layerID, fields) {
 
 //Display InfoWindow for mobile device on map click
 
-function ShowMobileInfoDetails(mapPoint, featureArray, geometry) {
+function ShowMobileInfoDetails(mapPoint, featureArray, geometry, features) {
     map.infoWindow.setTitle("");
     map.infoWindow.setContent("");
     ClearGraphics(tempGraphicsLayerId);
@@ -163,19 +165,15 @@ function ShowMobileInfoDetails(mapPoint, featureArray, geometry) {
     currentExtent = map.extent;
 
     if (featureArray.length == 1) {
-        var zoomDeferred = map.centerAndZoom(selectedMapPoint, responseObject.ZoomLevel);
-        map.infoWindow.hide();
-        zoomDeferred.then(function () {
-            SetInfoWindowPosition(selectedMapPoint, false);
-        });
+        SetMobileInfoWindowPosition(geometry, selectedMapPoint, features);
         for (var i in featureArray[0].attr.attributes) {
             if (!featureArray[0].attr.attributes[i]) {
                 featureArray[0].attr.attributes[i] = responseObject.ShowNullValueAs;
             }
         }
         try {
-            map.infoWindow.setTitle(TrimString(dojo.string.substitute(permitResultData[featureArray[0].layerId].InfoWindowTitleField, featureArray[0].attr.attributes), 15));
-            map.infoWindow.setContent(TrimString(dojo.string.substitute(permitResultData[featureArray[0].layerId].MobileCalloutContentField, featureArray[0].attr.attributes), 15));
+            map.infoWindow.setTitle(TrimString(dojo.string.substitute(permitResultData[featureArray[0].layerId].InfoWindowHeader, featureArray[0].attr.attributes), 15));
+            map.infoWindow.setContent(TrimString(dojo.string.substitute(permitResultData[featureArray[0].layerId].InfoWindowContent, featureArray[0].attr.attributes), 15));
         } catch (e) {
             alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
         }
@@ -198,6 +196,45 @@ function ShowMobileInfoDetails(mapPoint, featureArray, geometry) {
             };
         }
     });
+}
+
+function SetMobileInfoWindowPosition(geometry, selectedMapPoint, features) {
+    if (geometry.type == "point") {
+        if (map.getLevel() != responseObject.ZoomLevel) {
+            var zoomDeferred = map.centerAndZoom(selectedMapPoint, responseObject.ZoomLevel);
+            map.infoWindow.hide();
+            zoomDeferred.then(function () {
+                SetInfoWindowPosition(selectedMapPoint, true);
+            });
+        }
+        else {
+            SetInfoWindowPosition(selectedMapPoint, true);
+        }
+    } else {
+        if (responseObject.ZoomToPolygonGeometry) {
+            var ext = geometry.getExtent().expand(5);
+            ext.ymin = ext.ymin + ext.getHeight() / 4;
+            ext.ymax = ext.ymax + ext.getHeight() / 4;
+            var extentDeferred = map.setExtent(ext);
+            extentDeferred.then(function () {
+                var screenPoint = map.toScreen(selectedMapPoint);
+                screenPoint.y = map.height - screenPoint.y;
+                map.infoWindow.show(screenPoint);
+            });
+        }
+        else {
+            if (map.getLevel() != responseObject.ZoomLevel) {
+                var zoomDeferred = map.centerAndZoom(selectedMapPoint, responseObject.ZoomLevel);
+                map.infoWindow.hide();
+                zoomDeferred.then(function () {
+                    SetInfoWindowPosition(selectedMapPoint, true);
+                });
+            }
+            else {
+                SetInfoWindowPosition(selectedMapPoint, true);
+            }
+        }
+    }
 }
 
 //Display list of permits in InfoWindow on map click
@@ -259,7 +296,6 @@ function ShowPermitList(mapPoint, result, geometry) {
         map.infoWindow.resize(responseObject.InfoPopupWidth, responseObject.InfoPopupHeight);
         selectedMapPoint = GetGeometryType(geometry);
         point = mapPoint;
-        currentExtent = map.extent;
         var extentDeferred = map.setExtent(CalculateMapExtent(selectedMapPoint));
         extentDeferred.then(function () {
             var screenPoint = map.toScreen(selectedMapPoint);
@@ -283,7 +319,7 @@ function ShowPermitList(mapPoint, result, geometry) {
         SetPermitDataHeight();
     }
     if (featureID && infoWindowLayerID && shareFlag) {
-        ShowInfoWindowDetails(mapPoint, featureArray[index].attr.attributes, featureArray.length, featureArray[index].layerId, mapPoint, featureArray[index].fields);
+        ShowInfoWindowDetails(featureArray[index].attr.geometry, featureArray[index].attr.attributes, featureArray.length, featureArray[index].layerId, mapPoint, featureArray[index].fields);
     }
 }
 
@@ -295,7 +331,9 @@ function GetGeometryType(geometry) {
     } else {
         var mapPoint = geometry.getExtent().getCenter();
         if (!geometry.contains(mapPoint)) {
-            selectedMapPoint = geometry.getPoint(0, 0);
+            var rings = Math.floor(geometry.rings.length / 2);
+            var points = Math.floor(geometry.rings[rings].length / 2);
+            selectedMapPoint = geometry.getPoint(rings, points)
         } else {
             selectedMapPoint = geometry.getExtent().getCenter();
         }
@@ -319,7 +357,7 @@ function ShowInfoWindowDetails(geometry, attributes, featureLength, layer, mapPo
         }
     }
     try {
-        var value = Trim(dojo.string.substitute(permitResultData[layer].InfoWindowTitleField, attributes));
+        var value = Trim(dojo.string.substitute(permitResultData[layer].InfoWindowHeader, attributes));
     } catch (e) {
         alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
     }
@@ -339,15 +377,52 @@ function ShowInfoWindowDetails(geometry, attributes, featureLength, layer, mapPo
         map.infoWindow.resize(responseObject.InfoPopupWidth, responseObject.InfoPopupHeight);
         selectedMapPoint = GetGeometryType(geometry);
         point = mapPoint;
-        currentExtent = map.extent;
-        if (map.getLevel() != responseObject.ZoomLevel) {
-            var zoomDeferred = map.centerAndZoom(selectedMapPoint, responseObject.ZoomLevel);
-            map.infoWindow.hide();
-            zoomDeferred.then(function () {
+
+        if (geometry.type == "point") {
+            if (map.getLevel() != responseObject.ZoomLevel) {
+                var zoomDeferred = map.centerAndZoom(selectedMapPoint, responseObject.ZoomLevel);
+                map.infoWindow.hide();
+                zoomDeferred.then(function () {
+                    SetInfoWindowPosition(selectedMapPoint, true);
+                });
+            }
+            else {
                 SetInfoWindowPosition(selectedMapPoint, true);
-            });
+            }
         } else {
-            SetInfoWindowPosition(selectedMapPoint, true);
+            if (responseObject.ZoomToPolygonGeometry) {
+                var ext = geometry.getExtent().expand(5);
+                ext.ymin = ext.ymin + ext.getHeight() / 4;
+                ext.ymax = ext.ymax + ext.getHeight() / 4;
+                map.setExtent(ext);
+                var screenPoint = map.toScreen(selectedMapPoint);
+                screenPoint.y = map.height - screenPoint.y;
+                map.infoWindow.show(screenPoint);
+                if (extent != "") {
+                    mapExtent = extent.split(',');
+                    mapExtent = new esri.geometry.Extent(parseFloat(mapExtent[0]), parseFloat(mapExtent[1]), parseFloat(mapExtent[2]), parseFloat(mapExtent[3]), map.spatialReference);
+                    map.setExtent(mapExtent);
+                    extent = "";
+                }
+            }
+            else {
+                if (map.getLevel() != responseObject.ZoomLevel) {
+                    var zoomDeferred = map.centerAndZoom(selectedMapPoint, responseObject.ZoomLevel);
+                    map.infoWindow.hide();
+                    zoomDeferred.then(function () {
+                        SetInfoWindowPosition(selectedMapPoint, true);
+                    });
+                }
+                else {
+                    SetInfoWindowPosition(selectedMapPoint, true);
+                }
+                if (extent != "") {
+                    mapExtent = extent.split(',');
+                    mapExtent = new esri.geometry.Extent(parseFloat(mapExtent[0]), parseFloat(mapExtent[1]), parseFloat(mapExtent[2]), parseFloat(mapExtent[3]), map.spatialReference);
+                    map.setExtent(mapExtent);
+                    extent = "";
+                }
+            }
         }
     } else {
         dojo.dom.byId('divInfoContainer').style.display = "block";
@@ -377,17 +452,17 @@ function ShowInfoWindowDetails(geometry, attributes, featureLength, layer, mapPo
         }
     }
     try {
-        for (var index = 0; index < permitResultData[layer].InfoWindowContent.length; index++) {
+        for (var index = 0; index < permitResultData[layer].InfoWindowData.length; index++) {
             var tr = document.createElement("tr");
             tbody.appendChild(tr);
-            if (permitResultData[layer].InfoWindowContent[index].DisplayText && (permitResultData[layer].InfoWindowContent[index].DisplayText != "")) {
-                CreateTableRow(tr, permitResultData[layer].InfoWindowContent[index].DisplayText, dojo.string.substitute(permitResultData[layer].InfoWindowContent[index].FieldName, attributes));
+            if (permitResultData[layer].InfoWindowData[index].DisplayText && (permitResultData[layer].InfoWindowData[index].DisplayText != "")) {
+                CreateTableRow(tr, permitResultData[layer].InfoWindowData[index].DisplayText, dojo.string.substitute(permitResultData[layer].InfoWindowData[index].FieldName, attributes));
             } else {
-                var tempValue = permitResultData[layer].InfoWindowContent[index].FieldName.split("{");
+                var tempValue = permitResultData[layer].InfoWindowData[index].FieldName.split("{");
                 var fieldName = tempValue[1].split("}");
                 for (var j = 0; j < fields.length; j++) {
                     if (fields[j].alias == fieldName[0]) {
-                        CreateTableRow(tr, fields[j].alias + ":", dojo.string.substitute(permitResultData[layer].InfoWindowContent[index].FieldName, attributes));
+                        CreateTableRow(tr, fields[j].alias + ":", dojo.string.substitute(permitResultData[layer].InfoWindowData[index].FieldName, attributes));
                         break;
                     }
                 }
@@ -425,7 +500,7 @@ function SetInfoWindowPosition(selectedMapPoint, flag) {
     });
 }
 
-//Create table row 
+//Create table row
 
 function CreateTableRow(tr, displayName, value) {
     var tdDisplayText = document.createElement("td");
@@ -716,7 +791,7 @@ function SetPermitDataHeight() {
     CreateScrollbar(dojo.dom.byId("divPermitDataScrollContainer"), dojo.dom.byId("divPermitScrollContent"));
 }
 
-//Get the extent based on the map point 
+//Get the extent based on the map point
 
 function CalculateMapExtent(mapPoint) {
     var width = map.extent.getWidth();
@@ -1082,7 +1157,17 @@ function CreateTiledServiceLayer(layerId, layerURL) {
     }
 
     dojo.connect(tiledLayer, "onError", function (err) {
-        alert(messages.getElementsByTagName("layerLoadError")[0].childNodes[0].nodeValue + " " + err.message);
+        if (tiledLayer.tileInfo) {
+            if (tiledLayer.tileInfo.lods.length == 0) {
+                alert(dojo.string.substitute(messages.getElementsByTagName("noLODs")[0].childNodes[0].nodeValue, [tiledLayer.id]));
+            }
+            else {
+                alert(messages.getElementsByTagName("layerLoadError")[0].childNodes[0].nodeValue + " " + err.message);
+            }
+        }
+        else {
+            alert(messages.getElementsByTagName("layerLoadError")[0].childNodes[0].nodeValue + " " + err.message);
+        }
     });
     map.addLayer(tiledLayer);
 }
@@ -1280,5 +1365,5 @@ function CreateScrollbar(container, content) {
             scrolling = false;
         }, 100);
     }
-    //touch scrollbar end 
+    //touch scrollbar end
 }

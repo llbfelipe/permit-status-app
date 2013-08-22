@@ -33,7 +33,8 @@
     <layerLoadError>Unable to load the layer completely. The error from rest end is-</layerLoadError>
     <numberOfFeaturesFound>${0} features found at this location</numberOfFeaturesFound>
     <numberOfFeaturesFoundOnMobile>${0} features found</numberOfFeaturesFoundOnMobile>
-    <webmapLoadError>The Title field in the config file and webmap do not match</webmapLoadError>
-    <falseConfigParams> Either required configuration key values are null or not exactly matching with layer attributes </falseConfigParams>
-    <noBaseMapURL>Basemap URLs are not configured. Please configure basemap URLs</noBaseMapURL>
+    <webmapLoadError>The Title field in the config file and webmap do not match.</webmapLoadError>
+    <falseConfigParams> Either required configuration key values are null or not exactly matching with layer attributes.</falseConfigParams>
+    <noBaseMapURL>Basemap URLs are not configured. Please configure basemap URLs.</noBaseMapURL>
+    <noLODs>Configured layer ${0} cannot be loaded as (LoadAsServiceType).</noLODs>
 </Messages>

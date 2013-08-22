@@ -485,7 +485,7 @@ function FetchPermitData(pThis, arrPermits) {
     query.returnGeometry = true;
     query.outFields = ["*"];
     queryTask.execute(query, function (featureSet) {
-        LocatePermitOnMap(featureSet.features[0].geometry, featureSet.features[0].attributes, arrPermits[pThis.getAttribute("index")].attributes.index, featureSet.fields);
+        LocatePermitOnMap(featureSet.features[0].geometry, featureSet.features[0].attributes, arrPermits[pThis.getAttribute("index")].attributes.index, featureSet.fields, featureSet.features[0]);
     });
 }
 
@@ -674,7 +674,7 @@ function ClearBreadCrumbs() {
 
 //Locate searched permit on map and display the infowindow for the same
 
-function LocatePermitOnMap(mapPoint, attributes, layerID, fields) {
+function LocatePermitOnMap(mapPoint, attributes, layerID, fields,features) {
     if (mapPoint) {
         if (!isMobileDevice) {
             ShowInfoWindowDetails(mapPoint, attributes, null, layerID, null, fields);

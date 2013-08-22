@@ -35,10 +35,10 @@ dojo.require("js.infoWindow");
 var map; //variable to store map object
 var isiOS = false;
 var isBrowser = false; //This variable is set to true when the app is running on desktop browsers
-var isMobileDevice = false; //This variable is set to true when the app is running on mobile device 
+var isMobileDevice = false; //This variable is set to true when the app is running on mobile device
 var isTablet = false; //This variable is set to true when the app is running on tablets
 var tempGraphicsLayerId = "tempGraphicsLayerID"; //variable to store temporary graphics layer id
-var mapPoint; //variable to store map point 
+var mapPoint; //variable to store map point
 var selectedMapPoint; // variable to store selected map point
 var windowURL = window.location.toString();
 var lastSearchString; //variable to store the last search string
@@ -208,7 +208,7 @@ function InitializeAutocompleteSearch(evt) {
                     // Clear any staged search
                     clearTimeout(stagedSearch);
                     if (Trim(dojo.dom.byId("txtAddress").value).length > 0) {
-                        // Stage a new search, which will launch if no new searches show up 
+                        // Stage a new search, which will launch if no new searches show up
                         // before the timeout
                         stagedSearch = setTimeout(function () {
                             dojo.dom.byId("imgSearchLoader").style.display = "block";
@@ -268,15 +268,15 @@ function FetchWebMapData(response) {
                     for (var j = 0; j < webMapDetails.operationalLayers[i].layers.length; j++) {
                         if (webMapDetails.operationalLayers[i].layers[j].popupInfo) {
                             if (webMapDetails.operationalLayers[i].layers[j].popupInfo.title.split(": ").length > 1) {
-                                permitResultData[index]["InfoWindowTitleField"] = "$" + webMapDetails.operationalLayers[i].layers[j].popupInfo.title.split(": ")[1];
+                                permitResultData[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[i].layers[j].popupInfo.title.split(": ")[1];
                             } else {
-                                permitResultData[index]["InfoWindowTitleField"] = "$" + webMapDetails.operationalLayers[i].layers[j].popupInfo.title;
+                                permitResultData[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[i].layers[j].popupInfo.title;
                             }
-                            GetMobileCalloutContentField(index);
-                            permitResultData[index]["InfoWindowContent"] = [];
+                            GetMobileCalloutContentField(webMapDetails.operationalLayers[i].url + "/", index);
+                            permitResultData[index]["InfoWindowData"] = [];
                             for (var field in webMapDetails.operationalLayers[i].layers[j].popupInfo.fieldInfos) {
                                 if (webMapDetails.operationalLayers[i].layers[j].popupInfo.fieldInfos[field].visible) {
-                                    permitResultData[index]["InfoWindowContent"].push({
+                                    permitResultData[index]["InfoWindowData"].push({
                                         "DisplayText": webMapDetails.operationalLayers[i].layers[j].popupInfo.fieldInfos[field].label + ":",
                                         "FieldName": "${" + webMapDetails.operationalLayers[i].layers[j].popupInfo.fieldInfos[field].fieldName + "}"
                                     });
@@ -287,15 +287,15 @@ function FetchWebMapData(response) {
                 } else {
                     if (webMapDetails.operationalLayers[i].popupInfo) {
                         if (webMapDetails.operationalLayers[i].popupInfo.title.split(": ").length > 1) {
-                            permitResultData[index]["InfoWindowTitleField"] = "$" + webMapDetails.operationalLayers[i].popupInfo.title.split(": ")[1];
+                            permitResultData[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[i].popupInfo.title.split(": ")[1];
                         } else {
-                            permitResultData[index]["InfoWindowTitleField"] = "$" + webMapDetails.operationalLayers[i].popupInfo.title;
+                            permitResultData[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[i].popupInfo.title;
                         }
-                        permitResultData[index]["MobileCalloutContentField"] = webMapDetails.operationalLayers[i].layerObject.displayField;
-                        permitResultData[index]["InfoWindowContent"] = [];
+                        permitResultData[index]["InfoWindowContent"] = "${" + webMapDetails.operationalLayers[i].layerObject.displayField + "}";
+                        permitResultData[index]["InfoWindowData"] = [];
                         for (var field in webMapDetails.operationalLayers[i].popupInfo.fieldInfos) {
                             if (webMapDetails.operationalLayers[i].popupInfo.fieldInfos[field].visible) {
-                                permitResultData[index]["InfoWindowContent"].push({
+                                permitResultData[index]["InfoWindowData"].push({
                                     "DisplayText": webMapDetails.operationalLayers[i].popupInfo.fieldInfos[field].label + ":",
                                     "FieldName": "${" + webMapDetails.operationalLayers[i].popupInfo.fieldInfos[field].fieldName + "}"
                                 });
@@ -346,11 +346,11 @@ function FetchCountyLayerData(operationalLayerId, url) {
 
 // Get data to be displayed in mobile callout content field
 
-function GetMobileCalloutContentField(index) {
+function GetMobileCalloutContentField(url1, index) {
     esri.request({
-        url: responseObject.SearchSettings[index].QueryLayerId + '?f=json',
+        url: url1 + responseObject.SearchSettings[index].QueryLayerId + '?f=json',
         load: function (data) {
-            permitResultData[index]["MobileCalloutContentField"] = "${" + data.displayField + "}";
+            permitResultData[index]["InfoWindowContent"] = "${" + data.displayField + "}";
         }
     });
 }
@@ -426,6 +426,43 @@ function InitializeMap() {
         MapOnLoad();
     });
     CreateBaseMapComponent();
+    if (responseObject.ReferenceOverlayLayer) {
+        if (responseObject.ReferenceOverlayLayer.DisplayOnLoad && responseObject.ReferenceOverlayLayer.ServiceUrl) {
+            var layerType = responseObject.ReferenceOverlayLayer.ServiceUrl.substring(((responseObject.ReferenceOverlayLayer.ServiceUrl.lastIndexOf("/")) + 1), (responseObject.ReferenceOverlayLayer.ServiceUrl.length));
+            if (!isNaN(layerType) && (layerType != "")) {
+                var overlaymap = new esri.layers.FeatureLayer(responseObject.ReferenceOverlayLayer.ServiceUrl, {
+                    mode: esri.layers.FeatureLayer.MODE_SNAPSHOT,
+                    outFields: ["*"]
+                });
+                overlaymap.setMaxAllowableOffset(10)
+                map.addLayer(overlaymap);
+
+            } else {
+                var url1 = responseObject.ReferenceOverlayLayer.ServiceUrl + "?f=json";
+                esri.request({
+                    url: url1,
+                    handleAs: "json",
+                    load: function (data) {
+                        if (!data.tileInfo) {
+                            var imageParameters = new esri.layers.ImageParameters();
+                            //Takes a URL to a non cached map service.
+                            var overlaymap = new esri.layers.ArcGISDynamicMapServiceLayer(responseObject.ReferenceOverlayLayer.ServiceUrl, {
+                                "imageParameters": imageParameters
+                            });
+                            map.addLayer(overlaymap);
+
+                        } else {
+                            var overlaymap = new esri.layers.ArcGISTiledMapServiceLayer(responseObject.ReferenceOverlayLayer.ServiceUrl);
+                            map.addLayer(overlaymap);
+                        }
+                    },
+                    error: function (err) {
+                        alert(messages.getElementsByTagName("refrenceOverlayError")[0].childNodes[0].nodeValue);
+                    }
+                });
+            }
+        }
+    }
 }
 
 //Operations to be performed after the map has been loaded

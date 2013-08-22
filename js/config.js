@@ -31,14 +31,16 @@ dojo.declare("js.config", null, {
     // 7.  Set initial map extent                        - [ Tag(s) to look for: DefaultExtent ]
     // 8.  Specify WebMapId, if using WebMap             - [ Tag(s) to look for: WebMapId ]
     // 9.  Or for using map services:
-    // 9a. Specify URLs for operational layers           - [ Tag(s) to look for: PermitResultData, SearchSettings, CountyLayerData ]
+    // 9a. Specify URLs for operational layers           - [ Tag(s) to look for: PermitResultData, SearchSettings, CountyLayerData, ReferenceOverlayLayer ]
     // 9b. Customize zoom level for address search       - [ Tag(s) to look for: ZoomLevel ]
     // 9c. Enable or disable auto-complete feature for Permit search
     //                                                   - [ Tag(s) to look for: AutoCompleteForPermit]
-    // 9d. Customize info-Popup size                     - [ Tag(s) to look for: InfoPopupHeight, InfoPopupWidth ]
-    // 9e. Customize data formatting                     - [ Tag(s) to look for: ShowNullValueAs, FormatDateAs ]
+    // 9d. Flag to control zooming to polygon geometry or zoom level
+    //                                                   - [ Tag(s) to look for: ZoomToPolygonGeometry]
+    // 9e. Customize info-Popup size                     - [ Tag(s) to look for: InfoPopupHeight, InfoPopupWidth ]
+    // 9f. Customize data formatting                     - [ Tag(s) to look for: ShowNullValueAs, FormatDateAs ]
     // 10. Customize address search settings             - [ Tag(s) to look for: LocatorSettings]
-    // 11. Set URL for geometry service                  - [ Tag(s) to look for: GeometryService ]  
+    // 11. Set URL for geometry service                  - [ Tag(s) to look for: GeometryService ]
     // 12. Specify URLs for map sharing                  - [ Tag(s) to look for: MapSharingOptions,TinyURLServiceURL, TinyURLResponseAttribute, FacebookShareURL, TwitterShareURL, ShareByMailLink ]
 
     // ------------------------------------------------------------------------------------------------------------------------
@@ -97,21 +99,21 @@ dojo.declare("js.config", null, {
 
     // Configure operational layers and info-popup below.
     // ServiceURL: URL of the layer.
-    // LoadAsServiceType: Field to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer. 
+    // LoadAsServiceType: Field to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer.
     //                    Supported service types are 'dynamic', 'feature' and 'tiled' only.
-    // MobileCalloutContentField: Specify field to be displayed in callout bubble for mobile devices
-    // InfoWindowTitleField: Specify field for the info window header
-    // InfoWindowContent: Set the content to be displayed in the info-Popup. Define labels and field values. 
-    //                    These fields should be present in the layer referenced by 'QueryLayerId' specified under section 'SearchSettings' 
+    // InfoWindowContent: Specify field to be displayed in callout bubble for mobile devices
+    // InfoWindowHeader: Specify field for the info window header
+    // InfoWindowData: Set the content to be displayed in the info-Popup. Define labels and field values.
+    //                    These fields should be present in the layer referenced by 'QueryLayerId' specified under section 'SearchSettings'
     // DisplayText: Caption to be displayed instead of field alias names. Set this to empty string ("") if you wish to display field alias names as captions.
     // FieldName: Field used for displaying the value
 
     PermitResultData: [{
         ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/PermitStatus/MapServer/0",
         LoadAsServiceType: "dynamic",
-        InfoWindowTitleField: "${PROJ_NAME}",
-        MobileCalloutContentField: "${PermitNumber}",
-        InfoWindowContent: [{
+        InfoWindowHeader: "${PROJ_NAME}",
+        InfoWindowContent: "${PermitNumber}",
+        InfoWindowData: [{
             DisplayText: "Prog Area:",
             FieldName: "${PROG_AREA}"
         }, {
@@ -155,9 +157,9 @@ dojo.declare("js.config", null, {
     }, {
         ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/ERP/MapServer/0",
         LoadAsServiceType: "dynamic",
-        InfoWindowTitleField: "${PROJECT_NAME}",
-        MobileCalloutContentField: "${ERP_PERMIT_NBR}",
-        InfoWindowContent: [{
+        InfoWindowHeader: "${PROJECT_NAME}",
+        InfoWindowContent: "${ERP_PERMIT_NBR}",
+        InfoWindowData: [{
             DisplayText: "Application ID:",
             FieldName: "${ERP_APPLICATION_ID}"
         }, {
@@ -191,9 +193,9 @@ dojo.declare("js.config", null, {
     }, {
         ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/CUP/MapServer/0",
         LoadAsServiceType: "dynamic",
-        InfoWindowTitleField: "${SITE_PROJECT_NAME}",
-        MobileCalloutContentField: "${WUP_PERMIT_NBR}",
-        InfoWindowContent: [{
+        InfoWindowHeader: "${SITE_PROJECT_NAME}",
+        InfoWindowContent: "${WUP_PERMIT_NBR}",
+        InfoWindowData: [{
             DisplayText: "Application ID:",
             FieldName: "${WUP_APPLICATION_ID}"
         }, {
@@ -229,11 +231,11 @@ dojo.declare("js.config", null, {
     // Configure settings for loading and performing query on the county layer. County layer will be queried only when the 'UseGeocoderService' is set to false
     // Title: Name of the layer as defined in the map service.
     // ServiceURL: URL of the layer. The URL should include the layer id.
-    // LoadAsServiceType: Supported service types are 'dynamic', 'feature', 'tiled' only. 
-    //                    Use this flag to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer. 
+    // LoadAsServiceType: Supported service types are 'dynamic', 'feature', 'tiled' only.
+    //                    Use this flag to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer.
     // SearchExpression: Used while searching counties without using Geocoder service.
     // CountyDisplayField: Attribute that will be displayed in the search box when user searches for a particular county.
-    // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service. 
+    // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service.
     //                     When it is set to false then ServiceURL mentioned below will be used to perform location search.
 
     CountyLayerData: {
@@ -248,7 +250,7 @@ dojo.declare("js.config", null, {
     // Use this section to configure search settings for both Webmap and Operational layer implementations. All the fields in this section are mandatory.
     // Title: Name of the layer as defined in the webmap/operational layers. In case of webmap implementations, it must match layer name specified in webmap.
     // QueryLayerId: Layer index used for performing queries.
-    // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point. 
+    // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point.
     // ListFieldName: Attribute to be displayed in the InfoWindow when there are multiple permits at a particular point
     // SearchDisplayFields: Attribute that will be displayed in the search box when user searches for a particular permit.
     // SearchExpression: Query to perform permit search.
@@ -276,11 +278,21 @@ dojo.declare("js.config", null, {
         SearchExpression: "UPPER(WUP_PERMIT_NBR) LIKE '${0}%' OR UPPER(SITE_PROJECT_NAME) LIKE '${0}%' OR UPPER(WUP_PERMIT_TYPE_DESC) LIKE '${0}%' OR UPPER(PERMITTEE_NAME) LIKE '${0}%'"
     }],
 
+    // ServiceUrl is the REST end point for the reference overlay layer
+    // DisplayOnLoad setting is used to show or hide the reference overlay layer. Reference overlay will be shown when it is set to true
+
+    ReferenceOverlayLayer: {
+        ServiceUrl: "",
+        DisplayOnLoad: ""
+    },
+
     // Following zoom level will be set for the map upon searching an address or permit
     ZoomLevel: 10,
 
     // Flag to enable or disable auto-complete search feature for Permit search
     AutoCompleteForPermit: true,
+    // Flag to control zooming to polygon geometry or zoom level. When set to true it will zoom to polygon geometry and when set to false it will zoom to configured zoom level.
+    ZoomToPolygonGeometry: true,
 
     // ------------------------------------------------------------------------------------------------------------------------
     // INFO-POPUP UI SETTINGS
@@ -291,7 +303,7 @@ dojo.declare("js.config", null, {
     // minimum height should be 270 for the info-popup in pixels
     InfoPopupHeight: 310,
 
-    // minimum width should be 330 for the info-popup in pixels 
+    // minimum width should be 330 for the info-popup in pixels
     InfoPopupWidth: 330,
 
     // Set string value to be shown for null or blank values
