@@ -31,11 +31,11 @@ dojo.declare("js.config", null, {
     // 7.  Set initial map extent                        - [ Tag(s) to look for: DefaultExtent ]
     // 8.  Specify WebMapId, if using WebMap             - [ Tag(s) to look for: WebMapId ]
     // 9.  Or for using map services:
-    // 9a. Specify URLs for operational layers           - [ Tag(s) to look for: PermitResultData, SearchSettings, CountyLayerData, ReferenceOverlayLayer ]
+    // 9a. Specify URLs for operational layers           - [ Tag(s) to look for: OperationalLayers, InfoWindowSettings, SearchSettings, CountyLayerData, ReferenceOverlayLayer ]
     // 9b. Customize zoom level for address search       - [ Tag(s) to look for: ZoomLevel ]
     // 9c. Enable or disable auto-complete feature for Permit search
     //                                                   - [ Tag(s) to look for: AutoCompleteForPermit]
-    // 9d. Flag to control zooming to polygon geometry or zoom level
+    // 9d. Enable or disable using the configured zoom level for selected polygon feature
     //                                                   - [ Tag(s) to look for: ZoomToPolygonGeometry]
     // 9e. Customize info-Popup size                     - [ Tag(s) to look for: InfoPopupHeight, InfoPopupWidth ]
     // 9f. Customize data formatting                     - [ Tag(s) to look for: ShowNullValueAs, FormatDateAs ]
@@ -95,68 +95,74 @@ dojo.declare("js.config", null, {
     // Choose if you want to use WebMap or Map Services for operational layers. If using WebMap, specify WebMapId within quotes, otherwise leave this empty and configure operational layers
     WebMapId: "",
 
-    // If you are using webmap then skip below section for configuring operational layers and move to 'SearchSettings'
+    // If you are using webmap then skip below section for configuring operational layers and move to 'InfoWindowSettings'
 
-    // Configure operational layers and info-popup below.
+    // Configure operational layers below.
     // ServiceURL: URL of the layer.
     // LoadAsServiceType: Field to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer.
     //                    Supported service types are 'dynamic', 'feature' and 'tiled' only.
-    // InfoWindowContent: Specify field to be displayed in callout bubble for mobile devices
+    OperationalLayers: [{
+        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/PermitsCT/MapServer/1",
+        LoadAsServiceType: "dynamic"
+    }, {
+        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/CUP/MapServer/0",
+        LoadAsServiceType: "dynamic"
+    }, {
+        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/ERP/MapServer/0",
+        LoadAsServiceType: "dynamic"
+    }],
+
+    // Configure info-popup settings (The Title and QueryLayerId fields should be the same as Title and QueryLayerId fields in SearchSettings)
+    // Title: Name of the layer as defined in the map service.
+    // QueryLayerId: Layer index used for performing queries.
     // InfoWindowHeader: Specify field for the info window header
+    // InfoWindowContent: Specify field to be displayed in callout bubble for mobile devices
     // InfoWindowData: Set the content to be displayed in the info-Popup. Define labels and field values.
     //                    These fields should be present in the layer referenced by 'QueryLayerId' specified under section 'SearchSettings'
     // DisplayText: Caption to be displayed instead of field alias names. Set this to empty string ("") if you wish to display field alias names as captions.
     // FieldName: Field used for displaying the value
-
-    PermitResultData: [{
-        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/PermitStatus/MapServer/0",
-        LoadAsServiceType: "dynamic",
-        InfoWindowHeader: "${PROJ_NAME}",
-        InfoWindowContent: "${PermitNumber}",
+    InfoWindowSettings: [{
+        Title: "PermitsCT",
+        QueryLayerId: "1",
+        InfoWindowHeader: "${Permittee_Name}",
+        InfoWindowContent: "${Permit_Number}",
         InfoWindowData: [{
             DisplayText: "Prog Area:",
-            FieldName: "${PROG_AREA}"
+            FieldName: "${Division}"
         }, {
             DisplayText: "Permit Number:",
-            FieldName: "${PermitNumber}"
+            FieldName: "${Permit_Number}"
         }, {
             DisplayText: "Project No:",
-            FieldName: "${PROJ_NO}"
+            FieldName: "${Permitting}"
         }, {
-            DisplayText: "Project Name:",
-            FieldName: "${PROJ_NAME}"
-        }, {
-            DisplayText: "Site Name:",
-            FieldName: "${SITE_NAME}"
+            DisplayText: "Site ID:",
+            FieldName: "${Site_ID}"
         }, {
             DisplayText: "Address:",
-            FieldName: "${ADDRESS}"
+            FieldName: "${Site_Location}"
         }, {
             DisplayText: "City:",
-            FieldName: "${CITY}"
-        }, {
-            DisplayText: "State:",
-            FieldName: "${STATE}"
+            FieldName: "${City}"
         }, {
             DisplayText: "Type:",
-            FieldName: "${Type}"
+            FieldName: "${Permit_Type}"
         }, {
-            DisplayText: "Program:",
-            FieldName: "${Program}"
+            DisplayText: "Expiration Date:",
+            FieldName: "${Expiration_Date}"
         }, {
             DisplayText: "Issue Date:",
             FieldName: "${Issue_Date}"
         }, {
-            DisplayText: "Receive Date:",
-            FieldName: "${Receive_Date}"
+            DisplayText: "Effective Date:",
+            FieldName: "${Effective_Date}"
         }, {
             DisplayText: "County:",
             FieldName: "${County}"
         }]
-
     }, {
-        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/ERP/MapServer/0",
-        LoadAsServiceType: "dynamic",
+        Title: "ERP",
+        QueryLayerId: "0",
         InfoWindowHeader: "${PROJECT_NAME}",
         InfoWindowContent: "${ERP_PERMIT_NBR}",
         InfoWindowData: [{
@@ -191,8 +197,8 @@ dojo.declare("js.config", null, {
             FieldName: "${ERP_EXT_URL}"
         }]
     }, {
-        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/CUP/MapServer/0",
-        LoadAsServiceType: "dynamic",
+        Title: "CUP",
+        QueryLayerId: "0",
         InfoWindowHeader: "${SITE_PROJECT_NAME}",
         InfoWindowContent: "${WUP_PERMIT_NBR}",
         InfoWindowData: [{
@@ -240,7 +246,7 @@ dojo.declare("js.config", null, {
 
     CountyLayerData: {
         Title: "CountyLayer",
-        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/Counties/MapServer/0",
+        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/PermitsCT/MapServer/0",
         LoadAsServiceType: "dynamic",
         SearchExpression: "NAME LIKE '${0}%'",
         CountyDisplayField: "${NAME}",
@@ -248,7 +254,8 @@ dojo.declare("js.config", null, {
     },
 
     // Use this section to configure search settings for both Webmap and Operational layer implementations. All the fields in this section are mandatory.
-    // Title: Name of the layer as defined in the webmap/operational layers. In case of webmap implementations, it must match layer name specified in webmap.
+    // The Title and QueryLayerId fields should be the same as Title and QueryLayerId fields in InfoWindowSettings.
+    // Title: Name of the layer as defined in the webmap/operational layers. In case of webmap implementations, it must match layer name specified in webmap and in case of operational layers it should be the same as service name.
     // QueryLayerId: Layer index used for performing queries.
     // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point.
     // ListFieldName: Attribute to be displayed in the InfoWindow when there are multiple permits at a particular point
@@ -256,12 +263,12 @@ dojo.declare("js.config", null, {
     // SearchExpression: Query to perform permit search.
 
     SearchSettings: [{
-        Title: "State Permit",
-        QueryLayerId: "0",
+        Title: "PermitsCT",
+        QueryLayerId: "1",
         ListDisplayText: "Permit Number",
-        ListFieldName: "${PermitNumber}",
-        SearchDisplayFields: "${PermitNumber} / ${PROJ_NAME} / ${Type}",
-        SearchExpression: "UPPER(PermitNumber) LIKE '${0}%' OR UPPER(PROJ_NAME) LIKE '${0}%' OR UPPER(SITE_NAME) LIKE '${0}%' OR UPPER(Type) LIKE '${0}%'"
+        ListFieldName: "${Permit_Number}",
+        SearchDisplayFields: "${Permit_Number} / ${Permittee_Name} / ${Permit_Type}",
+        SearchExpression: "UPPER(Permit_Number) LIKE '${0}%' OR UPPER(Permittee_Name) LIKE '${0}%' OR UPPER(Site_Location) LIKE '${0}%' OR UPPER(Permit_Type) LIKE '${0}%'"
     }, {
         Title: "ERP",
         QueryLayerId: "0",
@@ -287,11 +294,12 @@ dojo.declare("js.config", null, {
     },
 
     // Following zoom level will be set for the map upon searching an address or permit
-    ZoomLevel: 10,
+    ZoomLevel: 14,
 
     // Flag to enable or disable auto-complete search feature for Permit search
-    AutoCompleteForPermit: true,
-    // Flag to control zooming to polygon geometry or zoom level. When set to true it will zoom to polygon geometry and when set to false it will zoom to configured zoom level.
+    AutocompleteForPermit: true,
+
+    // When set to true, application will zoom to the extents/geometry of selected polygon; when set to false, application will zoom to configured ‘ZoomLevel’ for selected polygon.
     ZoomToPolygonGeometry: true,
 
     // ------------------------------------------------------------------------------------------------------------------------

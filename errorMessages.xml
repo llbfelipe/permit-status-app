@@ -28,13 +28,17 @@
     <unableToLocatePermit>Permit not found at specified location.</unableToLocatePermit>
     <invalidSearch>No results found</invalidSearch>
     <noPermitFound>No permits found</noPermitFound>
-    <dataNotFound>Data for '${0}' layer could not be populated</dataNotFound>
+    <dataNotFound>Data for '${0}' layer could not be populated.</dataNotFound>
     <invalidServiceType>Service type specified as '${0}'. Supported service types are 'dynamic', 'feature', 'tiled' only.</invalidServiceType>
     <layerLoadError>Unable to load the layer completely. The error from rest end is-</layerLoadError>
     <numberOfFeaturesFound>${0} features found at this location</numberOfFeaturesFound>
     <numberOfFeaturesFoundOnMobile>${0} features found</numberOfFeaturesFoundOnMobile>
-    <webmapLoadError>The Title field in the config file and webmap do not match.</webmapLoadError>
     <falseConfigParams> Either required configuration key values are null or not exactly matching with layer attributes.</falseConfigParams>
     <noBaseMapURL>Basemap URLs are not configured. Please configure basemap URLs.</noBaseMapURL>
     <noLODs>Configured layer ${0} cannot be loaded as (LoadAsServiceType).</noLODs>
+    <layerNotVisible>The query layer(s) configured for search does not match operational layers </layerNotVisible>
+    <webmapTitleError>Title and/or QueryLayerId parameters in SearchSettings do not match with configured webmap.</webmapTitleError>
+    <layerTitleError>Title and/or QueryLayerId parameters in SearchSettings do not match with configured operational layers.</layerTitleError>
+    <titleNotMatching>Title and/or QueryLayerId parameters in the InfoWindowSettings and SearchSettings do not match.</titleNotMatching>
+    <lengthDoNotMatch>The number of objects in InfoWindowSettings and SearchSettings do not match.</lengthDoNotMatch>
 </Messages>

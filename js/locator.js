@@ -24,10 +24,10 @@ var isPermitNumberSearched = false;
 //Locate address
 
 function ValidateLocateType() {
-    if (Trim(dojo.dom.byId("tdSearchAddress").className) == "tdSearchByAddress") {
+    if (dojo.string.trim(dojo.dom.byId("tdSearchAddress").className) == "tdSearchByAddress") {
         dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
         RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
-        if (Trim(dojo.dom.byId("txtAddress").value) == '') {
+        if (dojo.string.trim(dojo.dom.byId("txtAddress").value) == '') {
             dojo.dom.byId("imgSearchLoader").style.display = "none";
             dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
             RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
@@ -41,7 +41,7 @@ function ValidateLocateType() {
         }
     }
     if (dojo.dom.byId("tdSearchLocation").className == "tdSearchByLocation") {
-        if ((Trim(dojo.dom.byId('txtAddress').value) == '')) {
+        if ((dojo.string.trim(dojo.dom.byId('txtAddress').value) == '')) {
             if ((dojo.dom.byId("divBreadCrumbs").style.display == "none")) {
                 dojo.dom.byId("imgSearchLoader").style.display = "none";
                 dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
@@ -73,7 +73,7 @@ function ValidateLocateType() {
             SearchLocation();
         }
     } else if (dojo.byId("tdSearchPermit").className == "tdSearchByPermit") {
-        if (Trim(dojo.dom.byId('txtAddress').value) == '') {
+        if (dojo.string.trim(dojo.dom.byId('txtAddress').value) == '') {
             dojo.dom.byId("imgSearchLoader").style.display = "none";
             dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
             RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
@@ -94,10 +94,9 @@ function ValidateLocateType() {
 //Fetch the extent to be queried for address/location search
 
 function SearchLocation() {
-    permitArray = [];
     dojo.dom.byId("imgSearchLoader").style.display = "block";
     ShowTransparentContainer();
-    thisSearchTime = lastSearchTime = (new Date()).getTime();
+    currentSearchTime = lastSearchTime = (new Date()).getTime();
 
     if (!isAddressSearched) {
         dojo.dom.byId('txtAddress').setAttribute("defaultLocation", dojo.dom.byId('txtAddress').value);
@@ -111,34 +110,30 @@ function SearchLocation() {
     var searchExtent;
     if (!isAddressSearched) {
         if (!countyGeometry) {
-            if (isWebMap) {
-                searchExtent = map.getLayer(baseMapId).fullExtent;
-            } else {
-                for (bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
-                    if (responseObject.BaseMapLayers[bMap].MapURL) {
-                        if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
-                            searchExtent = map.getLayer(responseObject.BaseMapLayers[bMap].Key).fullExtent;
-                        }
-                    }
-                }
-            }
+            searchExtent = GetSearchExtent();
         } else {
             searchExtent = countyGeometry;
         }
     } else {
-        if (isWebMap) {
-            searchExtent = map.getLayer(baseMapId).fullExtent;
-        } else {
-            for (bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
-                if (responseObject.BaseMapLayers[bMap].MapURL) {
-                    if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
-                        searchExtent = map.getLayer(responseObject.BaseMapLayers[bMap].Key).fullExtent;
-                    }
+        searchExtent = GetSearchExtent();
+    }
+    GetLocation(searchExtent);
+}
+
+function GetSearchExtent() {
+    var searchExtent;
+    if (isWebMap) {
+        searchExtent = map.getLayer(baseMapId).fullExtent;
+    } else {
+        for (bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
+            if (responseObject.BaseMapLayers[bMap].MapURL) {
+                if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
+                    searchExtent = map.getLayer(responseObject.BaseMapLayers[bMap].Key).fullExtent;
                 }
             }
         }
     }
-    GetLocation(searchExtent);
+    return searchExtent;
 }
 
 //Get candidate results for searched address/location
@@ -157,7 +152,7 @@ function GetLocation(searchExtent) {
         callbackParamName: "callback",
         load: function (candidates) {
             // Discard searches made obsolete by new typing from user
-            if (thisSearchTime < lastSearchTime) {
+            if (currentSearchTime < lastSearchTime) {
                 return;
             }
             if (candidates.locations.length > 0) {
@@ -253,21 +248,11 @@ function LocateAddressOnMap(mapPoint) {
     featureID = infoWindowLayerID = searchFeatureID = searchInfoWindowLayerID = point = null;
     map.infoWindow.hide();
     ClearGraphics(tempGraphicsLayerId);
-    if (isWebMap) {
-        var bmap = baseMapId;
-    } else {
-        for (var bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
-            if (responseObject.BaseMapLayers[bMap].MapURL) {
-                if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
-                    var bmap = responseObject.BaseMapLayers[bMap].Key;
-                }
-            }
-        }
-    }
+    var bmap = GetBaseMapId();
     if (!map.getLayer(bmap).fullExtent.contains(mapPoint)) {
         map.infoWindow.hide();
         mapPoint = selectedMapPoint = null;
-        map.getLayer(tempGraphicsLayerId).clear();
+        ClearGraphics(tempGraphicsLayerId);
         HideProgressIndicator();
         alert(messages.getElementsByTagName("noDataAvlbl")[0].childNodes[0].nodeValue);
         return;
@@ -285,10 +270,25 @@ function LocateAddressOnMap(mapPoint) {
     HideAddressContainer();
 }
 
-//Get candidate results for searched county
+function GetBaseMapId() {
+    if (isWebMap) {
+        var bmap = baseMapId;
+    } else {
+        for (var bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
+            if (responseObject.BaseMapLayers[bMap].MapURL) {
+                if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
+                    var bmap = responseObject.BaseMapLayers[bMap].Key;
+                    break;
+                }
+            }
+        }
+    }
+    return bmap;
+}
+//Get candidate results for searched location when the 'UseGeocoderService' flag is set to false
 
 function LocateCounty() {
-    var thisSearchTime = lastSearchTime = (new Date()).getTime();
+    var currentSearchTime = lastSearchTime = (new Date()).getTime();
     mapPoint = null;
     dojo.dom.byId("imgSearchLoader").style.display = "block";
     ShowTransparentContainer();
@@ -296,7 +296,7 @@ function LocateCounty() {
 
     var queryTask = new esri.tasks.QueryTask(countyLayerData.ServiceURL);
     var query = new esri.tasks.Query();
-    query.where = dojo.string.substitute(countyLayerData.SearchExpression, [Trim(dojo.dom.byId("txtAddress").value).toUpperCase()]);
+    query.where = dojo.string.substitute(countyLayerData.SearchExpression, [dojo.string.trim(dojo.dom.byId("txtAddress").value).toUpperCase()]);
     if (isCountySearched) {
         query.geometry = countyGeometry;
         query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_WITHIN;
@@ -305,7 +305,7 @@ function LocateCounty() {
     query.returnGeometry = false;
     query.outFields = ["*"];
     queryTask.execute(query, function (featureSet) {
-        if (thisSearchTime < lastSearchTime) {
+        if (currentSearchTime < lastSearchTime) {
             return;
         }
         if (featureSet.features.length > 0) {
@@ -322,13 +322,13 @@ function LocateCounty() {
     });
 }
 
-//Get candidate results for searched permit
+//Fired when user performs permit search.
 
 function LocatePermitNumber() {
     dojo.dom.byId('txtAddress').setAttribute("defaultPermit", dojo.dom.byId("txtAddress").value);
-    lastSearchString = Trim(dojo.dom.byId("txtAddress").value);
+    lastSearchString = dojo.string.trim(dojo.dom.byId("txtAddress").value);
     isCountySearched = false;
-    permitArray = [];
+    permitArray.length = 0;
     mapPoint = null;
     dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
     RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
@@ -338,16 +338,16 @@ function LocatePermitNumber() {
     }
 }
 
-//Query a layer to fetch permit data
+//Query the layers to fetch permit results
 
 function FetchPermitResults(layer, polygonGeometry, index) {
-    permitArray = [];
+    permitArray.length = 0;
     dojo.dom.byId("imgSearchLoader").style.display = "block";
     ShowTransparentContainer();
-    var queryTask = new esri.tasks.QueryTask(layer.QueryLayerId);
+    var queryTask = new esri.tasks.QueryTask(layer.QueryURL);
     var query = new esri.tasks.Query();
     if (!isCountySearched) {
-        query.where = dojo.string.substitute(layer.SearchExpression, [Trim(dojo.dom.byId("txtAddress").value).toUpperCase()]);
+        query.where = dojo.string.substitute(layer.SearchExpression, [dojo.string.trim(dojo.dom.byId("txtAddress").value).toUpperCase()]);
     } else {
         query.geometry = polygonGeometry;
         query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_CONTAINS;
@@ -363,22 +363,18 @@ function FetchPermitResults(layer, polygonGeometry, index) {
     });
 }
 
-//Fetch permit data and store it in an array
+//Get candidate results for searched permit and store it in an array
 
 function PopulatePermitData(featureSet, layer, index) {
     queryExecutedCount++;
-    var thisSearchTime = lastSearchTime = (new Date()).getTime();
-    if (thisSearchTime < lastSearchTime) {
+    var currentSearchTime = lastSearchTime = (new Date()).getTime();
+    if (currentSearchTime < lastSearchTime) {
         return;
     }
     if (featureSet) {
         if (featureSet.features.length > 0) {
             for (var num in featureSet.features) {
-                for (var j in featureSet.features[num].attributes) {
-                    if (!featureSet.features[num].attributes[j]) {
-                        featureSet.features[num].attributes[j] = responseObject.ShowNullValueAs;
-                    }
-                }
+                FormatNullValues(featureSet.features[num].attributes);
                 permitArray.push({
                     attr: featureSet.features[num],
                     fields: featureSet.fields,
@@ -448,7 +444,27 @@ function PopulatePermits(permitArray) {
         var defaultPermit = arrPermits[i].attributes.attr.attributes[arrPermits[i].searchDisplayField.split("$")[1].split("{")[1].split("}")[0]];
         td1.setAttribute("defaultPermit", defaultPermit);
         td1.onclick = function () {
-            FetchPermitData(this, arrPermits);
+            var counter = 0;
+            var layer = arrPermits[this.getAttribute("index")].attributes.layerID.QueryURL;
+            for (var i = 0; i < operationalLayers.length; i++) {
+                var lastIndex = operationalLayers[i].ServiceURL.lastIndexOf('/');
+                var dynamicLayerId = operationalLayers[i].ServiceURL.substr(lastIndex + 1);
+                if (isNaN(dynamicLayerId) || dynamicLayerId == "") {
+                    counter++;
+                }
+                else {
+                    if (operationalLayers[i].ServiceURL == layer) {
+                        counter++;
+                    }
+                }
+            }
+            //to check if the queried layer is added on the map or not
+            if (counter == 0) {
+                alert(messages.getElementsByTagName("layerNotVisible")[0].childNodes[0].nodeValue);
+            }
+            else {
+                FetchPermitData(this, arrPermits);
+            }
         };
         tr.appendChild(td1);
     }
@@ -457,43 +473,67 @@ function PopulatePermits(permitArray) {
 
 //Fetch data for the selected permit
 
-function FetchPermitData(pThis, arrPermits) {
+function FetchPermitData(permitData, arrPermits) {
+    var attributes = arrPermits[permitData.getAttribute("index")].attributes;
     ShowProgressIndicator();
     map.infoWindow.hide();
     if (!isCountySearched) {
-        dojo.dom.byId("txtAddress").value = pThis.getAttribute("defaultPermit");
-        dojo.dom.byId('txtAddress').setAttribute("defaultPermit", pThis.getAttribute("defaultPermit"));
+        dojo.dom.byId("txtAddress").value = permitData.getAttribute("defaultPermit");
+        dojo.dom.byId('txtAddress').setAttribute("defaultPermit", permitData.getAttribute("defaultPermit"));
     } else {
         dojo.dom.byId("txtAddress").value = "";
         dojo.dom.byId('txtAddress').setAttribute("defaultLocation", "");
     }
-    lastSearchString = Trim(dojo.dom.byId("txtAddress").value);
-    for (var i = 0; i < arrPermits[pThis.getAttribute("index")].attributes.fields.length; i++) {
-        if (arrPermits[pThis.getAttribute("index")].attributes.fields[i].type == "esriFieldTypeOID") {
-            var objID = arrPermits[pThis.getAttribute("index")].attributes.fields[i].name;
+    lastSearchString = dojo.string.trim(dojo.dom.byId("txtAddress").value);
+    for (var i = 0; i < attributes.fields.length; i++) {
+        if (attributes.fields[i].type == "esriFieldTypeOID") {
+            var objID = attributes.fields[i].name;
             break;
         }
     }
-    searchFeatureID = arrPermits[pThis.getAttribute("index")].attributes.attr.attributes[objID];
-    searchInfoWindowLayerID = searchSettings[arrPermits[pThis.getAttribute("index")].attributes.index].Title;
+    searchFeatureID = attributes.attr.attributes[objID];
+    searchInfoWindowLayerID = searchSettings[attributes.index].Title;
     addressSearchFlag = true;
-
-    var queryTask = new esri.tasks.QueryTask(arrPermits[pThis.getAttribute("index")].attributes.layerID.QueryLayerId);
+    if (isNaN(searchFeatureID)) {
+        searchFeatureID = "'" + searchFeatureID + "'";
+    }
+    var queryTask = new esri.tasks.QueryTask(attributes.layerID.QueryURL);
     var query = new esri.tasks.Query();
-    query.where = objID + "='" + searchFeatureID + "'";
+    query.where = objID + "=" + searchFeatureID;
     query.outSpatialReference = map.spatialReference;
     query.returnGeometry = true;
     query.outFields = ["*"];
     queryTask.execute(query, function (featureSet) {
-        LocatePermitOnMap(featureSet.features[0].geometry, featureSet.features[0].attributes, arrPermits[pThis.getAttribute("index")].attributes.index, featureSet.fields, featureSet.features[0]);
+        LocatePermitOnMap(featureSet.features[0].geometry, featureSet.features[0].attributes, attributes.index, featureSet.fields, attributes.layerID.QueryURL);
+    }, function (err) {
+        alert(err.message);
     });
 }
 
-//Populate candidate county list in address container
+//Locate searched permit on map and display the infowindow for the same
+
+function LocatePermitOnMap(mapPoint, attributes, layerID, fields, layer) {
+    if (!isMobileDevice) {
+        if (mapPoint) {
+            ShowInfoWindowDetails(mapPoint, attributes, null, layerID, null, fields);
+        }
+        if (dojo['dom-geometry'].getMarginBox("divAddressContent").h > 0) {
+            dojo['dom-class'].replace("divAddressContent", "hideContainerHeight", "showContainerHeight");
+            dojo.dom.byId('divAddressContent').style.height = '0px';
+        }
+    } else {
+        if (mapPoint) {
+            ShowMobileInfoWindow(mapPoint, attributes, layerID, fields);
+        }
+        HideAddressContainer();
+    }
+}
+
+//Populate candidate location list in address container on loction search
 
 function FetchCountyResults(featureset) {
-    var thisSearchTime = lastSearchTime = (new Date()).getTime();
-    if (thisSearchTime < lastSearchTime) {
+    var currentSearchTime = lastSearchTime = (new Date()).getTime();
+    if (currentSearchTime < lastSearchTime) {
         return;
     }
     dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
@@ -505,8 +545,7 @@ function FetchCountyResults(featureset) {
             var table = dojo.byId("tblAddressResults");
             var tBody = document.createElement("tbody");
             table.appendChild(tBody);
-            table.cellSpacing = 0;
-            table.cellPadding = 0;
+            table.cellSpacing = table.cellPadding = 0;
             var featureSet = [];
             try {
                 for (var i = 0; i < featureset.length; i++) {
@@ -540,7 +579,7 @@ function FetchCountyResults(featureset) {
                     map.infoWindow.hide();
                     dojo.dom.byId("txtAddress").value = this.innerHTML;
                     dojo.dom.byId('txtAddress').setAttribute("defaultLocation", this.innerHTML);
-                    lastSearchString = Trim(dojo.dom.byId("txtAddress").value);
+                    lastSearchString = dojo.string.trim(dojo.dom.byId("txtAddress").value);
                     var attr = featureSet[this.getAttribute("index")].attributes;
                     LocateCountyOnMap(attr);
                 }
@@ -576,7 +615,7 @@ function LocatorErrBack(errorMessage) {
     tr.appendChild(td);
 }
 
-//Query the selected county to fetch the geometry
+//Query the location that is selected from the list of candidates to fetch its geometry
 
 function LocateCountyOnMap(attributes) {
     isCountySearched = true;
@@ -596,7 +635,7 @@ function LocateCountyOnMap(attributes) {
     });
 }
 
-//Locate searched county on map and add it to the breadcrumbs
+//Locate selected location on map and add it to the breadcrumbs
 
 function ShowLocatedCountyOnMap(geometry, locationName) {
     if (!isMobileDevice) {
@@ -640,6 +679,8 @@ function ShowLocatedCountyOnMap(geometry, locationName) {
     }
 }
 
+//Navigate through the breadcrumbs.
+
 function NavigateBreadCrumbs(pThis) {
     countyGeometry = new esri.geometry.Extent(parseFloat(pThis.getAttribute("countyExtentxmin")), parseFloat(pThis.getAttribute("countyExtentymin")), parseFloat(pThis.getAttribute("countyExtentxmax")), parseFloat(pThis.getAttribute("countyExtentymax")), map.spatialReference);
     map.setExtent(countyGeometry);
@@ -658,7 +699,7 @@ function NavigateBreadCrumbs(pThis) {
     }
 }
 
-//Clear breadcrumbs container
+//Clear breadcrumbs container and clear the previously searched results
 
 function ClearBreadCrumbs() {
     dojo.dom.byId("divBreadCrumbs").style.display = "none";
@@ -672,32 +713,11 @@ function ClearBreadCrumbs() {
     isCountySearched = false;
 }
 
-//Locate searched permit on map and display the infowindow for the same
-
-function LocatePermitOnMap(mapPoint, attributes, layerID, fields,features) {
-    if (mapPoint) {
-        if (!isMobileDevice) {
-            ShowInfoWindowDetails(mapPoint, attributes, null, layerID, null, fields);
-        } else {
-            ShowMobileInfoWindow(mapPoint, attributes, layerID, fields);
-        }
-    }
-    if (!isMobileDevice) {
-        if (dojo['dom-geometry'].getMarginBox("divAddressContent").h > 0) {
-            dojo['dom-class'].replace("divAddressContent", "hideContainerHeight", "showContainerHeight");
-            dojo.dom.byId('divAddressContent').style.height = '0px';
-        }
-    }
-    if (isMobileDevice) {
-        HideAddressContainer();
-    }
-}
-
-//Display the current location of the user
+//Display the current location of the user and a pushpin at that location
 
 function ShowMyLocation() {
     var geometryService = new esri.tasks.GeometryService(responseObject.GeometryService);
-    map.getLayer(tempGraphicsLayerId).clear();
+    ClearGraphics(tempGraphicsLayerId);
     HideBaseMapLayerContainer();
     HideShareAppContainer();
     HideAddressContainer();
@@ -719,20 +739,10 @@ function ShowMyLocation() {
         graphicCollection.addPoint(mapPoint);
         map.infoWindow.hide();
         geometryService.project([graphicCollection], map.spatialReference, function (newPointCollection) {
-            if (isWebMap) {
-                var bmap = baseMapId;
-            } else {
-                for (var bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
-                    if (responseObject.BaseMapLayers[bMap].MapURL) {
-                        if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
-                            var bmap = responseObject.BaseMapLayers[bMap].Key;
-                        }
-                    }
-                }
-            }
+            var bmap = GetBaseMapId();
             if (!map.getLayer(bmap).fullExtent.contains(newPointCollection[0].getPoint(0))) {
                 mapPoint = selectedMapPoint = null;
-                map.getLayer(tempGraphicsLayerId).clear();
+                ClearGraphics(tempGraphicsLayerId);
                 map.infoWindow.hide();
                 HideProgressIndicator();
                 alert(messages.getElementsByTagName("geoLocation")[0].childNodes[0].nodeValue);
@@ -764,6 +774,8 @@ function ShowMyLocation() {
         });
 }
 
+//Handles errors during geolocation (display the current location of the user)
+
 function GeolocationErrorHandler(error) {
     switch (error.code) {
         case error.TIMEOUT:
@@ -781,16 +793,16 @@ function GeolocationErrorHandler(error) {
     }
 }
 
-//Query the features while sharing infowindow
+//Query the features for sharing infowindow when user locates a permit while performing search
 
 function ShareInfoWindow() {
     ShowProgressIndicator();
     for (var index = 0; index < searchSettings.length; index++) {
         if (searchSettings[index].Title == searchInfoWindowLayerID) {
             var layerIndex = index;
-            var queryTask = new esri.tasks.QueryTask(searchSettings[index].QueryLayerId);
+            var queryTask = new esri.tasks.QueryTask(searchSettings[index].QueryURL);
             esri.request({
-                url: searchSettings[index].QueryLayerId + "?f=json",
+                url: searchSettings[index].QueryURL + "?f=json",
                 load: function (data) {
                     for (var p = 0; p < data.fields.length; p++) {
                         if (data.fields[p].type == "esriFieldTypeOID") {
@@ -804,11 +816,7 @@ function ShareInfoWindow() {
                     query.outSpatialReference = map.spatialReference;
                     query.returnGeometry = true;
                     queryTask.execute(query, function (features) {
-                        for (var i in features.features[0].attributes) {
-                            if (!features.features[0].attributes[i]) {
-                                features.features[0].attributes[i] = responseObject.ShowNullValueAs;
-                            }
-                        }
+                        FormatNullValues(features.features[0].attributes);
                         if (!isMobileDevice) {
                             ShowInfoWindowDetails(features.features[0].geometry, features.features[0].attributes, null, layerIndex, null, features.fields);
                         } else {

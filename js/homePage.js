@@ -44,7 +44,7 @@ var windowURL = window.location.toString();
 var lastSearchString; //variable to store the last search string
 var stagedSearch; //variable to store the time limit for search
 var lastSearchTime; //variable to store the time of last search
-var searchSettings; //variable to store the Permit Result Data
+var searchSettings; //variable to store the Search Settings
 var countyLayerData; //variable to store the County layer Data
 var isCountySearched; //This variable is set to true when county search is performed and is false when permit search is performed
 var featureID; //variable to store the feature id when user selects a permit from the permit list InfoWindow
@@ -59,7 +59,7 @@ var addressSearchFlag = false; //This variable is set to true when address searc
 var extent; //variable to store the map extent
 var shareFlag = false;
 var mapExtent = null;
-var permitResultData;
+var operationalLayers;
 
 //This initialization function is called when the DOM elements are ready
 
@@ -68,53 +68,14 @@ function Init() {
     DetectDevice();
     responseObject = new js.config();
 
-    var shortcutIcon = document.createElement("link");
-    shortcutIcon.rel = "shortcut icon";
-    shortcutIcon.type = "image/x-icon";
-    shortcutIcon.href = responseObject.ApplicationFavicon;
-    document.getElementsByTagName('head')[0].appendChild(shortcutIcon);
+    CreateShortcutIcons("shortcut icon", responseObject.ApplicationFavicon);
     if (isMobileDevice || isTablet) {
-        var appleTouchIcon = document.createElement("link");
-        appleTouchIcon.rel = "apple-touch-icon-precomposed";
-        appleTouchIcon.type = "image/x-icon";
-        appleTouchIcon.href = responseObject.ApplicationIcon;
-        document.getElementsByTagName('head')[0].appendChild(appleTouchIcon);
-
-        var appleTouchIcon = document.createElement("link");
-        appleTouchIcon.rel = "apple-touch-icon";
-        appleTouchIcon.type = "image/x-icon";
-        appleTouchIcon.href = responseObject.ApplicationIcon;
-        document.getElementsByTagName('head')[0].appendChild(appleTouchIcon);
+        CreateShortcutIcons("apple-touch-icon-precomposed", responseObject.ApplicationIcon);
+        CreateShortcutIcons("apple-touch-icon", responseObject.ApplicationIcon);
     }
 
-    dojo.connect(dojo.byId("imgLocate"), "onclick", function () {
-        ValidateLocateType();
-    });
-
-    dojo.connect(dojo.dom.byId("txtAddress"), 'onkeyup', function (evt) {
-        InitializeAutocompleteSearch(evt);
-    });
-
-    dojo.connect(dojo.dom.byId("txtAddress"), 'onpaste', function () {
-        if (!responseObject.AutoCompleteForPermit && dojo.hasClass(dojo.dom.byId('tdSearchPermit'), "tdSearchByPermit")) {
-            return;
-        }
-        setTimeout(function () {
-            ValidateLocateType();
-        }, 100);
-    });
-
-    dojo.connect(dojo.dom.byId("txtAddress"), 'oncut', function () {
-        if (!responseObject.AutoCompleteForPermit && dojo.hasClass(dojo.dom.byId('tdSearchPermit'), "tdSearchByPermit")) {
-            return;
-        }
-        setTimeout(function () {
-            ValidateLocateType();
-        }, 100);
-    });
-
-    dojo.dom.byId("tdSearchAddress").innerHTML = responseObject.LocatorSettings.Locators[0].DisplayText;
     dojo.dom.byId('divAddressContainer').style.display = "none";
+    dojo.dom.byId("tdSearchAddress").innerHTML = responseObject.LocatorSettings.Locators[0].DisplayText;
     dojo.dom.byId("tdSearchLocation").innerHTML = responseObject.LocatorSettings.Locators[1].DisplayText;
     dojo.dom.byId("tdSearchPermit").innerHTML = responseObject.LocatorSettings.Locators[2].DisplayText;
     dojo.dom.byId("txtAddress").value = responseObject.LocatorSettings.Locators[0].LocatorDefaultAddress;
@@ -123,12 +84,7 @@ function Init() {
     dojo.dom.byId("txtAddress").setAttribute("defaultPermit", responseObject.LocatorSettings.Locators[2].LocatorDefaultPermit);
     dojo.dom.byId("txtAddress").style.color = "gray";
 
-    dojo.connect(dojo.dom.byId('txtAddress'), "ondblclick", ClearDefaultText);
-    dojo.connect(dojo.dom.byId('txtAddress'), "onblur", ReplaceDefaultText);
-    dojo.connect(dojo.dom.byId('txtAddress'), "onfocus", function () {
-        this.style.color = "#FFF";
-    });
-
+    AddressSearchEvents();
     if (!Modernizr.geolocation) {
         dojo.dom.byId("tdGeolocation").style.display = "none";
     }
@@ -164,7 +120,6 @@ function Init() {
     dojo.dom.byId('divSplashContent').innerHTML = responseObject.SplashScreen.Message;
     dojo.dom.byId('lblAppName').innerHTML = responseObject.ApplicationName;
     searchSettings = responseObject.SearchSettings;
-    permitResultData = responseObject.PermitResultData;
     countyLayerData = responseObject.CountyLayerData;
 
     LoadErrorMessages();
@@ -174,14 +129,54 @@ function Init() {
     if (responseObject.WebMapId) {
         InitializeWebMap();
     } else {
+        operationalLayers = responseObject.OperationalLayers;
         InitializeMap();
     }
 }
 
+//Events related to search functionality
+
+function AddressSearchEvents() {
+    dojo.connect(dojo.byId("imgLocate"), "onclick", function () {
+        ValidateLocateType();
+    });
+
+    dojo.connect(dojo.dom.byId("txtAddress"), 'onkeyup', InitializeAutocompleteSearch);
+
+    dojo.connect(dojo.dom.byId("txtAddress"), 'onpaste', function (evt) {
+        InitializeAutocompleteSearch(evt, true);
+    });
+
+    dojo.connect(dojo.dom.byId("txtAddress"), 'oncut', function (evt) {
+        InitializeAutocompleteSearch(evt, true);
+    });
+    dojo.connect(dojo.dom.byId('txtAddress'), "ondblclick", ClearDefaultText);
+    dojo.connect(dojo.dom.byId('txtAddress'), "onblur", ReplaceDefaultText);
+    dojo.connect(dojo.dom.byId('txtAddress'), "onfocus", function () {
+        this.style.color = "#FFF";
+    });
+}
+
+//Creating application shortcut icons and apple touch icon
+
+function CreateShortcutIcons(iconRel, iconHref) {
+    var icon = document.createElement("link");
+    icon.rel = iconRel;
+    icon.type = "image/x-icon";
+    icon.href = iconHref;
+    document.getElementsByTagName('head')[0].appendChild(icon);
+}
+
 // Initialize autocomplete feature for search
 
-function InitializeAutocompleteSearch(evt) {
-    if (!responseObject.AutoCompleteForPermit && dojo.hasClass(dojo.dom.byId('tdSearchPermit'), "tdSearchByPermit")) {
+function InitializeAutocompleteSearch(evt, locatorText) {
+    if (!responseObject.AutocompleteForPermit && dojo.hasClass(dojo.dom.byId('tdSearchPermit'), "tdSearchByPermit")) {
+        return;
+    }
+    if (locatorText) {
+        setTimeout(function () {
+            ValidateLocateType();
+        }, 100);
         return;
     }
     if (evt) {
@@ -200,25 +195,25 @@ function InitializeAutocompleteSearch(evt) {
             return;
         }
         if (dojo['dom-geometry'].getMarginBox("divAddressContent").h > 0) {
-            if (Trim(dojo.dom.byId("txtAddress").value) != '') {
-                if (lastSearchString != Trim(dojo.dom.byId("txtAddress").value)) {
-                    lastSearchString = Trim(dojo.dom.byId("txtAddress").value);
+            if (dojo.string.trim(dojo.dom.byId("txtAddress").value) != '') {
+                if (lastSearchString != dojo.string.trim(dojo.dom.byId("txtAddress").value)) {
+                    lastSearchString = dojo.string.trim(dojo.dom.byId("txtAddress").value);
                     dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
 
                     // Clear any staged search
                     clearTimeout(stagedSearch);
-                    if (Trim(dojo.dom.byId("txtAddress").value).length > 0) {
+                    if (dojo.string.trim(dojo.dom.byId("txtAddress").value).length > 0) {
                         // Stage a new search, which will launch if no new searches show up
                         // before the timeout
                         stagedSearch = setTimeout(function () {
                             dojo.dom.byId("imgSearchLoader").style.display = "block";
                             ValidateLocateType();
-                            lastSearchString = Trim(dojo.dom.byId("txtAddress").value);
+                            lastSearchString = dojo.string.trim(dojo.dom.byId("txtAddress").value);
                         }, 500);
                     }
                 }
             } else {
-                lastSearchString = Trim(dojo.dom.byId("txtAddress").value);
+                lastSearchString = dojo.string.trim(dojo.dom.byId("txtAddress").value);
                 dojo.dom.byId("imgSearchLoader").style.display = "none";
                 dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
                 RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
@@ -226,6 +221,8 @@ function InitializeAutocompleteSearch(evt) {
         }
     }
 }
+
+//Retrieving the data from webmap using the webmap id provided in the config file
 
 function InitializeWebMap() {
     dojo.dom.byId("tdBaseMap").style.display = "none";
@@ -242,89 +239,91 @@ function InitializeWebMap() {
     });
 }
 
+//Fetching the urls and info popup data from the webmap
+
 function FetchWebMapData(response) {
-    searchSettings = [];
-    permitResultData = [];
-    var titleCount = 0;
+    operationalLayers = [];
     map = response.map;
     webmapExtent = response.map.extent;
     baseMapId = response.itemInfo.itemData.baseMap.baseMapLayers[0].id;
     var webMapDetails = response.itemInfo.itemData;
+    var serviceTitle = [];
     for (var i = 0; i < webMapDetails.operationalLayers.length; i++) {
-        var operationalLayerId = Trim(webMapDetails.operationalLayers[i].title);
-        for (var index = 0; index < responseObject.SearchSettings.length; index++) {
-            if (operationalLayerId == Trim(responseObject.SearchSettings[index].Title)) {
-                titleCount++;
-                searchSettings[index] = {};
-                permitResultData[index] = {};
-                permitResultData[index]["ServiceURL"] = webMapDetails.operationalLayers[i].url;
-                searchSettings[index]["Title"] = responseObject.SearchSettings[index].Title;
-                searchSettings[index]["QueryLayerId"] = responseObject.SearchSettings[index].QueryLayerId;
-                searchSettings[index]["ListDisplayText"] = responseObject.SearchSettings[index].ListDisplayText;
-                searchSettings[index]["ListFieldName"] = responseObject.SearchSettings[index].ListFieldName;
-                searchSettings[index]["SearchDisplayFields"] = responseObject.SearchSettings[index].SearchDisplayFields;
-                searchSettings[index]["SearchExpression"] = responseObject.SearchSettings[index].SearchExpression;
-                if (webMapDetails.operationalLayers[i].layers) {
-                    for (var j = 0; j < webMapDetails.operationalLayers[i].layers.length; j++) {
-                        if (webMapDetails.operationalLayers[i].layers[j].popupInfo) {
-                            if (webMapDetails.operationalLayers[i].layers[j].popupInfo.title.split(": ").length > 1) {
-                                permitResultData[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[i].layers[j].popupInfo.title.split(": ")[1];
-                            } else {
-                                permitResultData[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[i].layers[j].popupInfo.title;
+        var operationalLayerId = dojo.string.trim(webMapDetails.operationalLayers[i].title);
+        var str = webMapDetails.operationalLayers[i].url.split('/');
+        var lastIndex = str[str.length - 1];
+        if (isNaN(lastIndex) || lastIndex == "") {
+            if (lastIndex == "") {
+                serviceTitle[operationalLayerId] = webMapDetails.operationalLayers[i].url;
+            }
+            else {
+                serviceTitle[operationalLayerId] = webMapDetails.operationalLayers[i].url + "/";
+            }
+        }
+        else {
+            serviceTitle[operationalLayerId] = webMapDetails.operationalLayers[i].url.substring(0, webMapDetails.operationalLayers[i].url.length - 1);
+        }
+    }
+
+    for (var index = 0; index < searchSettings.length; index++) {
+        if (searchSettings[index].Title && searchSettings[index].QueryLayerId && serviceTitle[searchSettings[index].Title]) {
+            searchSettings[index].QueryURL = serviceTitle[searchSettings[index].Title] + searchSettings[index].QueryLayerId;
+            for (var j = 0; j < webMapDetails.operationalLayers.length; j++) {
+                if (webMapDetails.operationalLayers[j].title && serviceTitle[webMapDetails.operationalLayers[j].title] && (webMapDetails.operationalLayers[j].title == searchSettings[index].Title)) {
+                    if (webMapDetails.operationalLayers[j].layers) {
+                        //fetching infopopup data in case the layers are added as dynamic layers in the webmap
+                        for (var k = 0; k < webMapDetails.operationalLayers[j].layers.length; k++) {
+                            var layerInfo = webMapDetails.operationalLayers[j].layers[k];
+                            if (webMapDetails.operationalLayers[j].layers[k].popupInfo) {
+                                operationalLayers[index] = {};
+                                operationalLayers[index]["ServiceURL"] = webMapDetails.operationalLayers[j].url + "/" + webMapDetails.operationalLayers[j].layers[k].id;
+                                if (layerInfo.popupInfo.title.split(": ").length > 1) {
+                                    searchSettings[index]["InfoWindowHeader"] = "$" + layerInfo.popupInfo.title.split(": ")[1];
+                                } else {
+                                    searchSettings[index]["InfoWindowHeader"] = "$" + layerInfo.popupInfo.title;
+                                }
+                                GetMobileCalloutContentField(index);
+                                searchSettings[index]["InfoWindowData"] = [];
+                                for (var field in layerInfo.popupInfo.fieldInfos) {
+                                    if (layerInfo.popupInfo.fieldInfos[field].visible) {
+                                        searchSettings[index]["InfoWindowData"].push({
+                                            "DisplayText": layerInfo.popupInfo.fieldInfos[field].label + ":",
+                                            "FieldName": "${" + layerInfo.popupInfo.fieldInfos[field].fieldName + "}"
+                                        });
+                                    }
+                                }
                             }
-                            GetMobileCalloutContentField(webMapDetails.operationalLayers[i].url + "/", index);
-                            permitResultData[index]["InfoWindowData"] = [];
-                            for (var field in webMapDetails.operationalLayers[i].layers[j].popupInfo.fieldInfos) {
-                                if (webMapDetails.operationalLayers[i].layers[j].popupInfo.fieldInfos[field].visible) {
-                                    permitResultData[index]["InfoWindowData"].push({
-                                        "DisplayText": webMapDetails.operationalLayers[i].layers[j].popupInfo.fieldInfos[field].label + ":",
-                                        "FieldName": "${" + webMapDetails.operationalLayers[i].layers[j].popupInfo.fieldInfos[field].fieldName + "}"
+                        }
+                    } else {
+                        if (webMapDetails.operationalLayers[j].popupInfo) {
+                            //fetching infopopup data in case the layers are added as feature layers in the webmap
+                            operationalLayers[index] = {};
+                            operationalLayers[index]["ServiceURL"] = webMapDetails.operationalLayers[j].url;
+                            if (webMapDetails.operationalLayers[j].popupInfo.title.split(": ").length > 1) {
+                                searchSettings[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[j].popupInfo.title.split(": ")[1];
+                            } else {
+                                searchSettings[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[j].popupInfo.title;
+                            }
+                            searchSettings[index]["InfoWindowContent"] = "${" + webMapDetails.operationalLayers[j].layerObject.displayField + "}";
+                            searchSettings[index]["InfoWindowData"] = [];
+                            for (var field in webMapDetails.operationalLayers[j].popupInfo.fieldInfos) {
+                                if (webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].visible) {
+                                    searchSettings[index]["InfoWindowData"].push({
+                                        "DisplayText": webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].label + ":",
+                                        "FieldName": "${" + webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].fieldName + "}"
                                     });
                                 }
                             }
                         }
                     }
-                } else {
-                    if (webMapDetails.operationalLayers[i].popupInfo) {
-                        if (webMapDetails.operationalLayers[i].popupInfo.title.split(": ").length > 1) {
-                            permitResultData[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[i].popupInfo.title.split(": ")[1];
-                        } else {
-                            permitResultData[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[i].popupInfo.title;
-                        }
-                        permitResultData[index]["InfoWindowContent"] = "${" + webMapDetails.operationalLayers[i].layerObject.displayField + "}";
-                        permitResultData[index]["InfoWindowData"] = [];
-                        for (var field in webMapDetails.operationalLayers[i].popupInfo.fieldInfos) {
-                            if (webMapDetails.operationalLayers[i].popupInfo.fieldInfos[field].visible) {
-                                permitResultData[index]["InfoWindowData"].push({
-                                    "DisplayText": webMapDetails.operationalLayers[i].popupInfo.fieldInfos[field].label + ":",
-                                    "FieldName": "${" + webMapDetails.operationalLayers[i].popupInfo.fieldInfos[field].fieldName + "}"
-                                });
-                            }
-                        }
-                    }
-                }
-                break;
-            }
-        }
-        if (webMapDetails.operationalLayers[i].layers) {
-            for (var k = 0; k < webMapDetails.operationalLayers[i].layerObject.layerInfos.length; k++) {
-                if (webMapDetails.operationalLayers[i].layerObject.__popupIds) {
-                    if (webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id != webMapDetails.operationalLayers[i].layerObject.__popupIds[k]) {
-                        FetchCountyLayerData(operationalLayerId, webMapDetails.operationalLayers[i].url + "/" + webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id);
-                    }
-                } else {
-                    FetchCountyLayerData(operationalLayerId, webMapDetails.operationalLayers[i].url + "/" + webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id);
                 }
             }
         } else {
-            if (!webMapDetails.operationalLayers[i].popupInfo) {
-                FetchCountyLayerData(operationalLayerId, webMapDetails.operationalLayers[i].url);
-            }
+            alert(messages.getElementsByTagName("webmapTitleError")[0].childNodes[0].nodeValue);
         }
     }
-    if (titleCount != responseObject.SearchSettings.length) {
-        alert(messages.getElementsByTagName("webmapLoadError")[0].childNodes[0].nodeValue);
-    }
+    GetCountyDataFromWebmap(webMapDetails);
+    //overriding the infowindow coming from the webmap
     dojo.destroy(map.infoWindow);
     var infoWindow = new js.InfoWindow({
         domNode: dojo.create("div", null, dojo.dom.byId("map"))
@@ -334,7 +333,30 @@ function FetchWebMapData(response) {
     MapOnLoad();
 }
 
-// Fetch the data for county layer from the webmap
+//Getting county layer data from the webmap. The layer without infopopup is considered as county layer.
+
+function GetCountyDataFromWebmap(webMapDetails) {
+    for (var i = 0; i < webMapDetails.operationalLayers.length; i++) {
+        var countyLayerId = webMapDetails.operationalLayers[i].title;
+        if (webMapDetails.operationalLayers[i].layers) {
+            for (var k = 0; k < webMapDetails.operationalLayers[i].layerObject.layerInfos.length; k++) {
+                if (webMapDetails.operationalLayers[i].layerObject.__popupIds) {
+                    if (webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id != webMapDetails.operationalLayers[i].layerObject.__popupIds[k]) {
+                        FetchCountyLayerData(countyLayerId, webMapDetails.operationalLayers[i].url + "/" + webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id);
+                    }
+                } else {
+                    FetchCountyLayerData(countyLayerId, webMapDetails.operationalLayers[i].url + "/" + webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id);
+                }
+            }
+        } else {
+            if (!webMapDetails.operationalLayers[i].popupInfo) {
+                FetchCountyLayerData(countyLayerId, webMapDetails.operationalLayers[i].url);
+            }
+        }
+    }
+}
+
+// Store county layer data coming from webmap
 
 function FetchCountyLayerData(operationalLayerId, url) {
     countyLayerData.Title = operationalLayerId;
@@ -346,11 +368,11 @@ function FetchCountyLayerData(operationalLayerId, url) {
 
 // Get data to be displayed in mobile callout content field
 
-function GetMobileCalloutContentField(url1, index) {
+function GetMobileCalloutContentField(index) {
     esri.request({
-        url: url1 + responseObject.SearchSettings[index].QueryLayerId + '?f=json',
+        url: searchSettings[index].QueryURL + '?f=json',
         load: function (data) {
-            permitResultData[index]["InfoWindowContent"] = "${" + data.displayField + "}";
+            searchSettings[index]["InfoWindowContent"] = "${" + data.displayField + "}";
         }
     });
 }
@@ -426,6 +448,7 @@ function InitializeMap() {
         MapOnLoad();
     });
     CreateBaseMapComponent();
+    //The following code is for adding reference overlay layer above the map
     if (responseObject.ReferenceOverlayLayer) {
         if (responseObject.ReferenceOverlayLayer.DisplayOnLoad && responseObject.ReferenceOverlayLayer.ServiceUrl) {
             var layerType = responseObject.ReferenceOverlayLayer.ServiceUrl.substring(((responseObject.ReferenceOverlayLayer.ServiceUrl.lastIndexOf("/")) + 1), (responseObject.ReferenceOverlayLayer.ServiceUrl.length));
@@ -438,9 +461,9 @@ function InitializeMap() {
                 map.addLayer(overlaymap);
 
             } else {
-                var url1 = responseObject.ReferenceOverlayLayer.ServiceUrl + "?f=json";
+                var layerUrl = responseObject.ReferenceOverlayLayer.ServiceUrl + "?f=json";
                 esri.request({
-                    url: url1,
+                    url: layerUrl,
                     handleAs: "json",
                     load: function (data) {
                         if (!data.tileInfo) {
@@ -469,21 +492,53 @@ function InitializeMap() {
 
 function MapOnLoad() {
     map.disableKeyboardNavigation();
-    for (var index = 0; index < searchSettings.length; index++) {
-        var lastIndex = permitResultData[index].ServiceURL.lastIndexOf('/');
-        var dynamicLayerId = permitResultData[index].ServiceURL.substr(lastIndex + 1);
-        if (isNaN(dynamicLayerId) || dynamicLayerId == "") {
-            if (isNaN(dynamicLayerId)) {
-                var layer = permitResultData[index].ServiceURL + "/";
-            } else if (dynamicLayerId == "") {
-                var layer = permitResultData[index].ServiceURL;
+    if (!isWebMap) {
+        var serviceTitle = [];
+        for (var i = 0; i < operationalLayers.length; i++) {
+            var str = operationalLayers[i].ServiceURL.split('/');
+            var lastIndex = str[str.length - 1];
+            if (isNaN(lastIndex) || lastIndex == "") {
+                if (lastIndex == "") {
+                    var layerTitle = str[str.length - 3];
+                    serviceTitle[layerTitle] = operationalLayers[i].ServiceURL;
+                }
+                else {
+                    var layerTitle = str[str.length - 2];
+                    serviceTitle[layerTitle] = operationalLayers[i].ServiceURL + "/";
+                }
             }
-        } else {
-            var layer = permitResultData[index].ServiceURL.substring(0, lastIndex + 1);
+            else {
+                var layerTitle = str[str.length - 3];
+                serviceTitle[layerTitle] = operationalLayers[i].ServiceURL.substring(0, operationalLayers[i].ServiceURL.length - 1);
+            }
         }
-        searchSettings[index].QueryLayerId = layer + searchSettings[index].QueryLayerId;
+        if (responseObject.InfoWindowSettings.length == searchSettings.length) {
+            var count = 0;
+            for (var index = 0; index < searchSettings.length; index++) {
+                if (searchSettings[index].Title && searchSettings[index].QueryLayerId && serviceTitle[searchSettings[index].Title]) {
+                    searchSettings[index].QueryURL = serviceTitle[searchSettings[index].Title] + searchSettings[index].QueryLayerId;
+                    for (var j = 0; j < responseObject.InfoWindowSettings.length; j++) {
+                        if (responseObject.InfoWindowSettings[j].Title && responseObject.InfoWindowSettings[j].QueryLayerId && serviceTitle[responseObject.InfoWindowSettings[j].Title] && (responseObject.InfoWindowSettings[j].Title == searchSettings[index].Title) && (responseObject.InfoWindowSettings[j].QueryLayerId == searchSettings[index].QueryLayerId)) {
+                            count++;
+                            searchSettings[index]["InfoWindowHeader"] = responseObject.InfoWindowSettings[j].InfoWindowHeader;
+                            searchSettings[index]["InfoWindowContent"] = responseObject.InfoWindowSettings[j].InfoWindowContent;
+                            searchSettings[index]["InfoWindowData"] = responseObject.InfoWindowSettings[j].InfoWindowData;
+                        }
+                    }
+                } else {
+                    alert(messages.getElementsByTagName("layerTitleError")[0].childNodes[0].nodeValue);
+                }
+            }
+            if (count != responseObject.InfoWindowSettings.length) {
+                alert(messages.getElementsByTagName("titleNotMatching")[0].childNodes[0].nodeValue);
+            }
+        }
+        else {
+            alert(messages.getElementsByTagName("lengthDoNotMatch")[0].childNodes[0].nodeValue);
+        }
     }
     var url = esri.urlToObject(window.location.toString());
+    //code for sharing the application
     if (url.query) {
         if (url.query.extent.split("$point=").length > 1) {
             var tempSelectedPoint = url.query.extent.split("$point=")[1];
@@ -493,29 +548,25 @@ function MapOnLoad() {
                 var currentExt = new esri.geometry.Extent(parseFloat(currentExtSplit[0]), parseFloat(currentExtSplit[1]), parseFloat(currentExtSplit[2]), parseFloat(currentExtSplit[3]), map.spatialReference);
                 var extentDeferred = map.setExtent(currentExt);
             }
+
             var selectedPoint = tempSelectedPoint.split("$currentExtent=")[0];
             var selectedPermit = tempSelectedPoint.split("$currentExtent=")[1];
 
-            if (selectedPermit.split("$featureID=").length > 1) {
-                extentDeferred.then(function () {
-                    var splitPoint = selectedPoint.split(',');
-                    var sPoint = new esri.geometry.Point(parseFloat(splitPoint[0]), parseFloat(splitPoint[1]), map.spatialReference);
-                    var tempFeatureID = tempSelectedPoint.split("$featureID=")[1];
-                    if (tempFeatureID.split("$infoWindowLayerID=").length > 1) {
-                        shareFlag = true;
-                        featureID = tempFeatureID.split("$infoWindowLayerID=")[0];
-                        infoWindowLayerID = tempFeatureID.split("$infoWindowLayerID=")[1];
-                    }
-                    FindPermits(sPoint);
-                });
-            } else {
-                extentDeferred.then(function () {
-                    var splitPoint = selectedPoint.split(',');
-                    var sPoint = new esri.geometry.Point(parseFloat(splitPoint[0]), parseFloat(splitPoint[1]), map.spatialReference);
-                    FindPermits(sPoint);
-                });
-            }
+            extentDeferred.then(function () {
+                //sharing infowindow when we get an infowindow or permit list on map click
+                var splitPoint = selectedPoint.split(',');
+                var sPoint = new esri.geometry.Point(parseFloat(splitPoint[0]), parseFloat(splitPoint[1]), map.spatialReference);
+                var tempFeatureID = tempSelectedPoint.split("$featureID=")[1];
+                if (selectedPermit.split("$featureID=").length > 1 && tempFeatureID.split("$infoWindowLayerID=").length > 1) {
+                    //sharing infowindow when a permit is selected from the list of permits which is displayed on map click
+                    shareFlag = true;
+                    featureID = tempFeatureID.split("$infoWindowLayerID=")[0];
+                    infoWindowLayerID = tempFeatureID.split("$infoWindowLayerID=")[1];
+                }
+                FindPermits(sPoint);
+            });
         } else if (url.query.extent.split("$searchFeatureID=").length > 0) {
+            //sharing infowindow when we user performs a location or permit search and locates a permit on the map
             var tempFeatureID = url.query.extent.split("$searchFeatureID=")[1];
             if (tempFeatureID) {
                 if (tempFeatureID.split("$searchInfoWindowLayerID=").length > 1) {
@@ -598,13 +649,27 @@ function AddLayersToMap() {
             if (countyLayerData) {
                 AddServiceLayers(countyLayerData.Title, countyLayerData.ServiceURL, countyLayerData.LoadAsServiceType);
             }
-            for (var index = 0; index < permitResultData.length; index++) {
-                AddServiceLayers(searchSettings[index].Title, permitResultData[index].ServiceURL, permitResultData[index].LoadAsServiceType);
+            for (var index = 0; index < operationalLayers.length; index++) {
+                var str = operationalLayers[index].ServiceURL.split('/');
+                var lastIndex = str[str.length - 1];
+                if (isNaN(lastIndex) || lastIndex == "") {
+                    if (lastIndex == "") {
+                        var layerTitle = str[str.length - 3];
+                    }
+                    else {
+                        var layerTitle = str[str.length - 2];
+                    }
+                }
+                else {
+                    var layerTitle = str[str.length - 3];
+                }
+                AddServiceLayers(layerTitle, operationalLayers[index].ServiceURL, operationalLayers[index].LoadAsServiceType);
             }
         }, 50);
     }
 
     dojo.connect(map, "onClick", function (evt) {
+        ShowProgressIndicator()
         featureID = infoWindowLayerID = searchFeatureID = searchInfoWindowLayerID = null;
         addressSearchFlag = false;
         map.infoWindow.hide();
