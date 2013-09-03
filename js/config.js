@@ -34,7 +34,7 @@ dojo.declare("js.config", null, {
     // 9a. Specify URLs for operational layers           - [ Tag(s) to look for: OperationalLayers, InfoWindowSettings, SearchSettings, CountyLayerData, ReferenceOverlayLayer ]
     // 9b. Customize zoom level for address search       - [ Tag(s) to look for: ZoomLevel ]
     // 9c. Enable or disable auto-complete feature for Permit search
-    //                                                   - [ Tag(s) to look for: AutoCompleteForPermit]
+    //                                                   - [ Tag(s) to look for: AutocompleteForPermit]
     // 9d. Enable or disable using the configured zoom level for selected polygon feature
     //                                                   - [ Tag(s) to look for: ZoomToPolygonGeometry]
     // 9e. Customize info-Popup size                     - [ Tag(s) to look for: InfoPopupHeight, InfoPopupWidth ]
@@ -95,7 +95,7 @@ dojo.declare("js.config", null, {
     // Choose if you want to use WebMap or Map Services for operational layers. If using WebMap, specify WebMapId within quotes, otherwise leave this empty and configure operational layers
     WebMapId: "",
 
-    // If you are using webmap then skip below section for configuring operational layers and move to 'InfoWindowSettings'
+    // If you are using webmap then skip below section for configuring operational layers and move to 'SearchSettings'
 
     // Configure operational layers below.
     // ServiceURL: URL of the layer.
@@ -110,6 +110,57 @@ dojo.declare("js.config", null, {
     }, {
         ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/ERP/MapServer/0",
         LoadAsServiceType: "dynamic"
+    }],
+
+    // Configure settings for loading and performing query on the county layer. County layer will be queried only when the 'UseGeocoderService' is set to false
+    // Title: Name of the layer as defined in the map service.
+    // ServiceURL: URL of the layer. The URL should include the layer id.
+    // LoadAsServiceType: Supported service types are 'dynamic', 'feature', 'tiled' only. 
+    //                    Use this flag to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer. 
+    // SearchExpression: Used while searching counties without using Geocoder service.
+    // CountyDisplayField: Attribute that will be displayed in the search box when user searches for a particular county.
+    // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service. 
+    //                     When it is set to false then ServiceURL mentioned below will be used to perform location search.
+
+    CountyLayerData: {
+        Title: "CountyLayer",
+        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/PermitsCT/MapServer/0",
+        LoadAsServiceType: "dynamic",
+        SearchExpression: "NAME LIKE '${0}%'",
+        CountyDisplayField: "${NAME}",
+        UseGeocoderService: true
+    },
+
+    // Use this section to configure search settings for both Webmap and Operational layer implementations. All the fields in this section are mandatory.
+    // The Title and QueryLayerId fields should be the same as Title and QueryLayerId fields in InfoWindowSettings.
+    // Title: Name of the layer as defined in the webmap/operational layers. In case of webmap implementations, it must match layer name specified in webmap and in case of operational layers it should be the same as service name
+    // QueryLayerId: Layer index used for performing queries.
+    // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point. 
+    // ListFieldName: Attribute to be displayed in the InfoWindow when there are multiple permits at a particular point.
+    // SearchDisplayFields: Attribute that will be displayed in the search box when user searches for a particular permit.
+    // SearchExpression: Query to perform permit search.
+
+    SearchSettings: [{
+        Title: "PermitsCT",
+        QueryLayerId: "1",
+        ListDisplayText: "Permit Number",
+        ListFieldName: "${Permit_Number}",
+        SearchDisplayFields: "${Permit_Number} / ${Permittee_Name} / ${Permit_Type}",
+        SearchExpression: "UPPER(Permit_Number) LIKE '${0}%' OR UPPER(Permittee_Name) LIKE '${0}%' OR UPPER(Site_Location) LIKE '${0}%' OR UPPER(Permit_Type) LIKE '${0}%'"
+    }, {
+        Title: "ERP",
+        QueryLayerId: "0",
+        ListDisplayText: "Permit Number",
+        ListFieldName: "${ERP_PERMIT_NBR}",
+        SearchDisplayFields: "${ERP_PERMIT_NBR} / ${PROJECT_NAME} / ${ERP_PERMIT_TYPE_DESC}",
+        SearchExpression: "UPPER(ERP_PERMIT_NBR) LIKE '${0}%' OR UPPER(PROJECT_NAME) LIKE '${0}%' OR UPPER(ERP_PERMIT_TYPE_DESC) LIKE '${0}%' OR UPPER(PERMITTEE_NAME) LIKE '${0}%'"
+    }, {
+        Title: "CUP",
+        QueryLayerId: "0",
+        ListDisplayText: "Permit Number",
+        ListFieldName: "${WUP_PERMIT_NBR}",
+        SearchDisplayFields: "${WUP_PERMIT_NBR} / ${SITE_PROJECT_NAME} / ${WUP_PERMIT_TYPE_DESC}",
+        SearchExpression: "UPPER(WUP_PERMIT_NBR) LIKE '${0}%' OR UPPER(SITE_PROJECT_NAME) LIKE '${0}%' OR UPPER(WUP_PERMIT_TYPE_DESC) LIKE '${0}%' OR UPPER(PERMITTEE_NAME) LIKE '${0}%'"
     }],
 
     // Configure info-popup settings (The Title and QueryLayerId fields should be the same as Title and QueryLayerId fields in SearchSettings)
@@ -234,57 +285,6 @@ dojo.declare("js.config", null, {
         }]
     }],
 
-    // Configure settings for loading and performing query on the county layer. County layer will be queried only when the 'UseGeocoderService' is set to false
-    // Title: Name of the layer as defined in the map service.
-    // ServiceURL: URL of the layer. The URL should include the layer id.
-    // LoadAsServiceType: Supported service types are 'dynamic', 'feature', 'tiled' only.
-    //                    Use this flag to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer.
-    // SearchExpression: Used while searching counties without using Geocoder service.
-    // CountyDisplayField: Attribute that will be displayed in the search box when user searches for a particular county.
-    // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service.
-    //                     When it is set to false then ServiceURL mentioned below will be used to perform location search.
-
-    CountyLayerData: {
-        Title: "CountyLayer",
-        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/PermitsCT/MapServer/0",
-        LoadAsServiceType: "dynamic",
-        SearchExpression: "NAME LIKE '${0}%'",
-        CountyDisplayField: "${NAME}",
-        UseGeocoderService: true
-    },
-
-    // Use this section to configure search settings for both Webmap and Operational layer implementations. All the fields in this section are mandatory.
-    // The Title and QueryLayerId fields should be the same as Title and QueryLayerId fields in InfoWindowSettings.
-    // Title: Name of the layer as defined in the webmap/operational layers. In case of webmap implementations, it must match layer name specified in webmap and in case of operational layers it should be the same as service name.
-    // QueryLayerId: Layer index used for performing queries.
-    // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point.
-    // ListFieldName: Attribute to be displayed in the InfoWindow when there are multiple permits at a particular point
-    // SearchDisplayFields: Attribute that will be displayed in the search box when user searches for a particular permit.
-    // SearchExpression: Query to perform permit search.
-
-    SearchSettings: [{
-        Title: "PermitsCT",
-        QueryLayerId: "1",
-        ListDisplayText: "Permit Number",
-        ListFieldName: "${Permit_Number}",
-        SearchDisplayFields: "${Permit_Number} / ${Permittee_Name} / ${Permit_Type}",
-        SearchExpression: "UPPER(Permit_Number) LIKE '${0}%' OR UPPER(Permittee_Name) LIKE '${0}%' OR UPPER(Site_Location) LIKE '${0}%' OR UPPER(Permit_Type) LIKE '${0}%'"
-    }, {
-        Title: "ERP",
-        QueryLayerId: "0",
-        ListDisplayText: "Permit Number",
-        ListFieldName: "${ERP_PERMIT_NBR}",
-        SearchDisplayFields: "${ERP_PERMIT_NBR} / ${PROJECT_NAME} / ${ERP_PERMIT_TYPE_DESC}",
-        SearchExpression: "UPPER(ERP_PERMIT_NBR) LIKE '${0}%' OR UPPER(PROJECT_NAME) LIKE '${0}%' OR UPPER(ERP_PERMIT_TYPE_DESC) LIKE '${0}%' OR UPPER(PERMITTEE_NAME) LIKE '${0}%'"
-    }, {
-        Title: "CUP",
-        QueryLayerId: "0",
-        ListDisplayText: "Permit Number",
-        ListFieldName: "${WUP_PERMIT_NBR}",
-        SearchDisplayFields: "${WUP_PERMIT_NBR} / ${SITE_PROJECT_NAME} / ${WUP_PERMIT_TYPE_DESC}",
-        SearchExpression: "UPPER(WUP_PERMIT_NBR) LIKE '${0}%' OR UPPER(SITE_PROJECT_NAME) LIKE '${0}%' OR UPPER(WUP_PERMIT_TYPE_DESC) LIKE '${0}%' OR UPPER(PERMITTEE_NAME) LIKE '${0}%'"
-    }],
-
     // ServiceUrl is the REST end point for the reference overlay layer
     // DisplayOnLoad setting is used to show or hide the reference overlay layer. Reference overlay will be shown when it is set to true
 
@@ -308,10 +308,10 @@ dojo.declare("js.config", null, {
 
     // Info-popup is a popup dialog that gets displayed on selecting a feature
     // Set size of the info-Popup - select maximum height and width in pixels (not applicable for tabbed info-Popup)
-    // minimum height should be 270 for the info-popup in pixels
+    // Minimum height should be 270 for the info-popup in pixels
     InfoPopupHeight: 310,
 
-    // minimum width should be 330 for the info-popup in pixels
+    // Minimum width should be 330 for the info-popup in pixels
     InfoPopupWidth: 330,
 
     // Set string value to be shown for null or blank values
@@ -326,7 +326,7 @@ dojo.declare("js.config", null, {
     // Set locator settings such as locator symbol, size, display fields, match score
     // LocatorParameters: Parameters(text, outFields, maxLocations, bbox, outSR) used for address and location search.
     // AddressSearch: Candidates based on which the address search will be performed.
-    // LocationSearch: Attributes based on which the layers will be queried when a location search is performed.
+    // PlaceNameSearch: Attributes based on which the layers will be queried when a location search is performed.
     // AddressMatchScore: Setting the minimum score for filtering the candidate results.
     // MaxResults: Maximum number of locations to display in the results menu.
     LocatorSettings: {
@@ -339,26 +339,24 @@ dojo.declare("js.config", null, {
             DisplayText: "Address",
             LocatorDefaultAddress: "26650 Foamflower Blvd, Wesley Chapel, FL, 33544",
             LocatorParameters: {
-                SearchField: "text",
-                SearchResultField: "outFields",
-                SearchCountField: "maxLocations",
-                SearchBoundaryField: "bbox",
-                SpatialReferenceField: "outSR"
+                SearchField: "SingleLine",
+                SearchBoundaryField: "searchExtent"
             },
-            LocatorURL: "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/find",
-            CandidateFields: "Addr_type, Type, Score, Match_addr",
-            DisplayField: "${Match_addr}",
+            LocatorURL: "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer",
+            LocatorOutFields: ["Addr_Type", "Type", "Score", "Match_Addr", "xmin", "xmax", "ymin", "ymax"],
+            DisplayField: "${Match_Addr}",
             AddressMatchScore: {
                 Field: "Score",
                 Value: 80
             },
             AddressSearch: {
-                FieldName: 'Addr_type',
-                FieldValues: ["StreetAddress", "StreetName", "PointAddress"]
+                FilterFieldName: 'Addr_Type',
+                FilterFieldValues: ["StreetAddress", "StreetName", "PointAddress"]
             },
-            LocationSearch: {
-                FieldName: 'Type',
-                FieldValues: ['county', 'city', 'park', 'lake', 'mountain', 'state or province']
+            PlaceNameSearch: {
+                LocatorFieldValue: "POI",
+                FilterFieldName: 'Type',
+                FilterFieldValues: ['county', 'city', 'park', 'lake', 'mountain', 'state or province']
             },
             MaxResults: 200
         }, {

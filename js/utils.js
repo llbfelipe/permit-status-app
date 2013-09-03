@@ -109,11 +109,11 @@ function FetchQueryResults(result, index, mapPoint) {
             currentExtent = map.extent;
             if (!isMobileDevice) {
                 if (featureArray.length == 1) {
-                    //show details in an infowindow when a single result is fetched on map click
+                    //Show details in an infowindow when a single result is fetched on map click
                     dojo.dom.byId("tdList").style.display = "none";
                     ShowInfoWindowDetails(featureArray[0].attr.geometry, featureArray[0].attr.attributes, featureArray.length, featureArray[0].layerId, mapPoint, featureArray[0].fields);
                 } else {
-                    //show list of permits in an infowindow when multiple results are found at a particular point on map click
+                    //Show list of permits in an infowindow when multiple results are found at a particular point on map click
                     ShowPermitList(mapPoint, featureArray, featureArray[0].attr.geometry);
                     dojo.dom.byId("tdList").onclick = function () {
                         featureID = infoWindowLayerID = searchFeatureID = searchInfoWindowLayerID = null;
@@ -416,8 +416,7 @@ function SetFeatureZoomLevel(geometry, selectedMapPoint, flag) {
                 map.setExtent(mapExtent);
                 extent = "";
             }
-        }
-        else {
+        } else {
             SetZoomLevel(selectedMapPoint);
         }
     }
@@ -430,8 +429,7 @@ function SetZoomLevel(selectedMapPoint) {
         zoomDeferred.then(function () {
             SetInfoWindowPosition(selectedMapPoint, 1);
         });
-    }
-    else {
+    } else {
         SetInfoWindowPosition(selectedMapPoint, 1);
     }
 }
@@ -462,12 +460,9 @@ function SetInfoWindowPosition(selectedMapPoint, flag) {
 function CreateTableRow(tr, displayName, value) {
     var tdDisplayText = document.createElement("td");
     tdDisplayText.innerHTML = displayName;
-    tdDisplayText.className = 'tdDisplayField';
+    dojo['dom-class'].add(tdDisplayText, "tdDisplayField");
     var tdFieldName = document.createElement("td");
-    tdFieldName.style.width = "180px";
-    tdFieldName.vAlign = "top";
-    tdFieldName.style.paddingTop = "5px";
-    tdFieldName.style.paddingLeft = "3px";
+    dojo['dom-class'].add(tdFieldName, "tdFieldName");
     if (CheckMailFormat(value)) {
         tdFieldName.innerHTML = "";
         var mail = document.createElement("u");
@@ -492,7 +487,7 @@ function CreateTableRow(tr, displayName, value) {
         tdFieldName.appendChild(link);
         tdFieldName.style.wordBreak = "break-all";
     } else {
-        tdFieldName.className = "tdBreakAll";
+        dojo['dom-class'].add(tdFieldName, "tdBreakAll");
         tdFieldName.innerHTML = value;
         var x = value.split(" ");
         for (var i in x) {
@@ -1038,6 +1033,8 @@ function AddServiceLayers(layerId, layerURL, layerType) {
     }
 }
 
+//Add hosted services to the map
+
 function AddHostedServices(layerURL, layerId) {
     esri.request({
         url: layerURL + "?f=json",
@@ -1052,6 +1049,8 @@ function AddHostedServices(layerURL, layerId) {
         }
     });
 }
+
+//Create dynamic services
 
 function CreateDynamicServiceLayer(dynamicLayer, imageParams, layerId) {
     var dynamicMapService = new esri.layers.ArcGISDynamicMapServiceLayer(dynamicLayer, {
@@ -1113,8 +1112,7 @@ function CreateTiledServiceLayer(layerId, layerURL) {
     dojo.connect(tiledLayer, "onError", function (err) {
         if (tiledLayer.tileInfo && tiledLayer.tileInfo.lods.length == 0) {
             alert(dojo.string.substitute(messages.getElementsByTagName("noLODs")[0].childNodes[0].nodeValue, [tiledLayer.id]));
-        }
-        else {
+        } else {
             alert(messages.getElementsByTagName("layerLoadError")[0].childNodes[0].nodeValue + " " + err.message);
         }
     });

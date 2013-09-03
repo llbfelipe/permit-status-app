@@ -33,10 +33,10 @@ dojo.require("js.date");
 dojo.require("js.infoWindow");
 
 var map; //variable to store map object
-var isiOS = false;
-var isBrowser = false; //This variable is set to true when the app is running on desktop browsers
-var isMobileDevice = false; //This variable is set to true when the app is running on mobile device
-var isTablet = false; //This variable is set to true when the app is running on tablets
+var isiOS = false; //This variable will be set to 'true' if the application is accessed from iPhone or iPad
+var isBrowser = false; //This variable will be set to 'true' when the application is running on desktop browsers
+var isMobileDevice = false; //This variable will be set to 'true' when the application is running on mobile device 
+var isTablet = false; //This variable will be set to 'true' when the application is running on tablets
 var tempGraphicsLayerId = "tempGraphicsLayerID"; //variable to store temporary graphics layer id
 var mapPoint; //variable to store map point
 var selectedMapPoint; // variable to store selected map point
@@ -60,6 +60,7 @@ var extent; //variable to store the map extent
 var shareFlag = false;
 var mapExtent = null;
 var operationalLayers;
+var geometryService;
 
 //This initialization function is called when the DOM elements are ready
 
@@ -102,10 +103,9 @@ function Init() {
     } else {
         var imgBasemap = document.createElement('img');
         imgBasemap.src = "images/imgbasemap.png";
-        imgBasemap.className = "imgOptions";
+        dojo['dom-class'].add(imgBasemap, "imgOptions cursorPointer");
         imgBasemap.title = "Switch Basemap";
         imgBasemap.id = "imgBaseMap";
-        imgBasemap.style.cursor = "pointer";
         imgBasemap.onclick = function () {
             ShowBaseMaps();
         };
@@ -121,7 +121,7 @@ function Init() {
     dojo.dom.byId('lblAppName').innerHTML = responseObject.ApplicationName;
     searchSettings = responseObject.SearchSettings;
     countyLayerData = responseObject.CountyLayerData;
-
+    geometryService = new esri.tasks.GeometryService(responseObject.GeometryService);
     LoadErrorMessages();
     dojo.connect(dojo.dom.byId('imgHelp'), "onclick", function () {
         window.open(responseObject.HelpURL);
@@ -187,7 +187,7 @@ function InitializeAutocompleteSearch(evt, locatorText) {
                 return;
             }
         }
-        //validations for ignoring keys other than alphabets,numbers,numpad keys,comma,ctl+v,ctrl +x,delete,backspace while performing auto complete search.
+        //Validations for ignoring keys other than alphabets,numbers,numpad keys,comma,ctl+v,ctrl +x,delete,backspace while performing auto complete search.
         if ((!((evt.keyCode >= 46 && evt.keyCode < 58) || (evt.keyCode > 64 && evt.keyCode < 91) || (evt.keyCode > 95 && evt.keyCode < 106) || evt.keyCode == 8 || evt.keyCode == 110 || evt.keyCode == 188)) || (evt.keyCode == 86 && evt.ctrlKey) || (evt.keyCode == 88 && evt.ctrlKey)) {
             evt = (evt) ? evt : event;
             evt.cancelBubble = true;
@@ -255,12 +255,10 @@ function FetchWebMapData(response) {
         if (isNaN(lastIndex) || lastIndex == "") {
             if (lastIndex == "") {
                 serviceTitle[operationalLayerId] = webMapDetails.operationalLayers[i].url;
-            }
-            else {
+            } else {
                 serviceTitle[operationalLayerId] = webMapDetails.operationalLayers[i].url + "/";
             }
-        }
-        else {
+        } else {
             serviceTitle[operationalLayerId] = webMapDetails.operationalLayers[i].url.substring(0, webMapDetails.operationalLayers[i].url.length - 1);
         }
     }
@@ -271,7 +269,7 @@ function FetchWebMapData(response) {
             for (var j = 0; j < webMapDetails.operationalLayers.length; j++) {
                 if (webMapDetails.operationalLayers[j].title && serviceTitle[webMapDetails.operationalLayers[j].title] && (webMapDetails.operationalLayers[j].title == searchSettings[index].Title)) {
                     if (webMapDetails.operationalLayers[j].layers) {
-                        //fetching infopopup data in case the layers are added as dynamic layers in the webmap
+                        //Fetching infopopup data in case the layers are added as dynamic layers in the webmap
                         for (var k = 0; k < webMapDetails.operationalLayers[j].layers.length; k++) {
                             var layerInfo = webMapDetails.operationalLayers[j].layers[k];
                             if (webMapDetails.operationalLayers[j].layers[k].popupInfo) {
@@ -296,7 +294,7 @@ function FetchWebMapData(response) {
                         }
                     } else {
                         if (webMapDetails.operationalLayers[j].popupInfo) {
-                            //fetching infopopup data in case the layers are added as feature layers in the webmap
+                            //Fetching infopopup data in case the layers are added as feature layers in the webmap
                             operationalLayers[index] = {};
                             operationalLayers[index]["ServiceURL"] = webMapDetails.operationalLayers[j].url;
                             if (webMapDetails.operationalLayers[j].popupInfo.title.split(": ").length > 1) {
@@ -323,7 +321,7 @@ function FetchWebMapData(response) {
         }
     }
     GetCountyDataFromWebmap(webMapDetails);
-    //overriding the infowindow coming from the webmap
+    //Overriding the infowindow coming from the webmap
     dojo.destroy(map.infoWindow);
     var infoWindow = new js.InfoWindow({
         domNode: dojo.create("div", null, dojo.dom.byId("map"))
@@ -448,7 +446,7 @@ function InitializeMap() {
         MapOnLoad();
     });
     CreateBaseMapComponent();
-    //The following code is for adding reference overlay layer above the map
+    //The following code is for adding reference overlay layer to the map
     if (responseObject.ReferenceOverlayLayer) {
         if (responseObject.ReferenceOverlayLayer.DisplayOnLoad && responseObject.ReferenceOverlayLayer.ServiceUrl) {
             var layerType = responseObject.ReferenceOverlayLayer.ServiceUrl.substring(((responseObject.ReferenceOverlayLayer.ServiceUrl.lastIndexOf("/")) + 1), (responseObject.ReferenceOverlayLayer.ServiceUrl.length));
@@ -501,13 +499,11 @@ function MapOnLoad() {
                 if (lastIndex == "") {
                     var layerTitle = str[str.length - 3];
                     serviceTitle[layerTitle] = operationalLayers[i].ServiceURL;
-                }
-                else {
+                } else {
                     var layerTitle = str[str.length - 2];
                     serviceTitle[layerTitle] = operationalLayers[i].ServiceURL + "/";
                 }
-            }
-            else {
+            } else {
                 var layerTitle = str[str.length - 3];
                 serviceTitle[layerTitle] = operationalLayers[i].ServiceURL.substring(0, operationalLayers[i].ServiceURL.length - 1);
             }
@@ -532,13 +528,12 @@ function MapOnLoad() {
             if (count != responseObject.InfoWindowSettings.length) {
                 alert(messages.getElementsByTagName("titleNotMatching")[0].childNodes[0].nodeValue);
             }
-        }
-        else {
+        } else {
             alert(messages.getElementsByTagName("lengthDoNotMatch")[0].childNodes[0].nodeValue);
         }
     }
     var url = esri.urlToObject(window.location.toString());
-    //code for sharing the application
+    //Code for sharing the application
     if (url.query) {
         if (url.query.extent.split("$point=").length > 1) {
             var tempSelectedPoint = url.query.extent.split("$point=")[1];
@@ -553,7 +548,7 @@ function MapOnLoad() {
             var selectedPermit = tempSelectedPoint.split("$currentExtent=")[1];
 
             extentDeferred.then(function () {
-                //sharing infowindow when we get an infowindow or permit list on map click
+                //Sharing infowindow when we get an infowindow or permit list on map click
                 var splitPoint = selectedPoint.split(',');
                 var sPoint = new esri.geometry.Point(parseFloat(splitPoint[0]), parseFloat(splitPoint[1]), map.spatialReference);
                 var tempFeatureID = tempSelectedPoint.split("$featureID=")[1];
@@ -566,7 +561,7 @@ function MapOnLoad() {
                 FindPermits(sPoint);
             });
         } else if (url.query.extent.split("$searchFeatureID=").length > 0) {
-            //sharing infowindow when we user performs a location or permit search and locates a permit on the map
+            //Sharing infowindow when we user performs a location or permit search and locates a permit on the map
             var tempFeatureID = url.query.extent.split("$searchFeatureID=")[1];
             if (tempFeatureID) {
                 if (tempFeatureID.split("$searchInfoWindowLayerID=").length > 1) {
@@ -655,12 +650,10 @@ function AddLayersToMap() {
                 if (isNaN(lastIndex) || lastIndex == "") {
                     if (lastIndex == "") {
                         var layerTitle = str[str.length - 3];
-                    }
-                    else {
+                    } else {
                         var layerTitle = str[str.length - 2];
                     }
-                }
-                else {
+                } else {
                     var layerTitle = str[str.length - 3];
                 }
                 AddServiceLayers(layerTitle, operationalLayers[index].ServiceURL, operationalLayers[index].LoadAsServiceType);

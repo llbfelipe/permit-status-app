@@ -50,10 +50,10 @@ function CreateBaseMapComponent() {
 
 function CreateBaseMapElement(baseMapLayerInfo) {
     var divContainer = document.createElement("div");
-    divContainer.className = "baseMapContainerNode";
+    dojo['dom-class'].add(divContainer, "baseMapContainerNode");
     var imgThumbnail = document.createElement("img");
     imgThumbnail.src = baseMapLayerInfo.ThumbnailSource;
-    imgThumbnail.className = "basemapThumbnail";
+    dojo['dom-class'].add(imgThumbnail, "basemapThumbnail");
     imgThumbnail.id = "imgThumbNail" + baseMapLayerInfo.Key;
     imgThumbnail.setAttribute("layerId", baseMapLayerInfo.Key);
     imgThumbnail.onclick = function () {
@@ -62,7 +62,7 @@ function CreateBaseMapElement(baseMapLayerInfo) {
     };
     var spanBaseMapText = document.createElement("span");
     spanBaseMapText.id = "spanBaseMapText" + baseMapLayerInfo.Key;
-    spanBaseMapText.className = "basemapLabel";
+    dojo['dom-class'].add(spanBaseMapText, "basemapLabel");
     spanBaseMapText.innerHTML = baseMapLayerInfo.Name;
     divContainer.appendChild(imgThumbnail);
     divContainer.appendChild(spanBaseMapText);

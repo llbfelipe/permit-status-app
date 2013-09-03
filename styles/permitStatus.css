@@ -27,7 +27,7 @@
 /* 6.  Set the styles for search container      - { Style(s) to look for: divAddressScrollContainer, divAddressScrollContent, tblHeader, divAddressPlaceHolder, txtAddress,
                                                                           imgLocate, divFreezeAddressContainer, divAddressList, bottomBorder, tdSearchByAddress, tdSearchByUnSelectedAddress,
                                                                           tdSearchByLocation, tdSearchByUnSelectedLocation, tdSearchByPermit, tdSearchByUnSelectedPermit,
-                                                                          imgSearchLoader, tdDisplayField}*/
+                                                                          imgSearchLoader, tdDisplayField, tdFieldName}*/
 /* 7.Set the Styles for BaseMap Container       - { Style(s) to look for: basemapThumbnail,baseMapContainerNode,basemapLabel,divLayerContentHolder}*/
 /* 8.  Set the styles for info window           - { Style(s) to look for: divInfoContainer, divTriangle, dj_ie .divInfoWindowContainer,divInfoWindowContainer .container,
                                                                           imgInfoWindow, divInfoContainer, divDetails, divPermitScrollContent, divInfoDetailsScroll,divPermitDataScrollContainer
@@ -483,6 +483,14 @@ body, html
     height: 18px;
     vertical-align: top !important;
     padding-top: 5px;
+}
+
+.tdFieldName
+{
+    width: 180px;
+    vertical-align: top;
+    padding-top: 5px;
+    padding-left: 3px;
 }
 
 .tdHeaderIcons
