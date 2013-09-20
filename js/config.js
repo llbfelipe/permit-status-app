@@ -115,11 +115,11 @@ dojo.declare("js.config", null, {
     // Configure settings for loading and performing query on the county layer. County layer will be queried only when the 'UseGeocoderService' is set to false
     // Title: Name of the layer as defined in the map service.
     // ServiceURL: URL of the layer. The URL should include the layer id.
-    // LoadAsServiceType: Supported service types are 'dynamic', 'feature', 'tiled' only. 
-    //                    Use this flag to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer. 
+    // LoadAsServiceType: Supported service types are 'dynamic', 'feature', 'tiled' only.
+    //                    Use this flag to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer.
     // SearchExpression: Used while searching counties without using Geocoder service.
     // CountyDisplayField: Attribute that will be displayed in the search box when user searches for a particular county.
-    // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service. 
+    // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service.
     //                     When it is set to false then ServiceURL mentioned below will be used to perform location search.
 
     CountyLayerData: {
@@ -135,7 +135,7 @@ dojo.declare("js.config", null, {
     // The Title and QueryLayerId fields should be the same as Title and QueryLayerId fields in InfoWindowSettings.
     // Title: Name of the layer as defined in the webmap/operational layers. In case of webmap implementations, it must match layer name specified in webmap and in case of operational layers it should be the same as service name
     // QueryLayerId: Layer index used for performing queries.
-    // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point. 
+    // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point.
     // ListFieldName: Attribute to be displayed in the InfoWindow when there are multiple permits at a particular point.
     // SearchDisplayFields: Attribute that will be displayed in the search box when user searches for a particular permit.
     // SearchExpression: Query to perform permit search.
@@ -324,11 +324,29 @@ dojo.declare("js.config", null, {
     // ADDRESS SEARCH SETTINGS
     // ------------------------------------------------------------------------------------------------------------------------
     // Set locator settings such as locator symbol, size, display fields, match score
-    // LocatorParameters: Parameters(text, outFields, maxLocations, bbox, outSR) used for address and location search.
+    // DisplayText: Set the title for type of search e.g. 'Address', 'Location', 'Permit'.
+    // DefaultLocatorSymbol: Set the image path for locator symbol. e.g. pushpin.
+    // MarkupSymbolSize: Set the image dimensions in pixels for locator symbol.
+    // LocatorDefaultAddress: Set the default address to search.
+    // LocatorParameters: Required parameters to search the address candidates.
+    //   SearchField: The name of geocode service input field that accepts the search address. e.g. 'SingleLine' or 'Address'.
+    //   SearchBoundaryField: The name of geocode service input field that accepts an extent to search an input address within. e.g."searchExtent".
+    // LocatorURL: Specify URL for geocode service.
+    // LocatorOutFields: The list of outfields to be included in the result set provided by geocode service.
+    // DisplayField: Specify the outfield of geocode service. The value in this field will be displayed for search results in the application.
+    // AddressMatchScore: Required parameters to specify the accuracy of address match.
+    //   Field: Set the outfield of geocode service that contains the Address Match Score.
+    //   Value: Set the minimum score value for filtering the candidate results. The value should a number between 0-100.
     // AddressSearch: Candidates based on which the address search will be performed.
+    //   FilterFieldName: Set the outfield that contains the match level for geocode request. e.g. For World GeoCode, the field that contains the match level is 'Addr_type'.
+    //   FilterFieldValues: Specify the desired match levels to filter address search results. e.g. 'StreetAddress', 'StreetName' etc.
     // PlaceNameSearch: Attributes based on which the layers will be queried when a location search is performed.
-    // AddressMatchScore: Setting the minimum score for filtering the candidate results.
-    // MaxResults: Maximum number of locations to display in the results menu.
+    //   LocatorFieldValue: Set the match level for county/place search. e.g. 'POI' will contain all administrative boundary
+    //   FilterFieldName: Set the feature type for results returned by the geocode request. e.g. For World GeoCode, the field that contains the feature type is 'Type'.
+    //   FilterFieldValues: Specify the feature types to filter search results. e.g. 'county', 'city' etc.
+    // LocatorDefaultLocation: Set the default location to search.
+    // LocatorDefaultPermit: Set the default permit to search.
+    
     LocatorSettings: {
         DefaultLocatorSymbol: "images/redpushpin.png",
         MarkupSymbolSize: {
@@ -357,8 +375,7 @@ dojo.declare("js.config", null, {
                 LocatorFieldValue: "POI",
                 FilterFieldName: 'Type',
                 FilterFieldValues: ['county', 'city', 'park', 'lake', 'mountain', 'state or province']
-            },
-            MaxResults: 200
+            }
         }, {
             DisplayText: "Location",
             LocatorDefaultLocation: "Hernando County"
