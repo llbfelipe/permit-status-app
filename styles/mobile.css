@@ -202,12 +202,6 @@ html, body
     height: 40px;
 }
 
-.tdBreak
-{
-    word-wrap: break-word;
-    word-break: break-all;
-}
-
 /*---------------------------------------------------------------------------------------------------------*/
 /*Styles for share application container*/
 

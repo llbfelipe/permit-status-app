@@ -26,7 +26,7 @@
 /* 4.  Set the styles for BaseMap container     - { Style(s) to look for: divLayerContainer, divLayerHolder, basemapThumbnail, baseMapContainerNode, selectedBaseMap}*/
 /* 5.  Set styles for header icons              - { Style(s) to look for: imgApp}*/
 /* 6.  Set the styles for info window           - { Style(s) to look for: divInfoContainer, divInfoContent, infoOptions, divInfoDetails,
-                                                                          scrollbar_container, scrollbar_content, trRowHeight, tdBreak }*/
+                                                                          scrollbar_container, scrollbar_content, trRowHeight }*/
 /* 7.  Set the styles for esri slider           - { Style(s) to look for: esriSimpleSlider}*/
 
 /*--------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -201,11 +201,6 @@ html, body
 .trRowHeight
 {
     height: 20px;
-}
-
-.tdBreak
-{
-    word-wrap: break-word;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

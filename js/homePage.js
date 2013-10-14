@@ -35,7 +35,7 @@ dojo.require("js.infoWindow");
 var map; //variable to store map object
 var isiOS = false; //This variable will be set to 'true' if the application is accessed from iPhone or iPad
 var isBrowser = false; //This variable will be set to 'true' when the application is running on desktop browsers
-var isMobileDevice = false; //This variable will be set to 'true' when the application is running on mobile device 
+var isMobileDevice = false; //This variable will be set to 'true' when the application is running on mobile device
 var isTablet = false; //This variable will be set to 'true' when the application is running on tablets
 var tempGraphicsLayerId = "tempGraphicsLayerID"; //variable to store temporary graphics layer id
 var mapPoint; //variable to store map point
@@ -248,6 +248,7 @@ function FetchWebMapData(response) {
     baseMapId = response.itemInfo.itemData.baseMap.baseMapLayers[0].id;
     var webMapDetails = response.itemInfo.itemData;
     var serviceTitle = [];
+    var p = 0;
     for (var i = 0; i < webMapDetails.operationalLayers.length; i++) {
         var operationalLayerId = dojo.string.trim(webMapDetails.operationalLayers[i].title);
         var str = webMapDetails.operationalLayers[i].url.split('/');
@@ -273,8 +274,9 @@ function FetchWebMapData(response) {
                         for (var k = 0; k < webMapDetails.operationalLayers[j].layers.length; k++) {
                             var layerInfo = webMapDetails.operationalLayers[j].layers[k];
                             if (webMapDetails.operationalLayers[j].layers[k].popupInfo) {
-                                operationalLayers[index] = {};
-                                operationalLayers[index]["ServiceURL"] = webMapDetails.operationalLayers[j].url + "/" + webMapDetails.operationalLayers[j].layers[k].id;
+                                operationalLayers[p] = {};
+                                operationalLayers[p]["ServiceURL"] = webMapDetails.operationalLayers[j].url + "/" + webMapDetails.operationalLayers[j].layers[k].id;
+                                p++;
                                 if (layerInfo.popupInfo.title.split(": ").length > 1) {
                                     searchSettings[index]["InfoWindowHeader"] = "$" + layerInfo.popupInfo.title.split(": ")[1];
                                 } else {
@@ -283,11 +285,13 @@ function FetchWebMapData(response) {
                                 GetMobileCalloutContentField(index);
                                 searchSettings[index]["InfoWindowData"] = [];
                                 for (var field in layerInfo.popupInfo.fieldInfos) {
-                                    if (layerInfo.popupInfo.fieldInfos[field].visible) {
-                                        searchSettings[index]["InfoWindowData"].push({
-                                            "DisplayText": layerInfo.popupInfo.fieldInfos[field].label + ":",
-                                            "FieldName": "${" + layerInfo.popupInfo.fieldInfos[field].fieldName + "}"
-                                        });
+                                    if (layerInfo.popupInfo.fieldInfos.hasOwnProperty(field)) {
+                                        if (layerInfo.popupInfo.fieldInfos[field].visible) {
+                                            searchSettings[index]["InfoWindowData"].push({
+                                                "DisplayText": layerInfo.popupInfo.fieldInfos[field].label + ":",
+                                                "FieldName": "${" + layerInfo.popupInfo.fieldInfos[field].fieldName + "}"
+                                            });
+                                        }
                                     }
                                 }
                             }
@@ -295,8 +299,9 @@ function FetchWebMapData(response) {
                     } else {
                         if (webMapDetails.operationalLayers[j].popupInfo) {
                             //Fetching infopopup data in case the layers are added as feature layers in the webmap
-                            operationalLayers[index] = {};
-                            operationalLayers[index]["ServiceURL"] = webMapDetails.operationalLayers[j].url;
+                            operationalLayers[p] = {};
+                            operationalLayers[p]["ServiceURL"] = webMapDetails.operationalLayers[j].url;
+                            p++;
                             if (webMapDetails.operationalLayers[j].popupInfo.title.split(": ").length > 1) {
                                 searchSettings[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[j].popupInfo.title.split(": ")[1];
                             } else {
@@ -305,11 +310,13 @@ function FetchWebMapData(response) {
                             searchSettings[index]["InfoWindowContent"] = "${" + webMapDetails.operationalLayers[j].layerObject.displayField + "}";
                             searchSettings[index]["InfoWindowData"] = [];
                             for (var field in webMapDetails.operationalLayers[j].popupInfo.fieldInfos) {
-                                if (webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].visible) {
-                                    searchSettings[index]["InfoWindowData"].push({
-                                        "DisplayText": webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].label + ":",
-                                        "FieldName": "${" + webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].fieldName + "}"
-                                    });
+                                if (webMapDetails.operationalLayers[j].popupInfo.fieldInfos.hasOwnProperty(field)) {
+                                    if (webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].visible) {
+                                        searchSettings[index]["InfoWindowData"].push({
+                                            "DisplayText": webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].label + ":",
+                                            "FieldName": "${" + webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].fieldName + "}"
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -337,13 +344,15 @@ function GetCountyDataFromWebmap(webMapDetails) {
     for (var i = 0; i < webMapDetails.operationalLayers.length; i++) {
         var countyLayerId = webMapDetails.operationalLayers[i].title;
         if (webMapDetails.operationalLayers[i].layers) {
-            for (var k = 0; k < webMapDetails.operationalLayers[i].layerObject.layerInfos.length; k++) {
-                if (webMapDetails.operationalLayers[i].layerObject.__popupIds) {
-                    if (webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id != webMapDetails.operationalLayers[i].layerObject.__popupIds[k]) {
+            if (webMapDetails.operationalLayers[i].layerObject) {
+                for (var k = 0; k < webMapDetails.operationalLayers[i].layerObject.layerInfos.length; k++) {
+                    if (webMapDetails.operationalLayers[i].layerObject.__popupIds) {
+                        if (webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id != webMapDetails.operationalLayers[i].layerObject.__popupIds[k]) {
+                            FetchCountyLayerData(countyLayerId, webMapDetails.operationalLayers[i].url + "/" + webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id);
+                        }
+                    } else {
                         FetchCountyLayerData(countyLayerId, webMapDetails.operationalLayers[i].url + "/" + webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id);
                     }
-                } else {
-                    FetchCountyLayerData(countyLayerId, webMapDetails.operationalLayers[i].url + "/" + webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id);
                 }
             }
         } else {
@@ -359,8 +368,13 @@ function GetCountyDataFromWebmap(webMapDetails) {
 function FetchCountyLayerData(operationalLayerId, url) {
     countyLayerData.Title = operationalLayerId;
     countyLayerData.ServiceURL = url;
-    countyLayerData.SearchExpression = responseObject.CountyLayerData.SearchExpression;
-    countyLayerData.CountyDisplayField = responseObject.CountyLayerData.CountyDisplayField;
+    if ((dojo.string.trim(responseObject.CountyLayerData.SearchExpression) && dojo.string.trim(responseObject.CountyLayerData.CountyDisplayField)) && (countyLayerData.UseGeocoderService == true || countyLayerData.UseGeocoderService == false)) {
+        countyLayerData.SearchExpression = responseObject.CountyLayerData.SearchExpression;
+        countyLayerData.CountyDisplayField = responseObject.CountyLayerData.CountyDisplayField;
+    }
+    else if (((!dojo.string.trim(responseObject.CountyLayerData.SearchExpression)) || (!dojo.string.trim(responseObject.CountyLayerData.CountyDisplayField))) && (responseObject.CountyLayerData.UseGeocoderService == false)) {
+        alert(messages.getElementsByTagName("noCountyLayer")[0].childNodes[0].nodeValue);
+    }
     countyLayerData.UseGeocoderService = responseObject.CountyLayerData.UseGeocoderService;
 }
 
@@ -493,21 +507,28 @@ function MapOnLoad() {
     if (!isWebMap) {
         var serviceTitle = [];
         for (var i = 0; i < operationalLayers.length; i++) {
-            var str = operationalLayers[i].ServiceURL.split('/');
-            var lastIndex = str[str.length - 1];
-            if (isNaN(lastIndex) || lastIndex == "") {
-                if (lastIndex == "") {
-                    var layerTitle = str[str.length - 3];
-                    serviceTitle[layerTitle] = operationalLayers[i].ServiceURL;
+            if (operationalLayers[i].ServiceURL) {
+                var str = operationalLayers[i].ServiceURL.split('/');
+                var lastIndex = str[str.length - 1];
+                if (isNaN(lastIndex) || lastIndex == "") {
+                    if (lastIndex == "") {
+                        var layerTitle = str[str.length - 3];
+                        serviceTitle[layerTitle] = operationalLayers[i].ServiceURL;
+                    } else {
+                        var layerTitle = str[str.length - 2];
+                        serviceTitle[layerTitle] = operationalLayers[i].ServiceURL + "/";
+                    }
                 } else {
-                    var layerTitle = str[str.length - 2];
-                    serviceTitle[layerTitle] = operationalLayers[i].ServiceURL + "/";
+                    var layerTitle = str[str.length - 3];
+                    serviceTitle[layerTitle] = operationalLayers[i].ServiceURL.substring(0, operationalLayers[i].ServiceURL.length - 1);
                 }
-            } else {
-                var layerTitle = str[str.length - 3];
-                serviceTitle[layerTitle] = operationalLayers[i].ServiceURL.substring(0, operationalLayers[i].ServiceURL.length - 1);
+            }
+            else {
+                operationalLayers.splice(i, 1);
+                i--;
             }
         }
+
         if (responseObject.InfoWindowSettings.length == searchSettings.length) {
             var count = 0;
             for (var index = 0; index < searchSettings.length; index++) {
@@ -523,6 +544,12 @@ function MapOnLoad() {
                     }
                 } else {
                     alert(messages.getElementsByTagName("layerTitleError")[0].childNodes[0].nodeValue);
+                }
+            }
+            for (var x = 0; x < searchSettings.length; x++) {
+                if (!searchSettings[x].QueryURL) {
+                    searchSettings.splice(x, 1);
+                    x--;
                 }
             }
             if (count != responseObject.InfoWindowSettings.length) {
@@ -575,7 +602,6 @@ function MapOnLoad() {
             ShareInfoWindow();
         }
     }
-
     extent = GetQueryString('extent');
     if (extent == "") {
         currentExtent = true;
@@ -584,9 +610,10 @@ function MapOnLoad() {
         var mapExtent = responseObject.DefaultExtent.split(',');
         if (extent == "") {
             mapExtent = new esri.geometry.Extent(parseFloat(mapExtent[0]), parseFloat(mapExtent[1]), parseFloat(mapExtent[2]), parseFloat(mapExtent[3]), map.spatialReference);
-            map.setExtent(mapExtent);
+            map.setExtent(mapExtent, true);
         }
     }
+
     if (!currentExtent) {
         mapExtent = extent.split(',');
         mapExtent = new esri.geometry.Extent(parseFloat(mapExtent[0]), parseFloat(mapExtent[1]), parseFloat(mapExtent[2]), parseFloat(mapExtent[3]), map.spatialReference);
@@ -624,9 +651,9 @@ function CreateSliderHomeButton() {
             if (!isWebMap) {
                 var startExtent = responseObject.DefaultExtent.split(',');
                 startExtent = new esri.geometry.Extent(parseFloat(startExtent[0]), parseFloat(startExtent[1]), parseFloat(startExtent[2]), parseFloat(startExtent[3]), map.spatialReference);
-                map.setExtent(startExtent);
+                map.setExtent(startExtent, true);
             } else {
-                map.setExtent(webmapExtent);
+                map.setExtent(webmapExtent, true);
             }
         }
     }, dojo.query(".esriSimpleSliderIncrementButton")[0], "after");
@@ -641,8 +668,16 @@ function AddLayersToMap() {
 
     if (!isWebMap) {
         setTimeout(function () {
-            if (countyLayerData) {
-                AddServiceLayers(countyLayerData.Title, countyLayerData.ServiceURL, countyLayerData.LoadAsServiceType);
+            if (countyLayerData && (dojo.string.trim(countyLayerData.ServiceURL) && dojo.string.trim(countyLayerData.SearchExpression) && dojo.string.trim(countyLayerData.CountyDisplayField)) && (countyLayerData.UseGeocoderService == true || countyLayerData.UseGeocoderService == false)) {
+                if (countyLayerData.LoadAsServiceType) {
+                    AddServiceLayers(countyLayerData.Title, countyLayerData.ServiceURL, countyLayerData.LoadAsServiceType);
+                }
+                else {
+                    AddServiceLayers(countyLayerData.Title, countyLayerData.ServiceURL, "dynamic");
+                }
+            }
+            else if (countyLayerData && ((!dojo.string.trim(countyLayerData.ServiceURL)) || (!dojo.string.trim(countyLayerData.SearchExpression)) || (!dojo.string.trim(countyLayerData.CountyDisplayField))) && (countyLayerData.UseGeocoderService == false)) {
+                alert(messages.getElementsByTagName("noCountyLayer")[0].childNodes[0].nodeValue);
             }
             for (var index = 0; index < operationalLayers.length; index++) {
                 var str = operationalLayers[index].ServiceURL.split('/');

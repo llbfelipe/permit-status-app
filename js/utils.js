@@ -204,8 +204,10 @@ function ShowMobileInfoDetails(mapPoint, featureArray, geometry) {
 
 function FormatNullValues(attributes) {
     for (var i in attributes) {
-        if (!attributes[i]) {
-            attributes[i] = responseObject.ShowNullValueAs;
+        if (attributes.hasOwnProperty(i)) {
+            if (!attributes[i]) {
+                attributes[i] = responseObject.ShowNullValueAs;
+            }
         }
     }
 }
@@ -218,33 +220,33 @@ function ShowPermitList(mapPoint, result, geometry) {
     dojo.dom.byId("tdList").style.display = "none";
     dojo.dom.byId("divInfoDetails").style.display = "none";
     dojo['dom-construct'].empty(dojo.dom.byId("divPermitScrollContent"));
-    var table = document.createElement("table");
-    dojo.dom.byId("divPermitScrollContent").appendChild(table);
-    table.style.width = "100%";
-    table.style.textAlign = "left";
-    table.style.overflow = "hidden";
-    var tBody = document.createElement("tbody");
-    table.appendChild(tBody);
+    var tblPermitList = document.createElement("table");
+    dojo.dom.byId("divPermitScrollContent").appendChild(tblPermitList);
+    tblPermitList.style.width = "100%";
+    tblPermitList.style.textAlign = "left";
+    tblPermitList.style.overflow = "hidden";
+    var tbodyPermitList = document.createElement("tbody");
+    tblPermitList.appendChild(tbodyPermitList);
 
     for (var i = 0; i < result.length; i++) {
-        var tr = document.createElement("tr");
-        tr.className = "trRowHeight";
+        var trPermitList = document.createElement("tr");
+        trPermitList.className = "trRowHeight";
         for (var j = 0; j < featureArray[i].fields.length; j++) {
             if (featureArray[i].fields[j].type == "esriFieldTypeOID") {
                 var objID = featureArray[i].fields[j].name;
                 break;
             }
         }
-        tr.id = featureArray[i].attr.attributes[objID];
-        tBody.appendChild(tr);
-        var td = document.createElement("td");
-        td.className = "cursorPointer";
-        td.innerHTML = searchSettings[result[i].layerId].ListDisplayText;
+        trPermitList.id = featureArray[i].attr.attributes[objID];
+        tbodyPermitList.appendChild(trPermitList);
+        var tdDisplayText = document.createElement("td");
+        tdDisplayText.className = "cursorPointer";
+        tdDisplayText.innerHTML = searchSettings[result[i].layerId].ListDisplayText;
 
-        var td1 = document.createElement("td");
-        td1.className = "cursorPointer";
+        var tdFieldName = document.createElement("td");
+        tdFieldName.className = "cursorPointer";
         try {
-            td1.innerHTML = dojo.string.substitute(searchSettings[result[i].layerId].ListFieldName, result[i].attr.attributes);
+            tdFieldName.innerHTML = dojo.string.substitute(searchSettings[result[i].layerId].ListFieldName, result[i].attr.attributes);
         } catch (e) {
             alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
         }
@@ -252,13 +254,13 @@ function ShowPermitList(mapPoint, result, geometry) {
         if (featureArray[i].attr.attributes[objID] == Number(featureID)) {
             var index = i;
         }
-        tr.onclick = function () {
+        trPermitList.onclick = function () {
             featureID = this.id;
             infoWindowLayerID = searchSettings[featureArray[this.rowIndex].layerId].Title;
             ShowInfoWindowDetails(featureArray[this.rowIndex].attr.geometry, featureArray[this.rowIndex].attr.attributes, featureArray.length, featureArray[this.rowIndex].layerId, mapPoint, featureArray[this.rowIndex].fields);
         };
-        tr.appendChild(td);
-        tr.appendChild(td1);
+        trPermitList.appendChild(tdDisplayText);
+        trPermitList.appendChild(tdFieldName);
     }
     if (!isMobileDevice) {
         dojo.dom.byId('divInfoContent').style.display = "block";
@@ -294,8 +296,10 @@ function ShowInfoWindowDetails(geometry, attributes, featureLength, layer, mapPo
         dojo.dom.byId("tdList").style.display = "block";
     }
     for (var index in attributes) {
-        if (!attributes[index] || attributes[index] == " ") {
-            attributes[index] = responseObject.ShowNullValueAs;
+        if (attributes.hasOwnProperty(index)) {
+            if (!attributes[index] || attributes[index] == " ") {
+                attributes[index] = responseObject.ShowNullValueAs;
+            }
         }
     }
     try {
@@ -331,8 +335,8 @@ function ShowInfoWindowDetails(geometry, attributes, featureLength, layer, mapPo
     dojo['dom-construct'].empty(dojo.dom.byId('tblInfoDetails'));
     dojo.dom.byId('tdInfoHeader').innerHTML = value;
     var tblInfoDetails = dojo.dom.byId('tblInfoDetails');
-    var tbody = document.createElement("tbody");
-    tblInfoDetails.appendChild(tbody);
+    var tbodyInfoDetails = document.createElement("tbody");
+    tblInfoDetails.appendChild(tbodyInfoDetails);
     for (var j = 0; j < fields.length; j++) {
         if (fields[j].type == "esriFieldTypeDate") {
             if (attributes[fields[j].name]) {
@@ -349,16 +353,16 @@ function ShowInfoWindowDetails(geometry, attributes, featureLength, layer, mapPo
     }
     try {
         for (var index = 0; index < searchSettings[layer].InfoWindowData.length; index++) {
-            var tr = document.createElement("tr");
-            tbody.appendChild(tr);
+            var trInfoDetails = document.createElement("tr");
+            tbodyInfoDetails.appendChild(trInfoDetails);
             if (searchSettings[layer].InfoWindowData[index].DisplayText && (searchSettings[layer].InfoWindowData[index].DisplayText != "")) {
-                CreateTableRow(tr, searchSettings[layer].InfoWindowData[index].DisplayText, dojo.string.substitute(searchSettings[layer].InfoWindowData[index].FieldName, attributes));
+                CreateTableRow(trInfoDetails, searchSettings[layer].InfoWindowData[index].DisplayText, dojo.string.substitute(searchSettings[layer].InfoWindowData[index].FieldName, attributes));
             } else {
                 var tempValue = searchSettings[layer].InfoWindowData[index].FieldName.split("{");
                 var fieldName = tempValue[1].split("}");
                 for (var j = 0; j < fields.length; j++) {
                     if (fields[j].alias == fieldName[0]) {
-                        CreateTableRow(tr, fields[j].alias + ":", dojo.string.substitute(searchSettings[layer].InfoWindowData[index].FieldName, attributes));
+                        CreateTableRow(trInfoDetails, fields[j].alias + ":", dojo.string.substitute(searchSettings[layer].InfoWindowData[index].FieldName, attributes));
                         break;
                     }
                 }
@@ -402,10 +406,10 @@ function SetFeatureZoomLevel(geometry, selectedMapPoint, flag) {
         if (responseObject.ZoomToPolygonGeometry) {
             map.infoWindow.hide();
             //set the extent of the polygon and move it down vertically so that the infowindow is completely visible
-            var ext = geometry.getExtent().expand(5);
+            var ext = geometry.getExtent().expand(3);
             ext.ymin = ext.ymin + ext.getHeight() / 4;
             ext.ymax = ext.ymax + ext.getHeight() / 4;
-            map.setExtent(ext);
+            map.setExtent(ext, true);
             var screenPoint = map.toScreen(selectedMapPoint);
             screenPoint.y = map.height - screenPoint.y;
             map.infoWindow.show(screenPoint);
@@ -437,7 +441,7 @@ function SetZoomLevel(selectedMapPoint) {
 // Position the infowindow to the center of the map
 
 function SetInfoWindowPosition(selectedMapPoint, flag) {
-    var extentDeferred = map.setExtent(CalculateMapExtent(selectedMapPoint));
+    var extentDeferred = map.setExtent(CalculateMapExtent(selectedMapPoint), true);
     map.infoWindow.hide();
     extentDeferred.then(function () {
         HideProgressIndicator();
@@ -457,7 +461,7 @@ function SetInfoWindowPosition(selectedMapPoint, flag) {
 
 //Create table row
 
-function CreateTableRow(tr, displayName, value) {
+function CreateTableRow(trData, displayName, value) {
     var tdDisplayText = document.createElement("td");
     tdDisplayText.innerHTML = displayName;
     dojo['dom-class'].add(tdDisplayText, "tdDisplayField");
@@ -487,30 +491,30 @@ function CreateTableRow(tr, displayName, value) {
         tdFieldName.appendChild(link);
         tdFieldName.style.wordBreak = "break-all";
     } else {
-        dojo['dom-class'].add(tdFieldName, "tdBreakAll");
+        dojo['dom-class'].add(tdFieldName, "tdBreak");
         tdFieldName.innerHTML = value;
-        var x = value.split(" ");
-        for (var i in x) {
-            w = x[i].getWidth(15) - 50;
+        var word = value.split(" ");
+        for (var i = 0; i < word.length; i++) {
+            wordWidth = GetWidth(word[i], 15) - 50;
             var boxWidth = (isMobileDevice) ? (dojo.window.getBox().w - 10) : (responseObject.InfoPopupWidth - 40);
-            if (boxWidth < w) {
-                td2.className = "tdBreak";
+            if (boxWidth < wordWidth) {
+                tdFieldName.className = "tdBreakWord";
                 continue;
             }
         }
     }
-    tr.appendChild(tdDisplayText);
-    tr.appendChild(tdFieldName);
+    trData.appendChild(tdDisplayText);
+    trData.appendChild(tdFieldName);
 }
 
 //Function to get width of a control when text and font size are specified
 
-String.prototype.getWidth = function (fontSize) {
+function GetWidth(word, fontSize) {
     var test = document.createElement("span");
     document.body.appendChild(test);
     test.style.visibility = "hidden";
     test.style.fontSize = fontSize + "px";
-    test.innerHTML = this;
+    test.innerHTML = word;
     var w = test.offsetWidth;
     document.body.removeChild(test);
     return w;
@@ -544,14 +548,14 @@ function OrientationChanged() {
                     SetViewDetailsHeight();
                     SetPermitDataHeight();
                     if (selectedMapPoint) {
-                        map.setExtent(CalculateMapExtent(selectedMapPoint));
+                        map.setExtent(CalculateMapExtent(selectedMapPoint), true);
                     }
                     orientationChange = false;
                 }, 500);
             } else {
                 setTimeout(function () {
                     if (selectedMapPoint) {
-                        map.setExtent(CalculateMapExtent(selectedMapPoint));
+                        map.setExtent(CalculateMapExtent(selectedMapPoint), true);
                     }
                     orientationChange = false;
                 }, 500);
@@ -803,6 +807,9 @@ function ShareLink(ext) {
             for (var x = 0; x < attr.length; x++) {
                 tinyUrl = tinyUrl[attr[x]];
             }
+            if (!tinyUrl) {
+                tinyUrl = urlStr;
+            }
             if (ext) {
                 HideBaseMapLayerContainer();
                 HideAddressContainer();
@@ -817,9 +824,9 @@ function ShareLink(ext) {
         },
         error: function () {
             if (!tinyResponse) {
-                alert(messages.getElementsByTagName("tinyURLEngine")[0].childNodes[0].nodeValue);
+                tinyUrl = urlStr;
             } else {
-                alert(tinyResponse.error);
+                tinyUrl = urlStr;
             }
         }
     });
@@ -1098,7 +1105,6 @@ function CreateTiledServiceLayer(layerId, layerURL) {
                 id: layerId
             });
         }
-
     } else {
         if (layerURL.indexOf("/FeatureServer") >= 0) {
             AddHostedServices(layerURL, layerId);

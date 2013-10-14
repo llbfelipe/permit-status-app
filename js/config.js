@@ -121,6 +121,8 @@ dojo.declare("js.config", null, {
     // CountyDisplayField: Attribute that will be displayed in the search box when user searches for a particular county.
     // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service.
     //                     When it is set to false then ServiceURL mentioned below will be used to perform location search.
+    // If 'UseGeocoderService' is set to true allow blank values for 'ServiceURL, SearchExpression and CountyDisplayField'.
+    // If 'UseGeocoderService' is set to false and one of the fields ('ServiceURL, SearchExpression and CountyDisplayField') is not specified then an error message is displayed.  If LoadAsServiceType is not set then load the serviceURL as dynamic map service.
 
     CountyLayerData: {
         Title: "CountyLayer",
@@ -346,7 +348,7 @@ dojo.declare("js.config", null, {
     //   FilterFieldValues: Specify the feature types to filter search results. e.g. 'county', 'city' etc.
     // LocatorDefaultLocation: Set the default location to search.
     // LocatorDefaultPermit: Set the default permit to search.
-    
+
     LocatorSettings: {
         DefaultLocatorSymbol: "images/redpushpin.png",
         MarkupSymbolSize: {

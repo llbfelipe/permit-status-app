@@ -26,7 +26,7 @@
                                                                             tdSearchByUnSelectedPermit, tdSearchByUnSelectedAddress, tdSearchByLocation,
                                                                             tdSearchByPermit}*/
 /* 4.  Set the styles for BaseMap container       - { Style(s) to look for: divLayerContainer,divLayerHolder,selectedBaseMap}*/
-/* 5.  Set the styles for info window             - { Style(s) to look for: divInfoContainer, divInfoContent, infoOptions, trRowHeight,cursorPointer,tdBreak}*/
+/* 5.  Set the styles for info window             - { Style(s) to look for: divInfoContainer, divInfoContent, infoOptions, trRowHeight,cursorPointer}*/
 /* 6.  Set the styles for esri slider             - { Style(s) to look for: esriSimpleSlider}*/
 
 /*---------------------------------------------------------------------------------------------------------------*/
@@ -202,11 +202,6 @@ body, html
 .cursorPointer
 {
     cursor: pointer;
-}
-
-.tdBreak
-{
-    word-wrap: break-word;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

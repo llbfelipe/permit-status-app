@@ -32,7 +32,7 @@
 /* 8.  Set the styles for info window           - { Style(s) to look for: divInfoContainer, divTriangle, dj_ie .divInfoWindowContainer,divInfoWindowContainer .container,
                                                                           imgInfoWindow, divInfoContainer, divDetails, divPermitScrollContent, divInfoDetailsScroll,divPermitDataScrollContainer
                                                                           tdInfoHeader,divInfoDetails, spanContentText, title, divInfoWindowContainer .content, divInfoWindowContainer .title,
-                                                                          tdBreak, tdLabel }*/
+                                                                          tdBreakWord, tdLabel }*/
 /* 9. Set the Styles for custom scrollbar       - { Style(s) to look for: scrollbar_track, scrollbar_handle, scrollbar_container, scrollbar_content}*/
 /* 10. Set the styles for loading indicator     - { Style(s) to look for: divLoadingIndicator}*/
 /*11. Styles for esri slider                    - { Style(s) to look for: esriSimpleSliderHomeButton}*/
@@ -708,9 +708,16 @@ body, html
     width: 98%;
 }
 
-.tdBreakAll
+.tdBreakWord
 {
-    word-break:break-all;
+    display: inline-block;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+
+.tdBreak
+{
+     word-wrap: break-word;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

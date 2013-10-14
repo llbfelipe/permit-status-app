@@ -145,15 +145,10 @@ function SearchLocation() {
 function GetSearchExtent() {
     var searchExtent;
     if (isWebMap) {
-        searchExtent = map.getLayer(baseMapId).fullExtent;
+        searchExtent = webmapExtent;
     } else {
-        for (bMap = 0; bMap < responseObject.BaseMapLayers.length; bMap++) {
-            if (responseObject.BaseMapLayers[bMap].MapURL) {
-                if (map.getLayer(responseObject.BaseMapLayers[bMap].Key).visible) {
-                    searchExtent = map.getLayer(responseObject.BaseMapLayers[bMap].Key).fullExtent;
-                }
-            }
-        }
+        var mapExtent = responseObject.DefaultExtent.split(',');
+        searchExtent = new esri.geometry.Extent(parseFloat(mapExtent[0]), parseFloat(mapExtent[1]), parseFloat(mapExtent[2]), parseFloat(mapExtent[3]), map.spatialReference);
     }
     return searchExtent;
 }
@@ -165,12 +160,11 @@ function ShowLocation(candidates, searchExtent) {
     dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
     RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
     if (candidates.length > 0) {
-        var table = dojo.dom.byId("tblAddressResults");
-        var tBody = document.createElement("tbody");
-        table.appendChild(tBody);
-        table.cellSpacing = 0;
-        table.cellPadding = 0;
-
+        var tblAddressResults = dojo.dom.byId("tblAddressResults");
+        var tbodyAddressResults = document.createElement("tbody");
+        tblAddressResults.appendChild(tbodyAddressResults);
+        tblAddressResults.cellSpacing = 0;
+        tblAddressResults.cellPadding = 0;
 
         var validResult = true;
         var searchFields = [];
@@ -185,20 +179,24 @@ function ShowLocation(candidates, searchExtent) {
         }
         else {
             for (var s in addressFieldValues) {
-                searchFields.push(addressFieldValues[s]);
+                if (addressFieldValues.hasOwnProperty(s)) {
+                    searchFields.push(addressFieldValues[s]);
+                }
             }
         }
         for (var i in candidates) {
-            var newExtent = { xmin: candidates[i].attributes.xmin, ymin: candidates[i].attributes.ymin, xmax: candidates[i].attributes.xmax, ymax: candidates[i].attributes.ymax };
-            newExtent = CreateExtentForCounty(newExtent);
-            if (!isAddressSearched) {
-                if (previousExtent.intersects(newExtent)) {
-                    if (dojo.toJson(previousExtent) != dojo.toJson(newExtent)) {
-                        GetResultsForLocation(candidates[i], addressFieldName, locatorFieldValues, locatorFieldName, searchFields, tBody)
+            if (candidates.hasOwnProperty(i)) {
+                var newExtent = { xmin: candidates[i].attributes.xmin, ymin: candidates[i].attributes.ymin, xmax: candidates[i].attributes.xmax, ymax: candidates[i].attributes.ymax };
+                newExtent = CreateExtentForCounty(newExtent);
+                if (!isAddressSearched) {
+                    if (previousExtent.intersects(newExtent)) {
+                        if (dojo.toJson(previousExtent) != dojo.toJson(newExtent)) {
+                            GetResultsForLocation(candidates[i], addressFieldName, locatorFieldValues, locatorFieldName, searchFields, tbodyAddressResults)
+                        }
                     }
+                } else {
+                    GetResultsForLocation(candidates[i], addressFieldName, locatorFieldValues, locatorFieldName, searchFields, tbodyAddressResults)
                 }
-            } else {
-                GetResultsForLocation(candidates[i], addressFieldName, locatorFieldValues, locatorFieldName, searchFields, tBody)
             }
         }
         //Display error message if there are no valid candidate addresses
@@ -216,66 +214,70 @@ function ShowLocation(candidates, searchExtent) {
     }
 }
 
-function GetResultsForLocation(candidates, addressFieldName, locatorFieldValues, locatorFieldName, searchFields, tBody) {
+function GetResultsForLocation(candidates, addressFieldName, locatorFieldValues, locatorFieldName, searchFields, tbodyCandidate) {
     if (candidates.attributes[responseObject.LocatorSettings.Locators[0].AddressMatchScore.Field] > responseObject.LocatorSettings.Locators[0].AddressMatchScore.Value) {
         var locatePoint = new esri.geometry.Point(Number(candidates.location.x), Number(candidates.location.y), map.spatialReference);
         for (var j in searchFields) {
-            if (candidates.attributes[addressFieldName] == searchFields[j]) {
-                if (!isAddressSearched) {
-                    if (candidates.attributes[addressFieldName] == responseObject.LocatorSettings.Locators[0].PlaceNameSearch.LocatorFieldValue) {
-                        for (var placeField in locatorFieldValues) {
-                            if (candidates.attributes[locatorFieldName] != locatorFieldValues[placeField]) {
-                                validResult = false;
-                            }
-                            else {
-                                validResult = true;
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    validResult = true;
-                }
-                if (validResult) {
-                    searchCounter++;
-                    var candidate = candidates;
-                    var tr = document.createElement("tr");
-                    tBody.appendChild(tr);
-                    var tdCandidate = document.createElement("td");
-                    tdCandidate.innerHTML = dojo.string.substitute(responseObject.LocatorSettings.Locators[0].DisplayField, candidate.attributes);
-                    tdCandidate.align = "left";
-                    dojo['dom-class'].add(tdCandidate, "bottomBorder cursorPointer");
-                    tdCandidate.setAttribute("x", candidate.location.x);
-                    tdCandidate.setAttribute("y", candidate.location.y);
-                    var ext = { xmin: candidate.attributes.xmin, ymin: candidate.attributes.ymin, xmax: candidate.attributes.xmax, ymax: candidate.attributes.ymax };
-                    var candidateExtent = new esri.geometry.Extent(parseFloat(candidate.attributes.xmin), parseFloat(candidate.attributes.ymin), parseFloat(candidate.attributes.xmax), parseFloat(candidate.attributes.ymax), candidate.location.spatialReference);
-                    tdCandidate.setAttribute("county", dojo.toJson(ext));
-                    tdCandidate.setAttribute("prevExtent", dojo.toJson(candidateExtent));
-                    tdCandidate.onclick = function () {
-                        if (!isMobileDevice) {
-                            map.infoWindow.hide();
-                        }
-                        mapPoint = new esri.geometry.Point(this.getAttribute("x"), this.getAttribute("y"), map.spatialReference);
-                        if (!isAddressSearched) {
-                            previousExtent = CreateExtentForCounty(dojo.fromJson(this.getAttribute("prevExtent")));
-                            countyExtent = CreateExtentForCounty(dojo.fromJson(this.getAttribute("county")));
-                            var locationName = this.innerHTML;
-                            geometryService.project([countyExtent], map.spatialReference, function (results) {
-                                if (results.length) {
-                                    countyExtent = new esri.geometry.Extent(parseFloat(results[0].xmin), parseFloat(results[0].ymin), parseFloat(results[0].xmax), parseFloat(results[0].ymax), map.spatialReference);
-                                    dojo.dom.byId("txtAddress").value = "";
-                                    dojo.dom.byId('txtAddress').setAttribute("defaultLocation", "");
-                                    ShowLocatedCountyOnMap(countyExtent, locationName);
+            if (searchFields.hasOwnProperty(j)) {
+                if (candidates.attributes[addressFieldName] == searchFields[j]) {
+                    if (!isAddressSearched) {
+                        if (candidates.attributes[addressFieldName] == responseObject.LocatorSettings.Locators[0].PlaceNameSearch.LocatorFieldValue) {
+                            for (var placeField in locatorFieldValues) {
+                                if (locatorFieldValues.hasOwnProperty(placeField)) {
+                                    if (candidates.attributes[locatorFieldName] != locatorFieldValues[placeField]) {
+                                        validResult = false;
+                                    }
+                                    else {
+                                        validResult = true;
+                                        break;
+                                    }
                                 }
-                            });
-                        } else {
-                            dojo.dom.byId("txtAddress").value = this.innerHTML;
-                            dojo.dom.byId('txtAddress').setAttribute("defaultAddress", this.innerHTML);
-                            LocateAddressOnMap(mapPoint);
+                            }
                         }
-                        SetAddressResultsHeight();
-                    };
-                    tr.appendChild(tdCandidate);
+                    } else {
+                        validResult = true;
+                    }
+                    if (validResult) {
+                        searchCounter++;
+                        var candidate = candidates;
+                        var trCandidate = document.createElement("tr");
+                        tbodyCandidate.appendChild(trCandidate);
+                        var tdCandidate = document.createElement("td");
+                        tdCandidate.innerHTML = dojo.string.substitute(responseObject.LocatorSettings.Locators[0].DisplayField, candidate.attributes);
+                        tdCandidate.align = "left";
+                        dojo['dom-class'].add(tdCandidate, "bottomBorder cursorPointer");
+                        tdCandidate.setAttribute("x", candidate.location.x);
+                        tdCandidate.setAttribute("y", candidate.location.y);
+                        var ext = { xmin: candidate.attributes.xmin, ymin: candidate.attributes.ymin, xmax: candidate.attributes.xmax, ymax: candidate.attributes.ymax };
+                        var candidateExtent = new esri.geometry.Extent(parseFloat(candidate.attributes.xmin), parseFloat(candidate.attributes.ymin), parseFloat(candidate.attributes.xmax), parseFloat(candidate.attributes.ymax), candidate.location.spatialReference);
+                        tdCandidate.setAttribute("county", dojo.toJson(ext));
+                        tdCandidate.setAttribute("prevExtent", dojo.toJson(candidateExtent));
+                        tdCandidate.onclick = function () {
+                            if (!isMobileDevice) {
+                                map.infoWindow.hide();
+                            }
+                            mapPoint = new esri.geometry.Point(this.getAttribute("x"), this.getAttribute("y"), map.spatialReference);
+                            if (!isAddressSearched) {
+                                previousExtent = CreateExtentForCounty(dojo.fromJson(this.getAttribute("prevExtent")));
+                                countyExtent = CreateExtentForCounty(dojo.fromJson(this.getAttribute("county")));
+                                var locationName = this.innerHTML;
+                                geometryService.project([countyExtent], map.spatialReference, function (results) {
+                                    if (results.length) {
+                                        countyExtent = new esri.geometry.Extent(parseFloat(results[0].xmin), parseFloat(results[0].ymin), parseFloat(results[0].xmax), parseFloat(results[0].ymax), map.spatialReference);
+                                        dojo.dom.byId("txtAddress").value = "";
+                                        dojo.dom.byId('txtAddress').setAttribute("defaultLocation", "");
+                                        ShowLocatedCountyOnMap(countyExtent, locationName);
+                                    }
+                                });
+                            } else {
+                                dojo.dom.byId("txtAddress").value = this.innerHTML;
+                                dojo.dom.byId('txtAddress').setAttribute("defaultAddress", this.innerHTML);
+                                LocateAddressOnMap(mapPoint);
+                            }
+                            SetAddressResultsHeight();
+                        };
+                        trCandidate.appendChild(tdCandidate);
+                    }
                 }
             }
         }
@@ -341,6 +343,7 @@ function GetBaseMapId() {
     }
     return bmap;
 }
+
 //Get candidate results for searched location when the 'UseGeocoderService' flag is set to false
 
 function LocateCounty() {
@@ -349,36 +352,41 @@ function LocateCounty() {
     dojo.dom.byId("imgSearchLoader").style.display = "block";
     ShowTransparentContainer();
     SetAddressResultsHeight();
-
-    var queryTask = new esri.tasks.QueryTask(countyLayerData.ServiceURL);
-    var query = new esri.tasks.Query();
-    query.where = dojo.string.substitute(countyLayerData.SearchExpression, [dojo.string.trim(dojo.dom.byId("txtAddress").value).toUpperCase()]);
-    if (isCountySearched) {
-        query.geometry = countyGeometry;
-        query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_WITHIN;
+    if (countyLayerData.ServiceURL) {
+        var queryTask = new esri.tasks.QueryTask(countyLayerData.ServiceURL);
+        var query = new esri.tasks.Query();
+        query.where = dojo.string.substitute(countyLayerData.SearchExpression, [dojo.string.trim(dojo.dom.byId("txtAddress").value).toUpperCase()]);
+        if (isCountySearched) {
+            query.geometry = countyGeometry;
+            query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_WITHIN;
+        }
+        query.outSpatialReference = map.spatialReference;
+        query.returnGeometry = false;
+        query.outFields = ["*"];
+        queryTask.execute(query, function (featureSet) {
+            if (currentSearchTime < lastSearchTime) {
+                return;
+            }
+            if (featureSet.features.length > 0) {
+                FetchCountyResults(featureSet.features);
+            } else {
+                dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
+                RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
+                LocatorErrBack();
+            }
+        }, function (err) {
+            alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
+            dojo.dom.byId("imgSearchLoader").style.display = "none";
+            HideTransparentContainer();
+        });
     }
-    query.outSpatialReference = map.spatialReference;
-    query.returnGeometry = false;
-    query.outFields = ["*"];
-    queryTask.execute(query, function (featureSet) {
-        if (currentSearchTime < lastSearchTime) {
-            return;
-        }
-        if (featureSet.features.length > 0) {
-            FetchCountyResults(featureSet.features);
-        } else {
-            dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
-            RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
-            LocatorErrBack();
-        }
-    }, function (err) {
-        alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
+    else {
         dojo.dom.byId("imgSearchLoader").style.display = "none";
         HideTransparentContainer();
-    });
+    }
 }
 
-//Executed when user performs permit search. 
+//Executed when user performs permit search.
 
 function LocatePermitNumber() {
     dojo.dom.byId('txtAddress').setAttribute("defaultPermit", dojo.dom.byId("txtAddress").value);
@@ -429,7 +437,7 @@ function PopulatePermitData(featureSet, layer, index) {
     }
     if (featureSet) {
         if (featureSet.features.length > 0) {
-            for (var num in featureSet.features) {
+            for (var num = 0; num < featureSet.features.length; num++) {
                 FormatNullValues(featureSet.features[num].attributes);
                 permitArray.push({
                     attr: featureSet.features[num],
@@ -452,7 +460,6 @@ function PopulatePermitData(featureSet, layer, index) {
         dojo.dom.byId("imgSearchLoader").style.display = "none";
         isPermitNumberSearched = false;
     }
-
 }
 
 //Populate candidate permit list in address container
@@ -462,10 +469,10 @@ function PopulatePermits(permitArray) {
     RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
     dojo.dom.byId("imgSearchLoader").style.display = "none";
     HideTransparentContainer();
-    var table = dojo.dom.byId("tblAddressResults");
-    var tBody = document.createElement("tbody");
-    table.appendChild(tBody);
-    table.cellSpacing = table.cellPadding = 0;
+    var tableAddressResults = dojo.dom.byId("tblAddressResults");
+    var tbodyAddressResults = document.createElement("tbody");
+    tableAddressResults.appendChild(tbodyAddressResults);
+    tableAddressResults.cellSpacing = tableAddressResults.cellPadding = 0;
 
     var arrPermits = [];
     try {
@@ -489,16 +496,16 @@ function PopulatePermits(permitArray) {
     });
 
     for (var i = 0; i < arrPermits.length; i++) {
-        var tr = document.createElement("tr");
-        tBody.appendChild(tr);
-        var td1 = document.createElement("td");
-        td1.innerHTML = arrPermits[i].name;
-        td1.align = "left";
-        dojo['dom-class'].add(td1, "bottomBorder cursorPointer");
-        td1.setAttribute("index", i);
+        var trPermit = document.createElement("tr");
+        tbodyAddressResults.appendChild(trPermit);
+        var tdPermit = document.createElement("td");
+        tdPermit.innerHTML = arrPermits[i].name;
+        tdPermit.align = "left";
+        dojo['dom-class'].add(tdPermit, "bottomBorder cursorPointer");
+        tdPermit.setAttribute("index", i);
         var defaultPermit = arrPermits[i].attributes.attr.attributes[arrPermits[i].searchDisplayField.split("$")[1].split("{")[1].split("}")[0]];
-        td1.setAttribute("defaultPermit", defaultPermit);
-        td1.onclick = function () {
+        tdPermit.setAttribute("defaultPermit", defaultPermit);
+        tdPermit.onclick = function () {
             var counter = 0;
             var layer = arrPermits[this.getAttribute("index")].attributes.layerID.QueryURL;
             for (var i = 0; i < operationalLayers.length; i++) {
@@ -519,7 +526,7 @@ function PopulatePermits(permitArray) {
                 FetchPermitData(this, arrPermits);
             }
         };
-        tr.appendChild(td1);
+        trPermit.appendChild(tdPermit);
     }
     SetAddressResultsHeight();
 }
@@ -595,10 +602,10 @@ function FetchCountyResults(featureset) {
     HideTransparentContainer();
     if (featureset.length > 0) {
         if (dojo.byId("txtAddress").value != "") {
-            var table = dojo.byId("tblAddressResults");
-            var tBody = document.createElement("tbody");
-            table.appendChild(tBody);
-            table.cellSpacing = table.cellPadding = 0;
+            var tableCounty = dojo.byId("tblAddressResults");
+            var tbodyCounty = document.createElement("tbody");
+            tableCounty.appendChild(tbodyCounty);
+            tableCounty.cellSpacing = tableCounty.cellPadding = 0;
             var featureSet = [];
             try {
                 for (var i = 0; i < featureset.length; i++) {
@@ -620,14 +627,14 @@ function FetchCountyResults(featureset) {
             });
 
             for (var i = 0; i < featureSet.length; i++) {
-                var tr = document.createElement("tr");
-                tBody.appendChild(tr);
-                var td1 = document.createElement("td");
-                td1.innerHTML = dojo.string.substitute(countyLayerData.CountyDisplayField, featureSet[i].attributes);
-                td1.align = "left";
-                dojo['dom-class'].add(td1, "bottomBorder cursorPointer");
-                td1.setAttribute("index", i);
-                td1.onclick = function () {
+                var trCounty = document.createElement("tr");
+                tbodyCounty.appendChild(trCounty);
+                var tdCounty = document.createElement("td");
+                tdCounty.innerHTML = dojo.string.substitute(countyLayerData.CountyDisplayField, featureSet[i].attributes);
+                tdCounty.align = "left";
+                dojo['dom-class'].add(tdCounty, "bottomBorder cursorPointer");
+                tdCounty.setAttribute("index", i);
+                tdCounty.onclick = function () {
                     map.infoWindow.hide();
                     dojo.dom.byId("txtAddress").value = this.innerHTML;
                     dojo.dom.byId('txtAddress').setAttribute("defaultLocation", this.innerHTML);
@@ -635,7 +642,7 @@ function FetchCountyResults(featureset) {
                     var attr = featureSet[this.getAttribute("index")].attributes;
                     LocateCountyOnMap(attr);
                 }
-                tr.appendChild(td1);
+                trCounty.appendChild(tdCounty);
             }
             isCountySearched = false;
             SetAddressResultsHeight();
@@ -652,19 +659,19 @@ function LocatorErrBack(errorMessage) {
     RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
     dojo.dom.byId("imgSearchLoader").style.display = "none";
     HideTransparentContainer();
-    var table = dojo.dom.byId("tblAddressResults");
-    var tBody = document.createElement("tbody");
-    table.appendChild(tBody);
-    table.cellSpacing = 0;
-    table.cellPadding = 0;
-    var tr = document.createElement("tr");
-    tBody.appendChild(tr);
-    var td = document.createElement("td");
-    td.innerHTML = errorMessage ? errorMessage : messages.getElementsByTagName("invalidSearch")[0].childNodes[0].nodeValue;
-    td.align = "left";
-    dojo['dom-class'].add(td, "bottomBorder");
-    td.style.cursor = "default";
-    tr.appendChild(td);
+    var tableErrorMsg = dojo.dom.byId("tblAddressResults");
+    var tbodyErrorMsg = document.createElement("tbody");
+    tableErrorMsg.appendChild(tbodyErrorMsg);
+    tableErrorMsg.cellSpacing = 0;
+    tableErrorMsg.cellPadding = 0;
+    var trErrorMsg = document.createElement("tr");
+    tbodyErrorMsg.appendChild(trErrorMsg);
+    var tdErrorMsg = document.createElement("td");
+    tdErrorMsg.innerHTML = errorMessage ? errorMessage : messages.getElementsByTagName("invalidSearch")[0].childNodes[0].nodeValue;
+    tdErrorMsg.align = "left";
+    dojo['dom-class'].add(tdErrorMsg, "bottomBorder");
+    tdErrorMsg.style.cursor = "default";
+    trErrorMsg.appendChild(tdErrorMsg);
 }
 
 //Query the location that is selected from the list of candidates to fetch its geometry
@@ -700,7 +707,7 @@ function ShowLocatedCountyOnMap(geometry, locationName) {
 
     if (geometry) {
         countyGeometry = geometry.getExtent();
-        map.setExtent(countyGeometry);
+        map.setExtent(countyGeometry, true);
         HideProgressIndicator();
     }
     for (var index = 0; index < searchSettings.length; index++) {
@@ -733,7 +740,7 @@ function ShowLocatedCountyOnMap(geometry, locationName) {
 function NavigateBreadCrumbs(pThis) {
     var county = dojo.fromJson(pThis.getAttribute("county"));
     countyGeometry = new esri.geometry.Extent(parseFloat(county.xmin), parseFloat(county.ymin), parseFloat(county.xmax), parseFloat(county.ymax), map.spatialReference);
-    map.setExtent(countyGeometry);
+    map.setExtent(countyGeometry, true);
     previousExtent = countyGeometry;
     for (var index = 0; index < searchSettings.length; index++) {
         FetchPermitResults(searchSettings[index], countyGeometry, index);
