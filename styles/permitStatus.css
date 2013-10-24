@@ -479,7 +479,7 @@ body, html
 
 .tdDisplayField
 {
-    width: 120px;
+    width: 40%;
     height: 18px;
     vertical-align: top !important;
     padding-top: 5px;
@@ -487,7 +487,7 @@ body, html
 
 .tdFieldName
 {
-    width: 180px;
+    width: 60%;
     vertical-align: top;
     padding-top: 5px;
     padding-left: 3px;

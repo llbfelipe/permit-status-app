@@ -277,10 +277,18 @@ function FetchWebMapData(response) {
                                 operationalLayers[p] = {};
                                 operationalLayers[p]["ServiceURL"] = webMapDetails.operationalLayers[j].url + "/" + webMapDetails.operationalLayers[j].layers[k].id;
                                 p++;
-                                if (layerInfo.popupInfo.title.split(": ").length > 1) {
-                                    searchSettings[index]["InfoWindowHeader"] = "$" + layerInfo.popupInfo.title.split(": ")[1];
+                                if (layerInfo.popupInfo.title.split(":").length > 1) {
+                                    if (dojo.string.trim(layerInfo.popupInfo.title.split(":")[1])) {
+                                        searchSettings[index]["InfoWindowHeader"] = "$" + dojo.string.trim(layerInfo.popupInfo.title.split(":")[1]);
+                                    } else {
+                                        searchSettings[index]["InfoWindowHeader"] = responseObject.ShowNullValueAs;
+                                    }
                                 } else {
-                                    searchSettings[index]["InfoWindowHeader"] = "$" + layerInfo.popupInfo.title;
+                                    if (layerInfo.popupInfo.title.split("{").length > 1) {
+                                        searchSettings[index]["InfoWindowHeader"] = "$" + dojo.string.trim(layerInfo.popupInfo.title);
+                                    } else {
+                                        searchSettings[index]["InfoWindowHeader"] = responseObject.ShowNullValueAs;
+                                    }
                                 }
                                 GetMobileCalloutContentField(index);
                                 searchSettings[index]["InfoWindowData"] = [];
@@ -296,27 +304,37 @@ function FetchWebMapData(response) {
                                 }
                             }
                         }
-                    } else {
-                        if (webMapDetails.operationalLayers[j].popupInfo) {
-                            //Fetching infopopup data in case the layers are added as feature layers in the webmap
-                            operationalLayers[p] = {};
-                            operationalLayers[p]["ServiceURL"] = webMapDetails.operationalLayers[j].url;
-                            p++;
-                            if (webMapDetails.operationalLayers[j].popupInfo.title.split(": ").length > 1) {
-                                searchSettings[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[j].popupInfo.title.split(": ")[1];
+                    } else if (webMapDetails.operationalLayers[j].popupInfo) {
+                        //Fetching infopopup data in case the layers are added as feature layers in the webmap
+                        operationalLayers[p] = {};
+                        operationalLayers[p]["ServiceURL"] = webMapDetails.operationalLayers[j].url;
+                        p++;
+                        if (webMapDetails.operationalLayers[j].popupInfo.title.split(":").length > 1) {
+                            if (dojo.string.trim(webMapDetails.operationalLayers[j].popupInfo.title.split(":")[1])) {
+                                searchSettings[index]["InfoWindowHeader"] = "$" + dojo.string.trim(webMapDetails.operationalLayers[j].popupInfo.title.split(":")[1]);
                             } else {
-                                searchSettings[index]["InfoWindowHeader"] = "$" + webMapDetails.operationalLayers[j].popupInfo.title;
+                                searchSettings[index]["InfoWindowHeader"] = responseObject.ShowNullValueAs;
                             }
+                        } else {
+                            if (webMapDetails.operationalLayers[j].popupInfo.title.split("{").length > 1) {
+                                searchSettings[index]["InfoWindowHeader"] = "$" + dojo.string.trim(webMapDetails.operationalLayers[j].popupInfo.title);
+                            } else {
+                                searchSettings[index]["InfoWindowHeader"] = responseObject.ShowNullValueAs;
+                            }
+                        }
+                        if (webMapDetails.operationalLayers[j].layerObject.displayField) {
                             searchSettings[index]["InfoWindowContent"] = "${" + webMapDetails.operationalLayers[j].layerObject.displayField + "}";
-                            searchSettings[index]["InfoWindowData"] = [];
-                            for (var field in webMapDetails.operationalLayers[j].popupInfo.fieldInfos) {
-                                if (webMapDetails.operationalLayers[j].popupInfo.fieldInfos.hasOwnProperty(field)) {
-                                    if (webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].visible) {
-                                        searchSettings[index]["InfoWindowData"].push({
-                                            "DisplayText": webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].label + ":",
-                                            "FieldName": "${" + webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].fieldName + "}"
-                                        });
-                                    }
+                        } else {
+                            searchSettings[index]["InfoWindowContent"] = responseObject.ShowNullValueAs;
+                        }
+                        searchSettings[index]["InfoWindowData"] = [];
+                        for (var field in webMapDetails.operationalLayers[j].popupInfo.fieldInfos) {
+                            if (webMapDetails.operationalLayers[j].popupInfo.fieldInfos.hasOwnProperty(field)) {
+                                if (webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].visible) {
+                                    searchSettings[index]["InfoWindowData"].push({
+                                        "DisplayText": webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].label + ":",
+                                        "FieldName": "${" + webMapDetails.operationalLayers[j].popupInfo.fieldInfos[field].fieldName + "}"
+                                    });
                                 }
                             }
                         }
@@ -371,8 +389,7 @@ function FetchCountyLayerData(operationalLayerId, url) {
     if ((dojo.string.trim(responseObject.CountyLayerData.SearchExpression) && dojo.string.trim(responseObject.CountyLayerData.CountyDisplayField)) && (countyLayerData.UseGeocoderService == true || countyLayerData.UseGeocoderService == false)) {
         countyLayerData.SearchExpression = responseObject.CountyLayerData.SearchExpression;
         countyLayerData.CountyDisplayField = responseObject.CountyLayerData.CountyDisplayField;
-    }
-    else if (((!dojo.string.trim(responseObject.CountyLayerData.SearchExpression)) || (!dojo.string.trim(responseObject.CountyLayerData.CountyDisplayField))) && (responseObject.CountyLayerData.UseGeocoderService == false)) {
+    } else if (((!dojo.string.trim(responseObject.CountyLayerData.SearchExpression)) || (!dojo.string.trim(responseObject.CountyLayerData.CountyDisplayField))) && (responseObject.CountyLayerData.UseGeocoderService == false)) {
         alert(messages.getElementsByTagName("noCountyLayer")[0].childNodes[0].nodeValue);
     }
     countyLayerData.UseGeocoderService = responseObject.CountyLayerData.UseGeocoderService;
@@ -384,7 +401,11 @@ function GetMobileCalloutContentField(index) {
     esri.request({
         url: searchSettings[index].QueryURL + '?f=json',
         load: function (data) {
-            searchSettings[index]["InfoWindowContent"] = "${" + data.displayField + "}";
+            if (data.displayField) {
+                searchSettings[index]["InfoWindowContent"] = "${" + data.displayField + "}";
+            } else {
+                searchSettings[index]["InfoWindowContent"] = responseObject.ShowNullValueAs;
+            }
         }
     });
 }
@@ -522,8 +543,7 @@ function MapOnLoad() {
                     var layerTitle = str[str.length - 3];
                     serviceTitle[layerTitle] = operationalLayers[i].ServiceURL.substring(0, operationalLayers[i].ServiceURL.length - 1);
                 }
-            }
-            else {
+            } else {
                 operationalLayers.splice(i, 1);
                 i--;
             }
@@ -671,12 +691,10 @@ function AddLayersToMap() {
             if (countyLayerData && (dojo.string.trim(countyLayerData.ServiceURL) && dojo.string.trim(countyLayerData.SearchExpression) && dojo.string.trim(countyLayerData.CountyDisplayField)) && (countyLayerData.UseGeocoderService == true || countyLayerData.UseGeocoderService == false)) {
                 if (countyLayerData.LoadAsServiceType) {
                     AddServiceLayers(countyLayerData.Title, countyLayerData.ServiceURL, countyLayerData.LoadAsServiceType);
-                }
-                else {
+                } else {
                     AddServiceLayers(countyLayerData.Title, countyLayerData.ServiceURL, "dynamic");
                 }
-            }
-            else if (countyLayerData && ((!dojo.string.trim(countyLayerData.ServiceURL)) || (!dojo.string.trim(countyLayerData.SearchExpression)) || (!dojo.string.trim(countyLayerData.CountyDisplayField))) && (countyLayerData.UseGeocoderService == false)) {
+            } else if (countyLayerData && ((!dojo.string.trim(countyLayerData.ServiceURL)) || (!dojo.string.trim(countyLayerData.SearchExpression)) || (!dojo.string.trim(countyLayerData.CountyDisplayField))) && (countyLayerData.UseGeocoderService == false)) {
                 alert(messages.getElementsByTagName("noCountyLayer")[0].childNodes[0].nodeValue);
             }
             for (var index = 0; index < operationalLayers.length; index++) {

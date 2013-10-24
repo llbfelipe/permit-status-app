@@ -147,8 +147,8 @@ function ShowMobileInfoWindow(mapPoint, attributes, layerID, fields) {
     SetFeatureZoomLevel(mapPoint, selectedMapPoint, false);
     FormatNullValues(attributes);
     try {
-        map.infoWindow.setTitle(TrimString(dojo.string.substitute(searchSettings[layerID].InfoWindowHeader, attributes), 15));
-        map.infoWindow.setContent(TrimString(dojo.string.substitute(searchSettings[layerID].InfoWindowContent, attributes), 15));
+        map.infoWindow.setTitle(TrimString(dojo.string.substitute(searchSettings[layerID].InfoWindowHeader, attributes), 14));
+        map.infoWindow.setContent(TrimString(dojo.string.substitute(searchSettings[layerID].InfoWindowContent, attributes), 14));
     } catch (e) {
         alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
     }
@@ -174,15 +174,15 @@ function ShowMobileInfoDetails(mapPoint, featureArray, geometry) {
         SetFeatureZoomLevel(geometry, selectedMapPoint, false);
         FormatNullValues(featureArray[0].attr.attributes);
         try {
-            map.infoWindow.setTitle(TrimString(dojo.string.substitute(searchSettings[featureArray[0].layerId].InfoWindowHeader, featureArray[0].attr.attributes), 15));
-            map.infoWindow.setContent(TrimString(dojo.string.substitute(searchSettings[featureArray[0].layerId].InfoWindowContent, featureArray[0].attr.attributes), 15));
+            map.infoWindow.setTitle(TrimString(dojo.string.substitute(searchSettings[featureArray[0].layerId].InfoWindowHeader, featureArray[0].attr.attributes), 14));
+            map.infoWindow.setContent(TrimString(dojo.string.substitute(searchSettings[featureArray[0].layerId].InfoWindowContent, featureArray[0].attr.attributes), 14));
         } catch (e) {
             alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
         }
     } else {
         SetInfoWindowPosition(selectedMapPoint, 0);
         try {
-            map.infoWindow.setTitle(TrimString(dojo.string.substitute(messages.getElementsByTagName("numberOfFeaturesFoundOnMobile")[0].childNodes[0].nodeValue, [featureArray.length]), 15));
+            map.infoWindow.setTitle(TrimString(dojo.string.substitute(messages.getElementsByTagName("numberOfFeaturesFoundOnMobile")[0].childNodes[0].nodeValue, [featureArray.length]), 14));
         } catch (e) {
             alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
         }
@@ -302,79 +302,86 @@ function ShowInfoWindowDetails(geometry, attributes, featureLength, layer, mapPo
             }
         }
     }
-    try {
-        var value = dojo.string.trim(dojo.string.substitute(searchSettings[layer].InfoWindowHeader, attributes));
-    } catch (e) {
-        alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
-    }
-    if (isBrowser) {
-        value = TrimString(value, Math.round(responseObject.InfoPopupWidth / 6));
-    } else {
-        value = TrimString(value, Math.round(responseObject.InfoPopupWidth / 10));
-    }
-
-    if (!isMobileDevice) {
-        map.infoWindow.hide();
-        selectedMapPoint = null;
-        dojo.dom.byId('divInfoContent').style.display = "block";
-        dojo.dom.byId('divInfoContent').style.width = responseObject.InfoPopupWidth + "px";
-        dojo.dom.byId('divInfoContent').style.height = responseObject.InfoPopupHeight + "px";
-        dojo.dom.byId("divInfoDetails").style.display = "block";
-        map.infoWindow.resize(responseObject.InfoPopupWidth, responseObject.InfoPopupHeight);
-        selectedMapPoint = GetGeometryType(geometry);
-        point = mapPoint;
-        SetFeatureZoomLevel(geometry, selectedMapPoint, true);
-    } else {
-        dojo.dom.byId('divInfoContainer').style.display = "block";
-        dojo['dom-class'].replace("divInfoContainer", "opacityShowAnimation", "opacityHideAnimation");
-        dojo['dom-class'].add("divInfoContainer", "divInfoContainer");
-        dojo['dom-class'].replace("divInfoContent", "showContainer", "hideContainer");
-        dojo['dom-class'].add("divInfoContent", "divInfoContent");
-        dojo.dom.byId("divInfoDetails").style.display = "block";
-    }
-    dojo['dom-construct'].empty(dojo.dom.byId('tblInfoDetails'));
-    dojo.dom.byId('tdInfoHeader').innerHTML = value;
-    var tblInfoDetails = dojo.dom.byId('tblInfoDetails');
-    var tbodyInfoDetails = document.createElement("tbody");
-    tblInfoDetails.appendChild(tbodyInfoDetails);
-    for (var j = 0; j < fields.length; j++) {
-        if (fields[j].type == "esriFieldTypeDate") {
-            if (attributes[fields[j].name]) {
-                if (Number(attributes[fields[j].name])) {
-                    var date = new js.date();
-                    var utcMilliseconds = Number(attributes[fields[j].name]);
-                    attributes[fields[j].name] = dojo.date.locale.format(date.utcTimestampFromMs(utcMilliseconds), {
-                        datePattern: responseObject.FormatDateAs,
-                        selector: "date"
-                    });
-                }
-            }
+    if (searchSettings[layer].InfoWindowHeader) {
+        try {
+            var value = dojo.string.trim(dojo.string.substitute(searchSettings[layer].InfoWindowHeader, attributes));
+        } catch (e) {
+            alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
         }
-    }
-    try {
-        for (var index = 0; index < searchSettings[layer].InfoWindowData.length; index++) {
-            var trInfoDetails = document.createElement("tr");
-            tbodyInfoDetails.appendChild(trInfoDetails);
-            if (searchSettings[layer].InfoWindowData[index].DisplayText && (searchSettings[layer].InfoWindowData[index].DisplayText != "")) {
-                CreateTableRow(trInfoDetails, searchSettings[layer].InfoWindowData[index].DisplayText, dojo.string.substitute(searchSettings[layer].InfoWindowData[index].FieldName, attributes));
-            } else {
-                var tempValue = searchSettings[layer].InfoWindowData[index].FieldName.split("{");
-                var fieldName = tempValue[1].split("}");
-                for (var j = 0; j < fields.length; j++) {
-                    if (fields[j].alias == fieldName[0]) {
-                        CreateTableRow(trInfoDetails, fields[j].alias + ":", dojo.string.substitute(searchSettings[layer].InfoWindowData[index].FieldName, attributes));
-                        break;
+        if (isBrowser) {
+            value = TrimString(value, Math.round(responseObject.InfoPopupWidth / 6));
+        } else {
+            value = TrimString(value, Math.round(responseObject.InfoPopupWidth / 10));
+        }
+
+        if (!isMobileDevice) {
+            map.infoWindow.hide();
+            selectedMapPoint = null;
+            dojo.dom.byId('divInfoContent').style.display = "block";
+            dojo.dom.byId('divInfoContent').style.width = responseObject.InfoPopupWidth + "px";
+            dojo.dom.byId('divInfoContent').style.height = responseObject.InfoPopupHeight + "px";
+            dojo.dom.byId("divInfoDetails").style.display = "block";
+            map.infoWindow.resize(responseObject.InfoPopupWidth, responseObject.InfoPopupHeight);
+            selectedMapPoint = GetGeometryType(geometry);
+            point = mapPoint;
+            SetFeatureZoomLevel(geometry, selectedMapPoint, true);
+        } else {
+            dojo.dom.byId('divInfoContainer').style.display = "block";
+            dojo['dom-class'].replace("divInfoContainer", "opacityShowAnimation", "opacityHideAnimation");
+            dojo['dom-class'].add("divInfoContainer", "divInfoContainer");
+            dojo['dom-class'].replace("divInfoContent", "showContainer", "hideContainer");
+            dojo['dom-class'].add("divInfoContent", "divInfoContent");
+            dojo.dom.byId("divInfoDetails").style.display = "block";
+        }
+        dojo['dom-construct'].empty(dojo.dom.byId('tblInfoDetails'));
+        dojo.dom.byId('tdInfoHeader').innerHTML = value;
+        var tblInfoDetails = dojo.dom.byId('tblInfoDetails');
+        var tbodyInfoDetails = document.createElement("tbody");
+        tblInfoDetails.appendChild(tbodyInfoDetails);
+        for (var j = 0; j < fields.length; j++) {
+            if (fields[j].type == "esriFieldTypeDate") {
+                if (attributes[fields[j].name]) {
+                    if (Number(attributes[fields[j].name])) {
+                        var date = new js.date();
+                        var utcMilliseconds = Number(attributes[fields[j].name]);
+                        attributes[fields[j].name] = dojo.date.locale.format(date.utcTimestampFromMs(utcMilliseconds), {
+                            datePattern: responseObject.FormatDateAs,
+                            selector: "date"
+                        });
                     }
                 }
             }
         }
-    } catch (e) {
-        alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
-        zoomDeferred.cancel();
+        try {
+            for (var index = 0; index < searchSettings[layer].InfoWindowData.length; index++) {
+                var trInfoDetails = document.createElement("tr");
+                tbodyInfoDetails.appendChild(trInfoDetails);
+                if (searchSettings[layer].InfoWindowData[index].DisplayText && (searchSettings[layer].InfoWindowData[index].DisplayText != "")) {
+                    CreateTableRow(trInfoDetails, searchSettings[layer].InfoWindowData[index].DisplayText, dojo.string.substitute(searchSettings[layer].InfoWindowData[index].FieldName, attributes));
+                } else {
+                    var tempValue = searchSettings[layer].InfoWindowData[index].FieldName.split("{");
+                    var fieldName = tempValue[1].split("}");
+                    for (var j = 0; j < fields.length; j++) {
+                        if (fields[j].alias == fieldName[0]) {
+                            CreateTableRow(trInfoDetails, fields[j].alias + ":", dojo.string.substitute(searchSettings[layer].InfoWindowData[index].FieldName, attributes));
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
+            zoomDeferred.cancel();
+            map.infoWindow.hide();
+            selectedMapPoint = null;
+        }
+        SetViewDetailsHeight();
+    } else {
+        alert(dojo.string.substitute(messages.getElementsByTagName("noInfoWindowData")[0].childNodes[0].nodeValue, [searchSettings[layer].Title]));
         map.infoWindow.hide();
         selectedMapPoint = null;
+        HideProgressIndicator();
     }
-    SetViewDetailsHeight();
 }
 
 //Fetch the geometry type of the mapPoint
@@ -464,7 +471,17 @@ function SetInfoWindowPosition(selectedMapPoint, flag) {
 function CreateTableRow(trData, displayName, value) {
     var tdDisplayText = document.createElement("td");
     tdDisplayText.innerHTML = displayName;
+    var boxWidth = (isMobileDevice) ? (dojo.window.getBox().w / 2) : (responseObject.InfoPopupWidth / 2);
     dojo['dom-class'].add(tdDisplayText, "tdDisplayField");
+    dojo['dom-class'].add(tdDisplayText, "tdBreak");
+    var displayNameWord = displayName.split(" ");
+    for (var i = 0; i < displayNameWord.length; i++) {
+        displayNameWordWidth = GetWidth(displayNameWord[i], 15);
+        if (boxWidth < displayNameWordWidth) {
+            tdDisplayText.className = "tdBreakWord";
+            continue;
+        }
+    }
     var tdFieldName = document.createElement("td");
     dojo['dom-class'].add(tdFieldName, "tdFieldName");
     if (CheckMailFormat(value)) {
@@ -495,8 +512,7 @@ function CreateTableRow(trData, displayName, value) {
         tdFieldName.innerHTML = value;
         var word = value.split(" ");
         for (var i = 0; i < word.length; i++) {
-            wordWidth = GetWidth(word[i], 15) - 50;
-            var boxWidth = (isMobileDevice) ? (dojo.window.getBox().w - 10) : (responseObject.InfoPopupWidth - 40);
+            wordWidth = GetWidth(word[i], 15);
             if (boxWidth < wordWidth) {
                 tdFieldName.className = "tdBreakWord";
                 continue;

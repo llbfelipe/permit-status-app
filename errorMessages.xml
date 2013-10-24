@@ -42,4 +42,5 @@
     <titleNotMatching>Title and/or QueryLayerId parameters in the InfoWindowSettings and SearchSettings do not match.</titleNotMatching>
     <lengthDoNotMatch>The number of objects in InfoWindowSettings and SearchSettings do not match.</lengthDoNotMatch>
     <noCountyLayer>Configuration settings for either ServiceURL, SearchExpression or CountyDisplayField fields in CountyLayerData are missing.</noCountyLayer>
+    <noInfoWindowData>InfoWindow data for '${0}' layer could not be fetched from webmap.</noInfoWindowData>
 </Messages>

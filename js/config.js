@@ -102,7 +102,7 @@ dojo.declare("js.config", null, {
     // LoadAsServiceType: Field to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer.
     //                    Supported service types are 'dynamic', 'feature' and 'tiled' only.
     OperationalLayers: [{
-        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/PermitsCT/MapServer/1",
+        ServiceURL: "http://tryitlive.arcgis.com/arcgis/rest/services/PermitStatus/MapServer/0",
         LoadAsServiceType: "dynamic"
     }, {
         ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/CUP/MapServer/0",
@@ -126,7 +126,7 @@ dojo.declare("js.config", null, {
 
     CountyLayerData: {
         Title: "CountyLayer",
-        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/PermitsCT/MapServer/0",
+        ServiceURL: "http://tryitlive.arcgis.com/arcgis/rest/services/PermitStatus/MapServer/1",
         LoadAsServiceType: "dynamic",
         SearchExpression: "NAME LIKE '${0}%'",
         CountyDisplayField: "${NAME}",
@@ -143,12 +143,12 @@ dojo.declare("js.config", null, {
     // SearchExpression: Query to perform permit search.
 
     SearchSettings: [{
-        Title: "PermitsCT",
-        QueryLayerId: "1",
+        Title: "PermitStatus",
+        QueryLayerId: "0",
         ListDisplayText: "Permit Number",
-        ListFieldName: "${Permit_Number}",
-        SearchDisplayFields: "${Permit_Number} / ${Permittee_Name} / ${Permit_Type}",
-        SearchExpression: "UPPER(Permit_Number) LIKE '${0}%' OR UPPER(Permittee_Name) LIKE '${0}%' OR UPPER(Site_Location) LIKE '${0}%' OR UPPER(Permit_Type) LIKE '${0}%'"
+        ListFieldName: "${PERMITID}",
+        SearchDisplayFields: "${PERMITID} / ${APPLICANT} / ${PERMITTYPE}",
+        SearchExpression: "UPPER(PERMITID) LIKE '${0}%' OR UPPER(APPLICANT) LIKE '${0}%' OR UPPER(LOCDESC) LIKE '${0}%' OR UPPER(PERMITTYPE) LIKE '${0}%'"
     }, {
         Title: "ERP",
         QueryLayerId: "0",
@@ -175,43 +175,37 @@ dojo.declare("js.config", null, {
     // DisplayText: Caption to be displayed instead of field alias names. Set this to empty string ("") if you wish to display field alias names as captions.
     // FieldName: Field used for displaying the value
     InfoWindowSettings: [{
-        Title: "PermitsCT",
-        QueryLayerId: "1",
-        InfoWindowHeader: "${Permittee_Name}",
-        InfoWindowContent: "${Permit_Number}",
+        Title: "PermitStatus",
+        QueryLayerId: "0",
+        InfoWindowHeader: "${APPLICANT}",
+        InfoWindowContent: "${PERMITID}",
         InfoWindowData: [{
-            DisplayText: "Prog Area:",
-            FieldName: "${Division}"
+            DisplayText: "Permit Type:",
+            FieldName: "${PERMITTYPE}"
         }, {
             DisplayText: "Permit Number:",
-            FieldName: "${Permit_Number}"
-        }, {
-            DisplayText: "Project No:",
-            FieldName: "${Permitting}"
+            FieldName: "${PERMITID}"
         }, {
             DisplayText: "Site ID:",
-            FieldName: "${Site_ID}"
+            FieldName: "${SITEID}"
         }, {
             DisplayText: "Address:",
-            FieldName: "${Site_Location}"
+            FieldName: "${LOCDESC}"
         }, {
-            DisplayText: "City:",
-            FieldName: "${City}"
+            DisplayText: "Applicant:",
+            FieldName: "${APPLICANT}"
         }, {
             DisplayText: "Type:",
-            FieldName: "${Permit_Type}"
+            FieldName: "${PERMITDESC}"
         }, {
-            DisplayText: "Expiration Date:",
-            FieldName: "${Expiration_Date}"
-        }, {
-            DisplayText: "Issue Date:",
-            FieldName: "${Issue_Date}"
+            DisplayText: "Approved Date:",
+            FieldName: "${APPROVEDDT}"
         }, {
             DisplayText: "Effective Date:",
-            FieldName: "${Effective_Date}"
+            FieldName: "${EFFECTIVEDT}"
         }, {
             DisplayText: "County:",
-            FieldName: "${County}"
+            FieldName: "${COUNTY}"
         }]
     }, {
         Title: "ERP",
@@ -393,7 +387,7 @@ dojo.declare("js.config", null, {
     // ------------------------------------------------------------------------------------------------------------------------
 
     // Set geometry service URL
-    GeometryService: "http://localgovtemplates2.esri.com/ArcGIS/rest/services/Geometry/GeometryServer",
+    GeometryService: "http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer",
 
     // ------------------------------------------------------------------------------------------------------------------------
     // SETTINGS FOR MAP SHARING

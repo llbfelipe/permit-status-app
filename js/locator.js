@@ -506,24 +506,30 @@ function PopulatePermits(permitArray) {
         var defaultPermit = arrPermits[i].attributes.attr.attributes[arrPermits[i].searchDisplayField.split("$")[1].split("{")[1].split("}")[0]];
         tdPermit.setAttribute("defaultPermit", defaultPermit);
         tdPermit.onclick = function () {
-            var counter = 0;
-            var layer = arrPermits[this.getAttribute("index")].attributes.layerID.QueryURL;
-            for (var i = 0; i < operationalLayers.length; i++) {
-                var lastIndex = operationalLayers[i].ServiceURL.lastIndexOf('/');
-                var dynamicLayerId = operationalLayers[i].ServiceURL.substr(lastIndex + 1);
-                if (isNaN(dynamicLayerId) || dynamicLayerId == "") {
-                    counter++;
-                } else {
-                    if (operationalLayers[i].ServiceURL == layer) {
+            //To check if infowindow data for this layer is accessible from the webmap or not.
+            if (arrPermits[this.getAttribute("index")].attributes.layerID.InfoWindowHeader) {
+                var counter = 0;
+                var layer = arrPermits[this.getAttribute("index")].attributes.layerID.QueryURL;
+                for (var i = 0; i < operationalLayers.length; i++) {
+                    var lastIndex = operationalLayers[i].ServiceURL.lastIndexOf('/');
+                    var dynamicLayerId = operationalLayers[i].ServiceURL.substr(lastIndex + 1);
+                    if (isNaN(dynamicLayerId) || dynamicLayerId == "") {
                         counter++;
+                    } else {
+                        if (operationalLayers[i].ServiceURL == layer) {
+                            counter++;
+                        }
                     }
                 }
+                //To check if the queried layer is added on the map or not
+                if (counter == 0) {
+                    alert(messages.getElementsByTagName("layerNotVisible")[0].childNodes[0].nodeValue);
+                } else {
+                    FetchPermitData(this, arrPermits);
+                }
             }
-            //To check if the queried layer is added on the map or not
-            if (counter == 0) {
-                alert(messages.getElementsByTagName("layerNotVisible")[0].childNodes[0].nodeValue);
-            } else {
-                FetchPermitData(this, arrPermits);
+            else {
+                alert(dojo.string.substitute(messages.getElementsByTagName("noInfoWindowData")[0].childNodes[0].nodeValue, [arrPermits[this.getAttribute("index")].attributes.layerID.Title]));
             }
         };
         trPermit.appendChild(tdPermit);
