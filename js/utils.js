@@ -144,7 +144,7 @@ function ShowMobileInfoWindow(mapPoint, attributes, layerID, fields) {
     point = selectedMapPoint;
     map.infoWindow.resize(225, 65);
     currentExtent = map.extent;
-    SetFeatureZoomLevel(mapPoint, selectedMapPoint, false);
+    SetFeatureZoomLevel(mapPoint, selectedMapPoint);
     FormatNullValues(attributes);
     try {
         map.infoWindow.setTitle(TrimString(dojo.string.substitute(searchSettings[layerID].InfoWindowHeader, attributes), 14));
@@ -171,7 +171,7 @@ function ShowMobileInfoDetails(mapPoint, featureArray, geometry) {
     currentExtent = map.extent;
 
     if (featureArray.length == 1) {
-        SetFeatureZoomLevel(geometry, selectedMapPoint, false);
+        SetFeatureZoomLevel(geometry, selectedMapPoint);
         FormatNullValues(featureArray[0].attr.attributes);
         try {
             map.infoWindow.setTitle(TrimString(dojo.string.substitute(searchSettings[featureArray[0].layerId].InfoWindowHeader, featureArray[0].attr.attributes), 14));
@@ -180,7 +180,7 @@ function ShowMobileInfoDetails(mapPoint, featureArray, geometry) {
             alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
         }
     } else {
-        SetInfoWindowPosition(selectedMapPoint, 0);
+        SetListInfoWindowExtent(selectedMapPoint, 0);
         try {
             map.infoWindow.setTitle(TrimString(dojo.string.substitute(messages.getElementsByTagName("numberOfFeaturesFoundOnMobile")[0].childNodes[0].nodeValue, [featureArray.length]), 14));
         } catch (e) {
@@ -270,7 +270,7 @@ function ShowPermitList(mapPoint, result, geometry) {
         map.infoWindow.resize(responseObject.InfoPopupWidth, responseObject.InfoPopupHeight);
         selectedMapPoint = GetGeometryType(geometry);
         point = mapPoint;
-        SetInfoWindowPosition(selectedMapPoint, 2);
+        SetListInfoWindowExtent(selectedMapPoint, 2);
     } else {
         dojo.dom.byId('divInfoContainer').style.display = "block";
         dojo['dom-class'].replace("divInfoContainer", "opacityShowAnimation", "opacityHideAnimation");
@@ -324,7 +324,7 @@ function ShowInfoWindowDetails(geometry, attributes, featureLength, layer, mapPo
             map.infoWindow.resize(responseObject.InfoPopupWidth, responseObject.InfoPopupHeight);
             selectedMapPoint = GetGeometryType(geometry);
             point = mapPoint;
-            SetFeatureZoomLevel(geometry, selectedMapPoint, true);
+            SetFeatureZoomLevel(geometry, selectedMapPoint);
         } else {
             dojo.dom.byId('divInfoContainer').style.display = "block";
             dojo['dom-class'].replace("divInfoContainer", "opacityShowAnimation", "opacityHideAnimation");
@@ -406,9 +406,9 @@ function GetGeometryType(geometry) {
 
 //Set the zoom level for features according to the 'ZoomToPolygonGeometry' tag set in the config file
 
-function SetFeatureZoomLevel(geometry, selectedMapPoint, flag) {
+function SetFeatureZoomLevel(geometry, selectedMapPoint) {
     if (geometry.type == "point") {
-        SetZoomLevel(selectedMapPoint);
+        SetZoomLevel(selectedMapPoint, 1);
     } else {
         if (responseObject.ZoomToPolygonGeometry) {
             map.infoWindow.hide();
@@ -428,42 +428,59 @@ function SetFeatureZoomLevel(geometry, selectedMapPoint, flag) {
                 extent = "";
             }
         } else {
-            SetZoomLevel(selectedMapPoint);
+            SetZoomLevel(selectedMapPoint, 1);
         }
-    }
-}
-
-function SetZoomLevel(selectedMapPoint) {
-    if (map.getLevel() != responseObject.ZoomLevel) {
-        var zoomDeferred = map.centerAndZoom(selectedMapPoint, responseObject.ZoomLevel);
-        map.infoWindow.hide();
-        zoomDeferred.then(function () {
-            SetInfoWindowPosition(selectedMapPoint, 1);
-        });
-    } else {
-        SetInfoWindowPosition(selectedMapPoint, 1);
     }
 }
 
 // Position the infowindow to the center of the map
 
-function SetInfoWindowPosition(selectedMapPoint, flag) {
-    var extentDeferred = map.setExtent(CalculateMapExtent(selectedMapPoint), true);
+function SetZoomLevel(selectedMapPoint, flag) {
     map.infoWindow.hide();
-    extentDeferred.then(function () {
-        HideProgressIndicator();
-        map.infoWindow.hide();
-        var screenPoint = map.toScreen(selectedMapPoint);
-        screenPoint.y = map.height - screenPoint.y;
-        map.infoWindow.show(screenPoint);
-        flag == 1 ? SetViewDetailsHeight() : flag == 2 ? SetPermitDataHeight() : null;
-        if (extent != "") {
-            mapExtent = extent.split(',');
-            mapExtent = new esri.geometry.Extent(parseFloat(mapExtent[0]), parseFloat(mapExtent[1]), parseFloat(mapExtent[2]), parseFloat(mapExtent[3]), map.spatialReference);
-            map.setExtent(mapExtent);
-            extent = "";
+    var screenPoint = map.toScreen(selectedMapPoint);
+    screenPoint.y = map.height - screenPoint.y;
+    map.infoWindow.show(screenPoint);
+    if (map.height / 2 < map.infoWindow.infoWindowHeight + 30 + 58) {
+        if (map.getLevel() != responseObject.ZoomLevel) {
+            var zoomDeferred = map.setLevel(responseObject.ZoomLevel);
+            map.infoWindow.hide();
+            zoomDeferred.then(function () {
+                SetCustomMapExtent(selectedMapPoint, flag);
+            });
+        } else {
+            SetCustomMapExtent(selectedMapPoint, flag);
         }
-    });
+    } else {
+        HideProgressIndicator();
+        map.centerAndZoom(selectedMapPoint, responseObject.ZoomLevel);
+    }
+}
+
+function SetCustomMapExtent(selectedMapPoint, flag) {
+    HideProgressIndicator();
+    map.setExtent(CalculateCustomMapExtent(selectedMapPoint));
+    flag == 1 ? SetViewDetailsHeight() : flag == 2 ? SetPermitDataHeight() : null;
+    if (extent != "") {
+        mapExtent = extent.split(',');
+        mapExtent = new esri.geometry.Extent(parseFloat(mapExtent[0]), parseFloat(mapExtent[1]), parseFloat(mapExtent[2]), parseFloat(mapExtent[3]), map.spatialReference);
+        map.setExtent(mapExtent);
+        extent = "";
+    }
+}
+
+//Get the extent based on the map point
+
+function CalculateCustomMapExtent(mapPoint) {
+    var width = map.extent.getWidth();
+    var height = map.extent.getHeight();
+    var ratioHeight = height / map.height;
+    var totalYPoint = map.infoWindow.infoWindowHeight + 30 + 58;
+    var infoWindowHeight = height - (ratioHeight * totalYPoint);
+    var xmin = mapPoint.x - (width / 2);
+    var ymin = mapPoint.y - infoWindowHeight;
+    var xmax = xmin + width;
+    var ymax = ymin + height;
+    return new esri.geometry.Extent(xmin, ymin, xmax, ymax, map.spatialReference);
 }
 
 //Create table row
@@ -564,19 +581,32 @@ function OrientationChanged() {
                     SetViewDetailsHeight();
                     SetPermitDataHeight();
                     if (selectedMapPoint) {
-                        map.setExtent(CalculateMapExtent(selectedMapPoint), true);
+                        SetListInfoWindowExtent(selectedMapPoint);
                     }
                     orientationChange = false;
                 }, 500);
             } else {
                 setTimeout(function () {
                     if (selectedMapPoint) {
-                        map.setExtent(CalculateMapExtent(selectedMapPoint), true);
+                        SetListInfoWindowExtent(selectedMapPoint);
                     }
                     orientationChange = false;
                 }, 500);
             }
         }, timeout);
+    }
+}
+
+function SetListInfoWindowExtent(selectedMapPoint, flag) {
+    var screenPoint = map.toScreen(selectedMapPoint);
+    screenPoint.y = map.height - screenPoint.y;
+    map.infoWindow.show(screenPoint);
+    if (map.height / 2 < map.infoWindow.infoWindowHeight + 30 + 58) {
+        SetCustomMapExtent(selectedMapPoint, flag);
+    } else {
+        HideProgressIndicator();
+        flag == 1 ? SetViewDetailsHeight() : flag == 2 ? SetPermitDataHeight() : null;
+        map.centerAt(selectedMapPoint);
     }
 }
 
@@ -759,22 +789,6 @@ function SetPermitDataHeight() {
         dojo.dom.byId('divPermitScrollContent').style.height = (height - ((!isTablet) ? 62 : 55)) + "px";
     }
     CreateScrollbar(dojo.dom.byId("divPermitDataScrollContainer"), dojo.dom.byId("divPermitScrollContent"));
-}
-
-//Get the extent based on the map point
-
-function CalculateMapExtent(mapPoint) {
-    var width = map.extent.getWidth();
-    var height = map.extent.getHeight();
-    var xmin = mapPoint.x - (width / 2);
-    if (!isMobileDevice) {
-        var ymin = mapPoint.y - (height / 3);
-    } else {
-        var ymin = mapPoint.y - (height / 4);
-    }
-    var xmax = xmin + width;
-    var ymax = ymin + height;
-    return new esri.geometry.Extent(xmin, ymin, xmax, ymax, map.spatialReference);
 }
 
 //Hide the base map container
