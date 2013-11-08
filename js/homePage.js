@@ -61,6 +61,7 @@ var shareFlag = false;
 var mapExtent = null;
 var operationalLayers;
 var geometryService;
+var searchQueryLayerID;
 
 //This initialization function is called when the DOM elements are ready
 
@@ -614,7 +615,11 @@ function MapOnLoad() {
                 if (tempFeatureID.split("$searchInfoWindowLayerID=").length > 1) {
                     addressSearchFlag = true;
                     searchFeatureID = tempFeatureID.split("$searchInfoWindowLayerID=")[0];
-                    searchInfoWindowLayerID = tempFeatureID.split("$searchInfoWindowLayerID=")[1];
+                    var tempQueryLayerID = tempFeatureID.split("$searchInfoWindowLayerID=")[1];
+                    if (tempQueryLayerID.split("$searchQueryLayerID=").length > 1) {
+                        searchInfoWindowLayerID = tempQueryLayerID.split("$searchQueryLayerID=")[0];
+                        searchQueryLayerID = tempQueryLayerID.split("$searchQueryLayerID=")[1];
+                    }
                 }
             }
         }

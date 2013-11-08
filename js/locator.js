@@ -559,6 +559,7 @@ function FetchPermitData(permitData, arrPermits) {
     }
     searchFeatureID = attributes.attr.attributes[objID];
     searchInfoWindowLayerID = searchSettings[attributes.index].Title;
+    searchQueryLayerID = searchSettings[attributes.index].QueryLayerId;
     addressSearchFlag = true;
     if (isNaN(searchFeatureID)) {
         searchFeatureID = "'" + searchFeatureID + "'";
@@ -861,7 +862,7 @@ function GeolocationErrorHandler(error) {
 function ShareInfoWindow() {
     ShowProgressIndicator();
     for (var index = 0; index < searchSettings.length; index++) {
-        if (searchSettings[index].Title == searchInfoWindowLayerID) {
+        if (searchSettings[index].Title == searchInfoWindowLayerID && searchSettings[index].QueryLayerId == searchQueryLayerID) {
             var layerIndex = index;
             var queryTask = new esri.tasks.QueryTask(searchSettings[index].QueryURL);
             esri.request({

@@ -85,7 +85,7 @@ function ExecuteQueryTask(index, mapPoint) {
     }, function (err) {
         HideProgressIndicator();
         alert(dojo.string.substitute(messages.getElementsByTagName("dataNotFound")[0].childNodes[0].nodeValue, [searchSettings[index].Title]));
-        FetchQueryResults();
+        FetchQueryResults(null, null, mapPoint);
     });
 }
 
@@ -820,7 +820,7 @@ function ShareLink(ext) {
     } else if (point && infoWindowLayerID && !addressSearchFlag) {
         var urlStr = encodeURI(url.path) + "?extent=" + mapExtent + "$point=" + point.x + "," + point.y + "$currentExtent=" + currentMapExtent + "$featureID=" + featureID + "$infoWindowLayerID=" + infoWindowLayerID;
     } else if (searchFeatureID && searchInfoWindowLayerID && addressSearchFlag) {
-        var urlStr = encodeURI(url.path) + "?extent=" + mapExtent + "$searchFeatureID=" + searchFeatureID + "$searchInfoWindowLayerID=" + searchInfoWindowLayerID;
+        var urlStr = encodeURI(url.path) + "?extent=" + mapExtent + "$searchFeatureID=" + searchFeatureID + "$searchInfoWindowLayerID=" + searchInfoWindowLayerID + "$searchQueryLayerID=" + searchQueryLayerID;
     } else {
         var urlStr = encodeURI(url.path) + "?extent=" + mapExtent;
     }
