@@ -18,10 +18,10 @@
 /* The common settings for the styles are defined in "permitStatus.css" */
 /* Use this file to perform the following: */
 /* 1.  Set the body styles                      - { Style(s) to look for: html, body } */
-/* 2.  Set styles for icons                     - { Style(s) to look for: customButton,tableHeader,tdHeader,imgOptions,imgShare}*/
-/* 3.  Set the styles for search container      - { Style(s) to look for: divAddressContainer,divAddressContent,imgLocate,
-                                                                          imgBreadCrumbs, txtAddress, bottomBorder,tdSubAddress, divAddressResultContainer}*/
-/* 4.  Set the styles for info window           - { Style(s) to look for: imgArrow, divInfoContent, divInfoDetails, divInfoContainer, 
+/* 2.  Set styles for icons                     - { Style(s) to look for: customButton, tableHeader, tdHeader, imgOptions, imgShare}*/
+/* 3.  Set the styles for search container      - { Style(s) to look for: divAddressContainer, divAddressContent, divFreezeAddressContainer, imgLocate,
+                                                                          imgBreadCrumbs, txtAddress, bottomBorder, divAddressResultContainer}*/
+/* 4.  Set the styles for info window           - { Style(s) to look for: imgArrow, divInfoContent, divInfoDetails, divInfoContainer,
                                                                           divInfoWindowContainer .content, divInfoWindowContainer .title,
                                                                           trRowHeight, infoOptions}*/
 /* 5.  Set the styles for share application     - { Style(s) to look for: divAppContainer}
@@ -132,11 +132,6 @@ html, body
     height: 40px;
 }
 
-.tdSubAddress
-{
-    height: 40px;
-}
-
 .divAddressPlaceHolder
 {
     height: 44px !important;
@@ -205,12 +200,6 @@ html, body
 .trRowHeight
 {
     height: 40px;
-}
-
-.tdBreak
-{
-    word-wrap: break-word;
-    word-break: break-all;
 }
 
 /*---------------------------------------------------------------------------------------------------------*/

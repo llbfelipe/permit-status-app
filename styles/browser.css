@@ -21,16 +21,17 @@
 /* 2.  Set styles for icons, buttons and header
        styles                                     - { Style(s) to look for: customButton,imgOptions,imgShare,tdHeader}*/
 
-/* 3.  Set the styles for search container        - { Style(s) to look for: divAddressContent, txtAddress, divAddressPlaceHolder, imgLocate,
+/* 3.  Set the styles for search container        - { Style(s) to look for: divAddressContent, divFreezeAddressContainer, txtAddress, divAddressPlaceHolder, imgLocate,
                                                                             imgBreadCrumbs, divAddressScrollContent, tdSearchByAddress, tdSearchByUnSelectedLocation,
                                                                             tdSearchByUnSelectedPermit, tdSearchByUnSelectedAddress, tdSearchByLocation,
-                                                                            tdSearchByPermit, tdSubAddress}*/
+                                                                            tdSearchByPermit}*/
 /* 4.  Set the styles for BaseMap container       - { Style(s) to look for: divLayerContainer,divLayerHolder,selectedBaseMap}*/
-/* 5.  Set the styles for info window             - { Style(s) to look for: divInfoContainer, divInfoContent, infoOptions, trRowHeight,cursorPointer,tdBreak}*/
+/* 5.  Set the styles for info window             - { Style(s) to look for: divInfoContainer, divInfoContent, infoOptions, trRowHeight,cursorPointer}*/
 /* 6.  Set the styles for esri slider             - { Style(s) to look for: esriSimpleSlider}*/
 
 /*---------------------------------------------------------------------------------------------------------------*/
 /* Styles for body*/
+
 body, html
 {
     font-size: 11px !important;
@@ -126,12 +127,6 @@ body, html
     width: 70px;
 }
 
-.tdSubAddress
-{
-    width: 250px;
-    height: 20px;
-}
-
 .bottomBorder
 {
     height: 20px;
@@ -209,11 +204,6 @@ body, html
     cursor: pointer;
 }
 
-.tdBreak
-{
-    word-wrap: break-word;
-}
-
 /*---------------------------------------------------------------------------------------------------------*/
 /* esri slider style*/
 
@@ -221,4 +211,3 @@ body, html
 {
     top: 90px !important;
 }
-

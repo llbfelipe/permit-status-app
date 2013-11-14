@@ -119,7 +119,7 @@ dojo.declare("js.InfoWindow", [esri.InfoWindowBase], {
     },
 
     destroy: function () {
-        dojo.forEach(this._eventConnections, dojo.disconnect);
+        dojo._base.array.forEach(this._eventConnections, dojo.disconnect);
         dojo.destroy(this.domNode);
         this._title = this._content = this._eventConnections = this._imgDetails = null;
     }
