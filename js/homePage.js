@@ -326,7 +326,7 @@ function FetchWebMapData(response) {
                         if (webMapDetails.operationalLayers[j].layerObject.displayField) {
                             searchSettings[index]["InfoWindowContent"] = "${" + webMapDetails.operationalLayers[j].layerObject.displayField + "}";
                         } else {
-                            searchSettings[index]["InfoWindowContent"] = responseObject.ShowNullValueAs;
+                            GetMobileCalloutContentField(index);
                         }
                         searchSettings[index]["InfoWindowData"] = [];
                         for (var field in webMapDetails.operationalLayers[j].popupInfo.fieldInfos) {
@@ -399,16 +399,24 @@ function FetchCountyLayerData(operationalLayerId, url) {
 // Get data to be displayed in mobile callout content field
 
 function GetMobileCalloutContentField(index) {
+    var def = new dojo.Deferred();
     esri.request({
         url: searchSettings[index].QueryURL + '?f=json',
         load: function (data) {
             if (data.displayField) {
                 searchSettings[index]["InfoWindowContent"] = "${" + data.displayField + "}";
             } else {
-                searchSettings[index]["InfoWindowContent"] = responseObject.ShowNullValueAs;
+                for (var i = 0; i < data.fields.length; i++) {
+                    if (data.fields[i].type != "esriFieldTypeOID") {
+                        searchSettings[index]["InfoWindowContent"] = "${" + data.fields[i].name + "}";
+                        break;
+                    }
+                }
             }
+            def.resolve();
         }
     });
+    return def;
 }
 
 function SetAPIDefaults() {

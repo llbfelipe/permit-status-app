@@ -148,7 +148,14 @@ function ShowMobileInfoWindow(mapPoint, attributes, layerID, fields) {
     FormatNullValues(attributes);
     try {
         map.infoWindow.setTitle(TrimString(dojo.string.substitute(searchSettings[layerID].InfoWindowHeader, attributes), 14));
-        map.infoWindow.setContent(TrimString(dojo.string.substitute(searchSettings[layerID].InfoWindowContent, attributes), 14));
+        if (searchSettings[layerID].InfoWindowContent && (dojo.string.trim(searchSettings[layerID].InfoWindowContent) != "")) {
+            map.infoWindow.setContent(TrimString(dojo.string.substitute(searchSettings[layerID].InfoWindowContent, attributes), 14));
+        }
+        else {
+            GetMobileCalloutContentField(layerID).then(function () {
+                map.infoWindow.setContent(TrimString(dojo.string.substitute(searchSettings[layerID].InfoWindowContent, attributes), 14));
+            });
+        }
     } catch (e) {
         alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
     }
@@ -175,7 +182,14 @@ function ShowMobileInfoDetails(mapPoint, featureArray, geometry) {
         FormatNullValues(featureArray[0].attr.attributes);
         try {
             map.infoWindow.setTitle(TrimString(dojo.string.substitute(searchSettings[featureArray[0].layerId].InfoWindowHeader, featureArray[0].attr.attributes), 14));
-            map.infoWindow.setContent(TrimString(dojo.string.substitute(searchSettings[featureArray[0].layerId].InfoWindowContent, featureArray[0].attr.attributes), 14));
+            if (searchSettings[featureArray[0].layerId].InfoWindowContent && (dojo.string.trim(searchSettings[featureArray[0].layerId].InfoWindowContent))) {
+                map.infoWindow.setContent(TrimString(dojo.string.substitute(searchSettings[featureArray[0].layerId].InfoWindowContent, featureArray[0].attr.attributes), 14));
+            }
+            else {
+                GetMobileCalloutContentField(featureArray[0].layerId).then(function () {
+                    map.infoWindow.setContent(TrimString(dojo.string.substitute(searchSettings[featureArray[0].layerId].InfoWindowContent, featureArray[0].attr.attributes), 14));
+                });
+            }
         } catch (e) {
             alert(messages.getElementsByTagName("falseConfigParams")[0].childNodes[0].nodeValue);
         }
