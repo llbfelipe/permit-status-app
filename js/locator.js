@@ -574,6 +574,7 @@ function FetchPermitData(permitData, arrPermits) {
         LocatePermitOnMap(featureSet.features[0].geometry, featureSet.features[0].attributes, attributes.index, featureSet.fields, attributes.layerID.QueryURL);
     }, function (err) {
         alert(err.message);
+        HideProgressIndicator();
     });
 }
 
@@ -647,7 +648,7 @@ function FetchCountyResults(featureset) {
                     dojo.dom.byId('txtAddress').setAttribute("defaultLocation", this.innerHTML);
                     lastSearchString = dojo.string.trim(dojo.dom.byId("txtAddress").value);
                     var attr = featureSet[this.getAttribute("index")].attributes;
-                    LocateCountyOnMap(attr);
+                    LocateCountyOnMap();
                 }
                 trCounty.appendChild(tdCounty);
             }
@@ -683,21 +684,20 @@ function LocatorErrBack(errorMessage) {
 
 //Query the location that is selected from the list of candidates to fetch its geometry
 
-function LocateCountyOnMap(attributes) {
+function LocateCountyOnMap() {
     isCountySearched = true;
     permitArray = [];
     dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
     RemoveScrollBar(dojo.dom.byId('divAddressScrollContainer'));
     var queryTask = new esri.tasks.QueryTask(countyLayerData.ServiceURL);
     var query = new esri.tasks.Query();
-    var countyName = countyLayerData.SearchExpression.split(" LIKE")[0];
-    query.where = dojo.string.substitute(countyLayerData.SearchExpression, [attributes[countyName]]);
+    query.where = dojo.string.substitute(countyLayerData.SearchExpression, [dojo.string.trim(dojo.dom.byId("txtAddress").value).toUpperCase()]);
     query.outSpatialReference = map.spatialReference;
     query.returnGeometry = true;
     query.outFields = ["*"];
     queryTask.execute(query, function (featureSet) {
         dojo['dom-construct'].empty(dojo.dom.byId('tblAddressResults'));
-        ShowLocatedCountyOnMap(featureSet.features[0].geometry, attributes[countyName]);
+        ShowLocatedCountyOnMap(featureSet.features[0].geometry, dojo.string.trim(dojo.dom.byId("txtAddress").value));
     });
 }
 
@@ -718,7 +718,7 @@ function ShowLocatedCountyOnMap(geometry, locationName) {
         HideProgressIndicator();
     }
     for (var index = 0; index < searchSettings.length; index++) {
-        FetchPermitResults(searchSettings[index], countyGeometry, index);
+        FetchPermitResults(searchSettings[index], geometry, index);
     }
     if (locationName) {
         dojo.dom.byId("divBreadCrumbs").style.display = "block";
@@ -726,6 +726,7 @@ function ShowLocatedCountyOnMap(geometry, locationName) {
         dojo.dom.byId("tdBreadCrumbs").appendChild(span);
         var ext = { xmin: countyGeometry.xmin, ymin: countyGeometry.ymin, xmax: countyGeometry.xmax, ymax: countyGeometry.ymax };
         span.setAttribute("county", dojo.toJson(ext));
+        span.setAttribute("countyGeometry", dojo.toJson(geometry));
         if (dojo.query(".spanBreadCrumbs", dojo.dom.byId("tdBreadCrumbs")).length > 0) {
             dojo['dom-class'].add(span, "spanBreadCrumbs");
             span.setAttribute("index", dojo.query(".spanBreadCrumbs", dojo.dom.byId("tdBreadCrumbs")).indexOf(span));
@@ -746,11 +747,19 @@ function ShowLocatedCountyOnMap(geometry, locationName) {
 
 function NavigateBreadCrumbs(pThis) {
     var county = dojo.fromJson(pThis.getAttribute("county"));
+    if (!responseObject.CountyLayerData.UseGeocoderService) {
+        var polygon = new esri.geometry.Polygon(map.spatialReference);
+        polygon.addRing(dojo.fromJson(pThis.getAttribute("countyGeometry")).rings[0]);
+    }
     countyGeometry = new esri.geometry.Extent(parseFloat(county.xmin), parseFloat(county.ymin), parseFloat(county.xmax), parseFloat(county.ymax), map.spatialReference);
     map.setExtent(countyGeometry, true);
     previousExtent = countyGeometry;
     for (var index = 0; index < searchSettings.length; index++) {
-        FetchPermitResults(searchSettings[index], countyGeometry, index);
+        if (responseObject.CountyLayerData.UseGeocoderService) {
+            FetchPermitResults(searchSettings[index], countyGeometry, index);
+        } else {
+            FetchPermitResults(searchSettings[index], polygon, index);
+        }
     }
     var list = dojo.dom.byId("tdBreadCrumbs");
     items = list.getElementsByTagName("span");
