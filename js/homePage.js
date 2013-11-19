@@ -366,8 +366,10 @@ function GetCountyDataFromWebmap(webMapDetails) {
             if (webMapDetails.operationalLayers[i].layerObject) {
                 for (var k = 0; k < webMapDetails.operationalLayers[i].layerObject.layerInfos.length; k++) {
                     if (webMapDetails.operationalLayers[i].layerObject.__popupIds) {
-                        if (webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id != webMapDetails.operationalLayers[i].layerObject.__popupIds[k]) {
-                            FetchCountyLayerData(countyLayerId, webMapDetails.operationalLayers[i].url + "/" + webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id);
+                        if (dojo.indexOf(webMapDetails.operationalLayers[i].layerObject.__popupIds, webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id) < 0) {
+                            if (!webMapDetails.operationalLayers[i].layerObject.layerInfos[k].subLayerIds) {
+                                FetchCountyLayerData(countyLayerId, webMapDetails.operationalLayers[i].url + "/" + webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id);
+                            }
                         }
                     } else {
                         FetchCountyLayerData(countyLayerId, webMapDetails.operationalLayers[i].url + "/" + webMapDetails.operationalLayers[i].layerObject.layerInfos[k].id);
