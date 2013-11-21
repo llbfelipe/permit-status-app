@@ -1,4 +1,4 @@
-ï»¿/*global dojo */
+/*global dojo */
 /*
  | Version 10.2
  | Copyright 2013 Esri
@@ -57,7 +57,7 @@ dojo.declare("js.config", null, {
 
     // Set splash window content - Message that appears when the application starts
     SplashScreen: {
-        Message: "Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.",
+        Message: "Welcome to the <b>Permit Status Application</b> <br/> <hr/> <br/>The <b>Permit Status Application</b> enables constituents in the State, NGO's, contractors <br/> and other entities to search for and discover <br/> information about permitted activities within the state.<br/></br> To locate a permit, simply enter an address, location or permit information in the search box, or use your current location. The permit(s) and relevant information will be presented to the user.",
         isVisible: true
     },
 
@@ -71,20 +71,20 @@ dojo.declare("js.config", null, {
     // Please note: All base maps need to use the same spatial reference. By default, on application start the first basemap will be loaded
 
     BaseMapLayers: [{
+        Key: "natgeoMap",
+        ThumbnailSource: "images/nationalgeo.png",
+        Name: "National Geographic Map",
+        MapURL: "http://services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer"
+
+    }, {
         Key: "imageryMap",
         ThumbnailSource: "images/imagery.png",
         Name: "Imagery Map",
-        MapURL: "http://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
-
-    }, {
-        Key: "streetMap",
-        ThumbnailSource: "images/streets.png",
-        Name: "Street Map",
-        MapURL: "http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"
+        MapURL: "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
     }],
 
     // Initial map extent. Use comma (,) to separate values and dont delete the last comma
-    DefaultExtent: "-10181248, 2823548, -8510640, 3646622",
+    DefaultExtent: "-10158000, 4002000, -8984000, 4554000",
 
     // ------------------------------------------------------------------------------------------------------------------------
     // OPERATIONAL DATA SETTINGS
@@ -102,13 +102,7 @@ dojo.declare("js.config", null, {
     // LoadAsServiceType: Field to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer.
     //                    Supported service types are 'dynamic', 'feature' and 'tiled' only.
     OperationalLayers: [{
-        ServiceURL: "http://tryitlive.arcgis.com/arcgis/rest/services/PermitStatus/MapServer/0",
-        LoadAsServiceType: "dynamic"
-    }, {
-        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/CUP/MapServer/0",
-        LoadAsServiceType: "dynamic"
-    }, {
-        ServiceURL: "http://50.18.115.76:6080/arcgis/rest/services/ERP/MapServer/0",
+        ServiceURL: "http://arcgis-gov-1244222493.us-west-2.elb.amazonaws.com/arcgis/rest/services/Permits/MapServer/0",
         LoadAsServiceType: "dynamic"
     }],
 
@@ -126,7 +120,7 @@ dojo.declare("js.config", null, {
 
     CountyLayerData: {
         Title: "CountyLayer",
-        ServiceURL: "http://tryitlive.arcgis.com/arcgis/rest/services/PermitStatus/MapServer/1",
+        ServiceURL: "http://arcgis-gov-1244222493.us-west-2.elb.amazonaws.com/arcgis/rest/services/Permits/MapServer",
         LoadAsServiceType: "dynamic",
         SearchExpression: "NAME LIKE '${0}%'",
         CountyDisplayField: "${NAME}",
@@ -143,26 +137,12 @@ dojo.declare("js.config", null, {
     // SearchExpression: Query to perform permit search.
 
     SearchSettings: [{
-        Title: "PermitStatus",
+        Title: "Permits",
         QueryLayerId: "0",
         ListDisplayText: "Permit Number",
         ListFieldName: "${PERMITID}",
-        SearchDisplayFields: "${PERMITID} / ${APPLICANT} / ${PERMITTYPE}",
-        SearchExpression: "UPPER(PERMITID) LIKE '${0}%' OR UPPER(APPLICANT) LIKE '${0}%' OR UPPER(LOCDESC) LIKE '${0}%' OR UPPER(PERMITTYPE) LIKE '${0}%'"
-    }, {
-        Title: "ERP",
-        QueryLayerId: "0",
-        ListDisplayText: "Permit Number",
-        ListFieldName: "${ERP_PERMIT_NBR}",
-        SearchDisplayFields: "${ERP_PERMIT_NBR} / ${PROJECT_NAME} / ${ERP_PERMIT_TYPE_DESC}",
-        SearchExpression: "UPPER(ERP_PERMIT_NBR) LIKE '${0}%' OR UPPER(PROJECT_NAME) LIKE '${0}%' OR UPPER(ERP_PERMIT_TYPE_DESC) LIKE '${0}%' OR UPPER(PERMITTEE_NAME) LIKE '${0}%'"
-    }, {
-        Title: "CUP",
-        QueryLayerId: "0",
-        ListDisplayText: "Permit Number",
-        ListFieldName: "${WUP_PERMIT_NBR}",
-        SearchDisplayFields: "${WUP_PERMIT_NBR} / ${SITE_PROJECT_NAME} / ${WUP_PERMIT_TYPE_DESC}",
-        SearchExpression: "UPPER(WUP_PERMIT_NBR) LIKE '${0}%' OR UPPER(SITE_PROJECT_NAME) LIKE '${0}%' OR UPPER(WUP_PERMIT_TYPE_DESC) LIKE '${0}%' OR UPPER(PERMITTEE_NAME) LIKE '${0}%'"
+        SearchDisplayFields: "${PERMITID} / ${PERMITDESC} / ${APPLICANT}",
+        SearchExpression: "UPPER(PERMITID) LIKE '${0}%' OR UPPER(PERMITDESC) LIKE '${0}%' OR UPPER(APPLICANT) LIKE '${0}%' OR UPPER(PERMITTYPE) LIKE '${0}%'"
     }],
 
     // Configure info-popup settings (The Title and QueryLayerId fields should be the same as Title and QueryLayerId fields in SearchSettings)
@@ -175,111 +155,43 @@ dojo.declare("js.config", null, {
     // DisplayText: Caption to be displayed instead of field alias names. Set this to empty string ("") if you wish to display field alias names as captions.
     // FieldName: Field used for displaying the value
     InfoWindowSettings: [{
-        Title: "PermitStatus",
+        Title: "Permits",
         QueryLayerId: "0",
         InfoWindowHeader: "${APPLICANT}",
         InfoWindowContent: "${PERMITID}",
         InfoWindowData: [{
             DisplayText: "Permit Type:",
             FieldName: "${PERMITTYPE}"
-        }, {
-            DisplayText: "Permit Number:",
+        },{
+            DisplayText: "Permit ID:",
             FieldName: "${PERMITID}"
         }, {
             DisplayText: "Site ID:",
             FieldName: "${SITEID}"
         }, {
-            DisplayText: "Address:",
+          
+            DisplayText: "Location:",
             FieldName: "${LOCDESC}"
         }, {
-            DisplayText: "Applicant:",
-            FieldName: "${APPLICANT}"
-        }, {
-            DisplayText: "Type:",
+            DisplayText: "Permit Description:",
             FieldName: "${PERMITDESC}"
         }, {
-            DisplayText: "Approved Date:",
+            DisplayText: "County:",
+            FieldName: "${COUNTY}"
+        }, {
+            DisplayText: "Approval Date:",
             FieldName: "${APPROVEDDT}"
         }, {
             DisplayText: "Effective Date:",
             FieldName: "${EFFECTIVEDT}"
-        }, {
-            DisplayText: "County:",
-            FieldName: "${COUNTY}"
-        }]
-    }, {
-        Title: "ERP",
-        QueryLayerId: "0",
-        InfoWindowHeader: "${PROJECT_NAME}",
-        InfoWindowContent: "${ERP_PERMIT_NBR}",
-        InfoWindowData: [{
-            DisplayText: "Application ID:",
-            FieldName: "${ERP_APPLICATION_ID}"
-        }, {
-            DisplayText: "Permit Number:",
-            FieldName: "${ERP_PERMIT_NBR}"
-        }, {
-            DisplayText: "Permittee Name:",
-            FieldName: "${PERMITTEE_NAME}"
-        }, {
-            DisplayText: "Project Name:",
-            FieldName: "${PROJECT_NAME}"
-        }, {
-            DisplayText: "Address:",
-            FieldName: "${ADDRESS}"
-        }, {
-            DisplayText: "City:",
-            FieldName: "${CITY}"
-        }, {
-            DisplayText: "Type:",
-            FieldName: "${ERP_PERMIT_TYPE_DESC}"
-        }, {
-            DisplayText: "Status:",
-            FieldName: "${ERP_STATUS_DESC}"
-        }, {
-            DisplayText: "County:",
-            FieldName: "${COUNTY_NAME}"
-        }, {
-            DisplayText: "URL:",
-            FieldName: "${ERP_EXT_URL}"
-        }]
-    }, {
-        Title: "CUP",
-        QueryLayerId: "0",
-        InfoWindowHeader: "${SITE_PROJECT_NAME}",
-        InfoWindowContent: "${WUP_PERMIT_NBR}",
-        InfoWindowData: [{
-            DisplayText: "Application ID:",
-            FieldName: "${WUP_APPLICATION_ID}"
-        }, {
-            DisplayText: "Permit Number:",
-            FieldName: "${WUP_PERMIT_NBR}"
-        }, {
-            DisplayText: "Permittee Name:",
-            FieldName: "${PERMITTEE_NAME}"
-        }, {
-            DisplayText: "Project Name:",
-            FieldName: "${SITE_PROJECT_NAME}"
-        }, {
-            DisplayText: "Address:",
-            FieldName: "${ADDRESS}"
-        }, {
-            DisplayText: "City:",
-            FieldName: "${CITY}"
-        }, {
-            DisplayText: "Type:",
-            FieldName: "${WUP_PERMIT_TYPE_DESC}"
-        }, {
-            DisplayText: "Status:",
-            FieldName: "${WUP_APP_STATUS_DESC}"
-        }, {
-            DisplayText: "County:",
-            FieldName: "${COUNTYNAME}"
-        }, {
-            DisplayText: "URL:",
-            FieldName: "${WUP_EXT_URL}"
-        }]
-    }],
+        
+       },
+	 {
+            DisplayText: "Permit Info:",
+            FieldName: "${URL}"
+        
+       }]
+    }], 
 
     // ServiceUrl is the REST end point for the reference overlay layer
     // DisplayOnLoad setting is used to show or hide the reference overlay layer. Reference overlay will be shown when it is set to true
@@ -295,7 +207,7 @@ dojo.declare("js.config", null, {
     // Flag to enable or disable auto-complete search feature for Permit search
     AutocompleteForPermit: true,
 
-    // When set to true, application will zoom to the extents/geometry of selected polygon; when set to false, application will zoom to configured â€˜ZoomLevelâ€™ for selected polygon.
+    // When set to true, application will zoom to the extents/geometry of selected polygon; when set to false, application will zoom to configured ‘ZoomLevel’ for selected polygon.
     ZoomToPolygonGeometry: true,
 
     // ------------------------------------------------------------------------------------------------------------------------
@@ -342,7 +254,12 @@ dojo.declare("js.config", null, {
     //   FilterFieldValues: Specify the feature types to filter search results. e.g. 'county', 'city' etc.
     // LocatorDefaultLocation: Set the default location to search.
     // LocatorDefaultPermit: Set the default permit to search.
-
+    // Set locator settings such as locator symbol, size, display fields, match score
+    // LocatorParameters: Parameters(text, outFields, maxLocations, bbox, outSR) used for address and location search.
+    // AddressSearch: Candidates based on which the address search will be performed.
+    // PlaceNameSearch: Attributes based on which the layers will be queried when a location search is performed.
+    // AddressMatchScore: Setting the minimum score for filtering the candidate results.
+    // MaxResults: Maximum number of locations to display in the results menu.
     LocatorSettings: {
         DefaultLocatorSymbol: "images/redpushpin.png",
         MarkupSymbolSize: {
@@ -351,7 +268,7 @@ dojo.declare("js.config", null, {
         },
         Locators: [{
             DisplayText: "Address",
-            LocatorDefaultAddress: "26650 Foamflower Blvd, Wesley Chapel, FL, 33544",
+            LocatorDefaultAddress: "401 Church Street, Nashville, TN",
             LocatorParameters: {
                 SearchField: "SingleLine",
                 SearchBoundaryField: "searchExtent"
@@ -365,20 +282,21 @@ dojo.declare("js.config", null, {
             },
             AddressSearch: {
                 FilterFieldName: 'Addr_Type',
-                FilterFieldValues: ["StreetAddress", "StreetName", "PointAddress"]
+                FilterFieldValues: ["StreetAddress", "StreetName", "PointAddress", "POI"]
             },
             PlaceNameSearch: {
                 LocatorFieldValue: "POI",
                 FilterFieldName: 'Type',
-                FilterFieldValues: ['county', 'city', 'park', 'lake', 'mountain', 'state or province']
-            }
-        }, {
+                FilterFieldValues: ['county', 'city', 'park', 'lake', 'mountain', 'state or province', 'state capital']
+            },
+            MaxResults: 200
+            }, {
             DisplayText: "Location",
-            LocatorDefaultLocation: "Hernando County"
+            LocatorDefaultLocation: "Davidson County"
 
         }, {
             DisplayText: "Permit",
-            LocatorDefaultPermit: "10"
+            LocatorDefaultPermit: "NR1003.10"
         }]
     },
 
