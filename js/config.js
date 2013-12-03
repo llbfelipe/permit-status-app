@@ -119,12 +119,12 @@ dojo.declare("js.config", null, {
     // If 'UseGeocoderService' is set to false and one of the fields ('ServiceURL, SearchExpression and CountyDisplayField') is not specified then an error message is displayed.  If LoadAsServiceType is not set then load the serviceURL as dynamic map service.
 
     CountyLayerData: {
-        Title: "CountyLayer",
-        ServiceURL: "http://arcgis-gov-1244222493.us-west-2.elb.amazonaws.com/arcgis/rest/services/Permits/MapServer",
+        Title: "County",
+        ServiceURL: "http://arcgis-gov-1244222493.us-west-2.elb.amazonaws.com/arcgis/rest/services/Permits/MapServer/1",
         LoadAsServiceType: "dynamic",
         SearchExpression: "NAME LIKE '${0}%'",
         CountyDisplayField: "${NAME}",
-        UseGeocoderService: true
+        UseGeocoderService: false
     },
 
     // Use this section to configure search settings for both Webmap and Operational layer implementations. All the fields in this section are mandatory.
