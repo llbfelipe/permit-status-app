@@ -2,7 +2,7 @@
 
 The Permit Status application is a configuration of ArcGIS for Server and a JavaScript application that allows the public to locate permitted activities, and permit applications in their community.
 
-![Image of Permit Status application](https://raw.github.com/Esri/permit-status-app/master/permit-status-app.png "Permit Status application")
+![Image of Permit Status application](permit-status-app.png "Permit Status application")
 
 ## Features
 
@@ -70,7 +70,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 A copy of the license is available in the repository's
-[LICENSE.txt](https://raw.github.com/Esri/permit-status-app/master/LICENSE.txt) file.
+[LICENSE.txt](LICENSE.txt) file.
 
 [](Esri Tags: State-Government State Government Permit Status)
 [](Esri Language: JavaScript)
