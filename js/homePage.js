@@ -278,15 +278,14 @@ function FetchWebMapData(response) {
                                 operationalLayers[p] = {};
                                 operationalLayers[p]["ServiceURL"] = webMapDetails.operationalLayers[j].url + "/" + webMapDetails.operationalLayers[j].layers[k].id;
                                 p++;
-                                if (layerInfo.popupInfo.title.split(":").length > 1) {
-                                    if (dojo.string.trim(layerInfo.popupInfo.title.split(":")[1])) {
-                                        searchSettings[index]["InfoWindowHeader"] = "$" + dojo.string.trim(layerInfo.popupInfo.title.split(":")[1]);
-                                    } else {
-                                        searchSettings[index]["InfoWindowHeader"] = responseObject.ShowNullValueAs;
+                                if (layerInfo.popupInfo.title.split("{").length > 1) {
+                                    searchSettings[index]["InfoWindowHeader"] = dojo.string.trim(layerInfo.popupInfo.title.split("{")[0]) + " ";
+                                    for (var l = 1; l < layerInfo.popupInfo.title.split("{").length; l++) {
+                                        searchSettings[index]["InfoWindowHeader"] += "${" + dojo.string.trim(layerInfo.popupInfo.title.split("{")[l]);
                                     }
                                 } else {
-                                    if (layerInfo.popupInfo.title.split("{").length > 1) {
-                                        searchSettings[index]["InfoWindowHeader"] = "$" + dojo.string.trim(layerInfo.popupInfo.title);
+                                    if (dojo.string.trim(layerInfo.popupInfo.title) != "") {
+                                        searchSettings[index]["InfoWindowHeader"] = dojo.string.trim(layerInfo.popupInfo.title);
                                     } else {
                                         searchSettings[index]["InfoWindowHeader"] = responseObject.ShowNullValueAs;
                                     }
@@ -310,15 +309,14 @@ function FetchWebMapData(response) {
                         operationalLayers[p] = {};
                         operationalLayers[p]["ServiceURL"] = webMapDetails.operationalLayers[j].url;
                         p++;
-                        if (webMapDetails.operationalLayers[j].popupInfo.title.split(":").length > 1) {
-                            if (dojo.string.trim(webMapDetails.operationalLayers[j].popupInfo.title.split(":")[1])) {
-                                searchSettings[index]["InfoWindowHeader"] = "$" + dojo.string.trim(webMapDetails.operationalLayers[j].popupInfo.title.split(":")[1]);
-                            } else {
-                                searchSettings[index]["InfoWindowHeader"] = responseObject.ShowNullValueAs;
+                        if (webMapDetails.operationalLayers[j].popupInfo.title.split("{").length > 1) {
+                            searchSettings[index]["InfoWindowHeader"] = dojo.string.trim(webMapDetails.operationalLayers[j].popupInfo.title.split("{")[0]);
+                            for (var l = 1; l < webMapDetails.operationalLayers[j].popupInfo.title.split("{").length; l++) {
+                                searchSettings[index]["InfoWindowHeader"] += " ${" + dojo.string.trim(webMapDetails.operationalLayers[j].popupInfo.title.split("{")[l]);
                             }
                         } else {
-                            if (webMapDetails.operationalLayers[j].popupInfo.title.split("{").length > 1) {
-                                searchSettings[index]["InfoWindowHeader"] = "$" + dojo.string.trim(webMapDetails.operationalLayers[j].popupInfo.title);
+                            if (dojo.string.trim(webMapDetails.operationalLayers[j].popupInfo.title) != "") {
+                                searchSettings[index]["InfoWindowHeader"] = dojo.string.trim(webMapDetails.operationalLayers[j].popupInfo.title);
                             } else {
                                 searchSettings[index]["InfoWindowHeader"] = responseObject.ShowNullValueAs;
                             }
