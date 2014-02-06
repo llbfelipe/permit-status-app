@@ -414,7 +414,7 @@ function FetchPermitResults(layer, polygonGeometry, index) {
         query.where = dojo.string.substitute(layer.SearchExpression, [dojo.string.trim(dojo.dom.byId("txtAddress").value).toUpperCase()]);
     } else {
         query.geometry = polygonGeometry;
-        query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_CONTAINS;
+        query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_INTERSECTS;
     }
     query.outSpatialReference = map.spatialReference;
     query.returnGeometry = false;
