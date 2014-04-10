@@ -38,6 +38,8 @@ var isBrowser = false; //This variable will be set to 'true' when the applicatio
 var isMobileDevice = false; //This variable will be set to 'true' when the application is running on mobile device
 var isTablet = false; //This variable will be set to 'true' when the application is running on tablets
 var tempGraphicsLayerId = "tempGraphicsLayerID"; //variable to store temporary graphics layer id
+var highlightPointGraphicsLayerId = "highlightPointGraphicsLayerId";
+var highlightGraphicsLayerId = "highlightGraphicsLayerId";
 var mapPoint; //variable to store map point
 var selectedMapPoint; // variable to store selected map point
 var windowURL = window.location.toString();
@@ -62,6 +64,7 @@ var mapExtent = null;
 var operationalLayers;
 var geometryService;
 var searchQueryLayerID;
+var webmapBaseMapId;
 
 //This initialization function is called when the DOM elements are ready
 
@@ -226,7 +229,6 @@ function InitializeAutocompleteSearch(evt, locatorText) {
 //Retrieving the data from webmap using the webmap id provided in the config file
 
 function InitializeWebMap() {
-    dojo.dom.byId("tdBaseMap").style.display = "none";
     isWebMap = true;
     var mapDeferred = esri.arcgis.utils.createMap(responseObject.WebMapId, "map", {
         mapOptions: {
@@ -237,6 +239,8 @@ function InitializeWebMap() {
 
     mapDeferred.then(function (response) {
         FetchWebMapData(response);
+    }, function (err) {
+        alert(err.message);
     });
 }
 
@@ -245,6 +249,7 @@ function InitializeWebMap() {
 function FetchWebMapData(response) {
     operationalLayers = [];
     map = response.map;
+    webmapBaseMapId = response.itemInfo.itemData.baseMap.baseMapLayers[0].id;
     webmapExtent = response.map.extent;
     baseMapId = response.itemInfo.itemData.baseMap.baseMapLayers[0].id;
     var webMapDetails = response.itemInfo.itemData;
@@ -353,6 +358,7 @@ function FetchWebMapData(response) {
     map.infoWindow = infoWindow;
     AddLayersToMap();
     MapOnLoad();
+    CreateBaseMapComponent();
 }
 
 //Getting county layer data from the webmap. The layer without infopopup is considered as county layer.
@@ -699,6 +705,13 @@ function AddLayersToMap() {
     graphicsLayer.id = tempGraphicsLayerId;
     map.addLayer(graphicsLayer);
 
+    var graphicsLayer = new esri.layers.GraphicsLayer();
+    graphicsLayer.id = highlightGraphicsLayerId;
+    map.addLayer(graphicsLayer);
+
+    var graphicsLayer = new esri.layers.GraphicsLayer();
+    graphicsLayer.id = highlightPointGraphicsLayerId;
+    map.addLayer(graphicsLayer);
     if (!isWebMap) {
         setTimeout(function () {
             if (countyLayerData && (dojo.string.trim(countyLayerData.ServiceURL) && dojo.string.trim(countyLayerData.SearchExpression) && dojo.string.trim(countyLayerData.CountyDisplayField)) && (countyLayerData.UseGeocoderService == true || countyLayerData.UseGeocoderService == false)) {
@@ -732,6 +745,8 @@ function AddLayersToMap() {
         featureID = infoWindowLayerID = searchFeatureID = searchInfoWindowLayerID = null;
         addressSearchFlag = false;
         map.infoWindow.hide();
+        map.getLayer(highlightGraphicsLayerId).clear();
+        HideRipple();
         evt.mapPoint.spatialReference = map.spatialReference;
         FindPermits(evt.mapPoint);
     });
@@ -743,13 +758,13 @@ function AddLayersToMap() {
         }
     });
 
-    window.onresize = function () {
+    window.onresize = function() {
         if (!isMobileDevice) {
             ResizeHandler();
         } else {
             OrientationChanged();
         }
-    }
+    };
 }
 
 dojo.addOnLoad(Init);

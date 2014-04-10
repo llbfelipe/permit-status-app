@@ -18,6 +18,7 @@ var isAddressSearched;
 var permitLayerCounter = 0;
 var queryExecutedCount = 0;
 var permitArray = [];
+var intervalIDs = [];
 var countyGeometry;
 var isPermitNumberSearched = false;
 var previousExtent;
@@ -571,7 +572,7 @@ function FetchPermitData(permitData, arrPermits) {
     query.returnGeometry = true;
     query.outFields = ["*"];
     queryTask.execute(query, function (featureSet) {
-        LocatePermitOnMap(featureSet.features[0].geometry, featureSet.features[0].attributes, attributes.index, featureSet.fields, attributes.layerID.QueryURL);
+        LocatePermitOnMap(featureSet.features[0].geometry, featureSet.features[0].attributes, attributes.index, featureSet.fields, featureSet.geometryType);
     }, function (err) {
         alert(err.message);
         HideProgressIndicator();
@@ -580,7 +581,29 @@ function FetchPermitData(permitData, arrPermits) {
 
 //Locate searched permit on map and display the infowindow for the same
 
-function LocatePermitOnMap(mapPoint, attributes, layerID, fields, layer) {
+function LocatePermitOnMap(mapPoint, attributes, layerID, fields, geometryType) {
+    map.getLayer(highlightGraphicsLayerId).clear();
+    HideRipple();
+    if (geometryType == "esriGeometryPoint") {
+        GlowRipple(mapPoint);
+    } else {
+        var highlightSymbol = new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID,
+        new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID,
+        new dojo.Color([parseInt(responseObject.HighlightFeaturesSymbology.LineSymbolColor.split(",")[0], 10),
+         parseInt(responseObject.HighlightFeaturesSymbology.LineSymbolColor.split(",")[1], 10),
+         parseInt(responseObject.HighlightFeaturesSymbology.LineSymbolColor.split(",")[2], 10),
+         parseFloat(responseObject.HighlightFeaturesSymbology.LineSymbolTransparency.split(",")[0], 10)]), 2),
+        new dojo.Color([parseInt(responseObject.HighlightFeaturesSymbology.FillSymbolColor.split(",")[0], 10),
+        parseInt(responseObject.HighlightFeaturesSymbology.FillSymbolColor.split(",")[1], 10),
+         parseInt(responseObject.HighlightFeaturesSymbology.FillSymbolColor.split(",")[2], 10),
+         parseFloat(responseObject.HighlightFeaturesSymbology.FillSymbolTransparency.split(",")[0], 10)]));
+        var highlightGraphic = new esri.Graphic(mapPoint, highlightSymbol);
+        var features = [];
+        features.push(highlightGraphic);
+        var featureSet = new esri.tasks.FeatureSet();
+        featureSet.features = features;
+        map.getLayer(highlightGraphicsLayerId).add(featureSet.features[0]);
+    }
     if (!isMobileDevice) {
         if (mapPoint) {
             ShowInfoWindowDetails(mapPoint, attributes, null, layerID, null, fields);
@@ -595,6 +618,52 @@ function LocatePermitOnMap(mapPoint, attributes, layerID, fields, layer) {
         }
         HideAddressContainer();
     }
+}
+
+//Show ripple for point feature on address search
+
+function GlowRipple(mapPoint) {
+    HideRipple();
+    var layer = map.getLayer(highlightPointGraphicsLayerId);
+    var rippleSize = responseObject.HighlightFeaturesSymbology.MarkerSymbolSize;
+    var rippleColor = [parseInt(responseObject.HighlightFeaturesSymbology.MarkerSymbolColor.split(",")[0], 10), parseInt(responseObject.HighlightFeaturesSymbology.MarkerSymbolColor.split(",")[1], 10), parseInt(responseObject.HighlightFeaturesSymbology.MarkerSymbolColor.split(",")[2], 10), parseFloat(responseObject.HighlightFeaturesSymbology.MarkerSymbolTransparency.split(",")[0], 10)];
+    var i = rippleSize;
+    var flag = true;
+    var intervalID = setInterval(function () {
+        layer.clear();
+        if (i == rippleSize) {
+            flag = false;
+        } else if (i == (rippleSize - 4)) {
+            flag = true;
+        }
+        var symbol = new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_CIRCLE, (i - 1) * 2,
+        new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID,
+        new dojo.Color(rippleColor), 6),
+        new dojo.Color([0, 0, 0, 0])).setOffset(0, -4);
+
+        var highlightGraphic = new esri.Graphic(mapPoint, symbol, null, null);
+        var features = [];
+        features.push(highlightGraphic);
+        var featureSet = new esri.tasks.FeatureSet();
+        featureSet.features = features;
+        layer.add(featureSet.features[0]);
+        if (flag) i++;
+        else i--;
+    }, 100);
+    intervalIDs[intervalIDs.length] = intervalID;
+}
+
+function HideRipple() {
+    ClearAllIntervals();
+    map.getLayer(highlightPointGraphicsLayerId).clear();
+}
+
+function ClearAllIntervals() {
+    for (var i = 0; i < intervalIDs.length; i++) {
+        clearInterval(intervalIDs[i]);
+        delete intervalIDs[i];
+    }
+    intervalIDs.length = 0;
 }
 
 //Populate candidate location list in address container on location search
@@ -628,7 +697,7 @@ function FetchCountyResults(featureset) {
 
             featureSet.sort(function (a, b) {
                 var nameA = a.name.toLowerCase(),
-                    nameB = b.name.toLowerCase()
+                    nameB = b.name.toLowerCase();
                 if (nameA < nameB) //sort string ascending
                     return -1
                 else return 1
@@ -649,7 +718,7 @@ function FetchCountyResults(featureset) {
                     lastSearchString = dojo.string.trim(dojo.dom.byId("txtAddress").value);
                     var attr = featureSet[this.getAttribute("index")].attributes;
                     LocateCountyOnMap();
-                }
+                };
                 trCounty.appendChild(tdCounty);
             }
             isCountySearched = false;
