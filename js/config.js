@@ -1,6 +1,6 @@
-/*global dojo */
+ï»¿/*global dojo */
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
 /*
- | Version 10.2
  | Copyright 2013 Esri
  |
  | Licensed under the Apache License, Version 2.0 (the "License");
@@ -214,7 +214,7 @@ dojo.declare("js.config", null, {
     // Flag to enable or disable auto-complete search feature for Permit search
     AutocompleteForPermit: true,
 
-    // When set to true, application will zoom to the extents/geometry of selected polygon; when set to false, application will zoom to configured ‘ZoomLevel’ for selected polygon.
+    // When set to true, application will zoom to the extents/geometry of selected polygon; when set to false, application will zoom to configured ï¿½ZoomLevelï¿½ for selected polygon.
     ZoomToPolygonGeometry: true,
 
     // ------------------------------------------------------------------------------------------------------------------------

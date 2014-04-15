@@ -1,6 +1,6 @@
 ﻿/*global dojo */
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
 /*
- | Version 10.2
  | Copyright 2013 Esri
  |
  | Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,9 +57,12 @@ dojo.declare("js.config", null, {
 
     // Set splash window content - Message that appears when the application starts
     SplashScreen: {
-          Message: "Welcome to the <b>Permit Status Application</b> <br/> <hr/> <br/>The <b>Permit Status Application</b> enables constituents in the State, NGO's, 
-contractors <br/> and other entities to search for and discover <br/> information about permitted activities within the state.<br/></br> To locate a permit, simply 
-enter an address, location or permit information in the search box, or use your current location. The permit(s) and relevant information will be presented to the 
+          Message: "Welcome to the <b>Permit Status Application</b> <br/> <hr/> <br/>The <b>Permit Status Application</b> enables constituents in the State, NGO's,
+
+contractors <br/> and other entities to search for and discover <br/> information about permitted activities within the state.<br/></br> To locate a permit, simply
+
+enter an address, location or permit information in the search box, or use your current location. The permit(s) and relevant information will be presented to the
+
 user.",
         isVisible: true
     },
@@ -100,15 +103,15 @@ user.",
 
     // If you are using webmap then skip below section for configuring operational layers and move to 'SearchSettings'
 
-   
+
     // Configure settings for loading and performing query on the county layer. County layer will be queried only when the 'UseGeocoderService' is set to false
     // Title: Name of the layer as defined in the map service.
     // ServiceURL: URL of the layer. The URL should include the layer id.
-    // LoadAsServiceType: Supported service types are 'dynamic', 'feature', 'tiled' only. 
-    //                    Use this flag to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer. 
+    // LoadAsServiceType: Supported service types are 'dynamic', 'feature', 'tiled' only.
+    //                    Use this flag to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer.
     // SearchExpression: Used while searching counties without using Geocoder service.
     // CountyDisplayField: Attribute that will be displayed in the search box when user searches for a particular county.
-    // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service. 
+    // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service.
     //                     When it is set to false then ServiceURL mentioned below will be used to perform location search.
 
     CountyLayerData: {
@@ -124,7 +127,7 @@ user.",
     // The Title and QueryLayerId fields should be the same as Title and QueryLayerId fields in InfoWindowSettings.
     // Title: Name of the layer as defined in the webmap/operational layers. In case of webmap implementations, it must match layer name specified in webmap and in case of operational layers it should be the same as service name
     // QueryLayerId: Layer index used for performing queries.
-    // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point. 
+    // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point.
     // ListFieldName: Attribute to be displayed in the InfoWindow when there are multiple permits at a particular point.
     // SearchDisplayFields: Attribute that will be displayed in the search box when user searches for a particular permit.
     // SearchExpression: Query to perform permit search.
@@ -138,8 +141,8 @@ user.",
         SearchExpression: "UPPER(PERMITID) LIKE '${0}%' OR UPPER(PERMITTYPE) LIKE '${0}%' OR UPPER(APPLICANT) LIKE '${0}%' OR UPPER(SITEID) LIKE '${0}%'"
     }],
 
- 
-    
+
+
 
     // ServiceUrl is the REST end point for the reference overlay layer
     // DisplayOnLoad setting is used to show or hide the reference overlay layer. Reference overlay will be shown when it is set to true
