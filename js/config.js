@@ -32,13 +32,14 @@ dojo.declare("js.config", null, {
     // 8.  Specify WebMapId, if using WebMap             - [ Tag(s) to look for: WebMapId ]
     // 9.  Or for using map services:
     // 9a. Specify URLs for operational layers           - [ Tag(s) to look for: OperationalLayers, InfoWindowSettings, SearchSettings, CountyLayerData, ReferenceOverlayLayer ]
-    // 9b. Customize zoom level for address search       - [ Tag(s) to look for: ZoomLevel ]
-    // 9c. Enable or disable auto-complete feature for Permit search
+    // 9b. Specify color and size for feature highlight  - [ Tag(s) to look for: HighlightFeaturesSymbology]
+    // 9c. Customize zoom level for address search       - [ Tag(s) to look for: ZoomLevel ]
+    // 9d. Enable or disable auto-complete feature for Permit search
     //                                                   - [ Tag(s) to look for: AutocompleteForPermit]
-    // 9d. Enable or disable using the configured zoom level for selected polygon feature
+    // 9e. Enable or disable using the configured zoom level for selected polygon feature
     //                                                   - [ Tag(s) to look for: ZoomToPolygonGeometry]
-    // 9e. Customize info-Popup size                     - [ Tag(s) to look for: InfoPopupHeight, InfoPopupWidth ]
-    // 9f. Customize data formatting                     - [ Tag(s) to look for: ShowNullValueAs, FormatDateAs ]
+    // 9f. Customize info-Popup size                     - [ Tag(s) to look for: InfoPopupHeight, InfoPopupWidth ]
+    // 9g. Customize data formatting                     - [ Tag(s) to look for: ShowNullValueAs, FormatDateAs ]
     // 10. Customize address search settings             - [ Tag(s) to look for: LocatorSettings]
     // 11. Set URL for geometry service                  - [ Tag(s) to look for: GeometryService ]
     // 12. Specify URLs for map sharing                  - [ Tag(s) to look for: MapSharingOptions,TinyURLServiceURL, TinyURLResponseAttribute, FacebookShareURL, TwitterShareURL, ShareByMailLink ]
@@ -122,7 +123,7 @@ dojo.declare("js.config", null, {
         Title: "County",
         ServiceURL: "http://arcgis-gov-1244222493.us-west-2.elb.amazonaws.com/arcgis/rest/services/Permits/MapServer/1",
         LoadAsServiceType: "dynamic",
-        SearchExpression: "NAME LIKE '${0}%'",
+        SearchExpression: "UPPER(NAME) LIKE '${0}%'",
         CountyDisplayField: "${NAME}",
         UseGeocoderService: false
     },
@@ -162,14 +163,13 @@ dojo.declare("js.config", null, {
         InfoWindowData: [{
             DisplayText: "Permit Type:",
             FieldName: "${PERMITTYPE}"
-        },{
+        }, {
             DisplayText: "Permit ID:",
             FieldName: "${PERMITID}"
         }, {
             DisplayText: "Site ID:",
             FieldName: "${SITEID}"
         }, {
-          
             DisplayText: "Location:",
             FieldName: "${LOCDESC}"
         }, {
@@ -184,14 +184,21 @@ dojo.declare("js.config", null, {
         }, {
             DisplayText: "Effective Date:",
             FieldName: "${EFFECTIVEDT}"
-        
-       },
-	 {
+        }, {
             DisplayText: "Permit Info:",
             FieldName: "${URL}"
-        
-       }]
-    }], 
+        }]
+    }],
+
+    HighlightFeaturesSymbology: {
+        FillSymbolColor: "125,125,125",
+        FillSymbolTransparency: "0.30",
+        LineSymbolColor: "0,255,255",
+        LineSymbolTransparency: "1",
+        MarkerSymbolColor: "0,255,255",
+        MarkerSymbolTransparency: "1",
+        MarkerSymbolSize: 25
+    },
 
     // ServiceUrl is the REST end point for the reference overlay layer
     // DisplayOnLoad setting is used to show or hide the reference overlay layer. Reference overlay will be shown when it is set to true
@@ -290,7 +297,7 @@ dojo.declare("js.config", null, {
                 FilterFieldValues: ['county', 'city', 'park', 'lake', 'mountain', 'state or province', 'state capital']
             },
             MaxResults: 200
-            }, {
+        }, {
             DisplayText: "Location",
             LocatorDefaultLocation: "Davidson County"
 

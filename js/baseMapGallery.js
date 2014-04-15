@@ -21,7 +21,13 @@ function CreateBaseMapComponent() {
     var baseMapURLCount = 0;
     for (var i = 0; i < responseObject.BaseMapLayers.length; i++) {
         if (responseObject.BaseMapLayers[i].MapURL) {
-            map.addLayer(CreateBaseMapLayer(responseObject.BaseMapLayers[i].MapURL, responseObject.BaseMapLayers[i].Key, (i == 0) ? true : false));
+            if (isWebMap) {
+                if (i != 0) {
+                    map.addLayer(CreateBaseMapLayer(responseObject.BaseMapLayers[i].MapURL, responseObject.BaseMapLayers[i].Key, (i == 0) ? false : false));
+                }
+            } else {
+                map.addLayer(CreateBaseMapLayer(responseObject.BaseMapLayers[i].MapURL, responseObject.BaseMapLayers[i].Key, (i == 0) ? true : false));
+            }
             if (baseMapURLCount == 0) {
                 baseMapURL = i;
             }
@@ -95,6 +101,9 @@ function ChangeBaseMap(spanControl) {
             }
             if (responseObject.BaseMapLayers[i].Key == key) {
                 dojo['dom-class'].add(dojo.dom.byId("imgThumbNail" + responseObject.BaseMapLayers[i].Key), "selectedBaseMap");
+                if (i == 0 && isWebMap) {
+                    map.addLayer(CreateBaseMapLayer(responseObject.BaseMapLayers[i].MapURL, responseObject.BaseMapLayers[i].Key, (i == 0) ? true : false));
+                }
                 layer = map.getLayer(responseObject.BaseMapLayers[i].Key);
                 layer.show();
             }
@@ -113,6 +122,9 @@ function HideMapLayers() {
             }
         }
     }
+    if (isWebMap) {
+        map.getLayer(webmapBaseMapId).hide();
+    }
 }
 
 //Animate BaseMap container
@@ -122,7 +134,7 @@ function ShowBaseMaps() {
     if (!isMobileDevice) {
         HideAddressContainer();
     }
-    var cellHeight = (isTablet) ? 125 : 115;
+    var cellHeight = 125;
     if (dojo['dom-geometry'].getMarginBox("divLayerContainer").h > 0) {
         dojo['dom-class'].replace("divLayerContainer", "hideContainerHeight", "showContainerHeight");
         dojo.dom.byId('divLayerContainer').style.height = '0px';
