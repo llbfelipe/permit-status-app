@@ -1,5 +1,5 @@
 ﻿/*global dojo */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2013 Esri
  |
@@ -125,7 +125,7 @@ dojo.declare("js.config", null, {
         LoadAsServiceType: "dynamic",
         SearchExpression: "UPPER(NAME) LIKE '${0}%'",
         CountyDisplayField: "${NAME}",
-        UseGeocoderService: false
+        UseGeocoderService: true
     },
 
     // Use this section to configure search settings for both Webmap and Operational layer implementations. All the fields in this section are mandatory.
@@ -141,7 +141,7 @@ dojo.declare("js.config", null, {
         Title: "Permits",
         QueryLayerId: "0",
         ListDisplayText: "Permit Number",
-        ListFieldName: "${PERMITID}",
+        ListFieldName: "PERMITID",
         SearchDisplayFields: "${PERMITID} / ${PERMITDESC} / ${APPLICANT}",
         SearchExpression: "UPPER(PERMITID) LIKE '${0}%' OR UPPER(PERMITDESC) LIKE '${0}%' OR UPPER(APPLICANT) LIKE '${0}%' OR UPPER(PERMITTYPE) LIKE '${0}%'"
     }],
@@ -214,7 +214,7 @@ dojo.declare("js.config", null, {
     // Flag to enable or disable auto-complete search feature for Permit search
     AutocompleteForPermit: true,
 
-    // When set to true, application will zoom to the extents/geometry of selected polygon; when set to false, application will zoom to configured �ZoomLevel� for selected polygon.
+    // When set to true, application will zoom to the extents/geometry of selected polygon; when set to false, application will zoom to configured ZoomLevel for selected polygon.
     ZoomToPolygonGeometry: true,
 
     // ------------------------------------------------------------------------------------------------------------------------
@@ -294,7 +294,7 @@ dojo.declare("js.config", null, {
             PlaceNameSearch: {
                 LocatorFieldValue: "POI",
                 FilterFieldName: 'Type',
-                FilterFieldValues: ['county', 'city', 'park', 'lake', 'mountain', 'state or province', 'state capital']
+                FilterFieldValues: ['County', 'City', 'Park', 'Lake', 'Mountain', 'State or Province', 'State Capital']
             },
             MaxResults: 200
         }, {
@@ -320,7 +320,7 @@ dojo.declare("js.config", null, {
 
     // Set URL for TinyURL service, and URLs for social media
     MapSharingOptions: {
-        TinyURLServiceURL: "http://api.bit.ly/v3/shorten?login=esri&apiKey=R_65fd9891cd882e2a96b99d4bda1be00e&uri=${0}&format=json",
+        TinyURLServiceURL: "https://api-ssl.bitly.com/v3/shorten?longUrl=${0}",
         TinyURLResponseAttribute: "data.url",
         FacebookShareURL: "http://www.facebook.com/sharer.php?u=${0}&t=Permit%20Status",
         TwitterShareURL: "http://mobile.twitter.com/compose/tweet?status=Permit%20Status ${0}",

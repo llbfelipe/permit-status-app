@@ -1,5 +1,5 @@
-﻿/*global */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true */
+﻿/*global dojo,isMobileDevice,esri*/
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2013 Esri
  |
@@ -34,7 +34,7 @@ dojo.declare("js.InfoWindow", [esri.InfoWindowBase], {
         this._anchor = dojo.create("div", {
             "class": "divTriangle"
         }, this.domNode);
-        this._imgDetails;
+        this._imgDetails = null;
         if (!isMobileDevice) {
             this._content.appendChild(dojo.byId('divInfoContent'));
             dojo.byId('divInfoContent').style.display = "none";
@@ -74,7 +74,9 @@ dojo.declare("js.InfoWindow", [esri.InfoWindowBase], {
 
     show: function (location) {
         this._title.style.display = "block";
-        if (this._imgDetails) this._imgDetails.style.display = "block";
+        if (this._imgDetails) {
+            this._imgDetails.style.display = "block";
+        }
         if (!isMobileDevice) {
             this._title.style.display = 'none';
         }
