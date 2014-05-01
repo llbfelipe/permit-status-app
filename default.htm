@@ -39,13 +39,13 @@
     </script>
     <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.5compact">
     </script>
+    <script type="text/javascript" src="js/utils.js"></script>
     <script type="text/javascript" src="js/baseMapGallery.js"></script>
     <script type="text/javascript" src="js/modernizr-2.5.3.js"></script>
     <script type="text/javascript" src="js/locator.js"></script>
-    <script type="text/javascript" src="js/utils.js"></script>
     <script type="text/javascript" src="js/homePage.js"></script>
 </head>
-<body onorientationchange="OrientationChanged();">
+<body onorientationchange="orientationChanged();">
     <div id="mapView" class="fullHeightWidth">
         <div id="map" class="fullHeightWidth">
         </div>
@@ -112,7 +112,7 @@
                             <td align="center" id="tdBaseMap">
                             </td>
                             <td align="center" class="tdHeader">
-                                <img src="images/imgsocialmedia.png" class="imgOptions" title="Share" onclick="ShareLink(true);" />
+                                <img src="images/imgsocialmedia.png" class="imgOptions" title="Share" onclick="shareLink(true);" />
                             </td>
                             <td align="center" id="help" class="tdHeader">
                                 <img src="images/help.png" title="Help" id="imgHelp" class="imgOptions" />
@@ -135,7 +135,7 @@
                                 </td>
                                 <td class="tdClose" align="right">
                                     <img src="images/close.png" class="imgOptions" title="Close" style="padding: 0px"
-                                        onclick="HideAddressContainer();" />
+                                        onclick="hideAddressContainer();" />
                                 </td>
                             </tr>
                         </table>
@@ -166,7 +166,7 @@
                                                     <td align="left" id="tdBreadCrumbs">
                                                     </td>
                                                     <td align="right">
-                                                        <img src="images/close.png" class="imgBreadCrumbs" title="Close" onclick="ClearBreadCrumbs();" />
+                                                        <img src="images/close.png" class="imgBreadCrumbs" title="Close" onclick="clearBreadCrumbs();" />
                                                     </td>
                                                 </tr>
                                             </table>
