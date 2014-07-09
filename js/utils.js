@@ -127,7 +127,6 @@ function FetchQueryResults(result, index, mapPoint) {
         } else {
             map.infoWindow.hide();
             selectedMapPoint = null;
-            alert(messages.getElementsByTagName("unableToLocatePermit")[0].childNodes[0].nodeValue);
             HideProgressIndicator();
         }
 
@@ -773,6 +772,8 @@ function SetAddressResultsHeight() {
 
 function HideInfoContainer() {
     selectedMapPoint = featureID = infoWindowLayerID = searchFeatureID = searchInfoWindowLayerID = point = null;
+    map.getLayer(highlightGraphicsLayerId).clear();
+    HideRipple();
     map.infoWindow.hide();
     if (isMobileDevice) {
         setTimeout(function () {
