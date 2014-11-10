@@ -67,9 +67,10 @@ var operationalLayers;
 var geometryService;
 var searchQueryLayerID;
 var webmapBaseMapId;
+var mapSharingOptions; //variable to store tiny service url
 
 function _setAPIDefaults() {
-    esri.config.defaults.io.proxyUrl = "proxy.ashx"; //relative path
+    esri.config.defaults.io.proxyUrl = "proxy/proxy.ashx"; //relative path
     esriConfig.defaults.io.alwaysUseProxy = false;
     esriConfig.defaults.io.timeout = 180000; // milliseconds
 }
@@ -693,7 +694,7 @@ function Init() {
     _setAPIDefaults();
     _detectDevice();
     responseObject = new js.config();
-
+    mapSharingOptions = responseObject.MapSharingOptions;
     _createShortcutIcons("shortcut icon", responseObject.ApplicationFavicon);
     if (isMobileDevice || isTablet) {
         _createShortcutIcons("apple-touch-icon-precomposed", responseObject.ApplicationIcon);
