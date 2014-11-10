@@ -1,5 +1,5 @@
 ﻿/*global alert,console,currentExtent:true,countyGeometry:true,extent:true,isTablet,isiOS,isCountySearched:true,js,dojo,isBrowser,mapExtent:true,highlightGraphicsLayerId:true,infoWindowLayerID:true,featureID:true,lastSearchString:true,esri,messages:true,responseObject:true,
-addressSearchFlag:true,searchFeatureID:true,searchInfoWindowLayerID:true,searchQueryLayerID:true,searchSettings:true,selectedMapPoint:true,shareFlag:true,isMobileDevice:true,map:true,tempGraphicsLayerId:true,zoomDeferred:true,queryExecutedCount:true,glowRipple,hideRipple */
+addressSearchFlag:true,searchFeatureID:true,searchInfoWindowLayerID:true,searchQueryLayerID:true,searchSettings:true,selectedMapPoint:true,shareFlag:true,isMobileDevice:true,map:true,tempGraphicsLayerId:true,zoomDeferred:true,queryExecutedCount:true,glowRipple,hideRipple,mapSharingOptions */
 /*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
  | Copyright 2013 Esri
@@ -16,6 +16,10 @@ addressSearchFlag:true,searchFeatureID:true,searchInfoWindowLayerID:true,searchQ
  | See the License for the specific language governing permissions and
  | limitations under the License.
  */
+dojo.require("js.commonShare");
+
+var commonShare = null;
+var getTinyUrl = null;
 var orientationChange = false; //variable for setting the flag on orientation
 var tinyResponse; //variable for storing the response from tiny URL API
 var tinyUrl; //variable for storing the tiny URL
@@ -1098,6 +1102,9 @@ function _getMapExtent() {
 //Create the tiny URL with current extent and selected feature
 
 function shareLink(ext) {
+    if (!commonShare) {
+        commonShare = new js.CommonShare();
+    }
     tinyUrl = null;
     var mapExtent, url, urlStr, currentMapExtent, encodedURL;
     mapExtent = _getMapExtent();
@@ -1115,33 +1122,20 @@ function shareLink(ext) {
     } else {
         urlStr = encodeURI(url.path) + "?extent=" + mapExtent;
     }
-    encodedURL = encodeURIComponent(urlStr);
-    url = dojo.string.substitute(responseObject.MapSharingOptions.TinyURLServiceURL, [encodedURL]);
-    esri.request({
-        url: url,
-        load: function (response) {
-            if (response.data) {
-                tinyUrl = response.data.url;
-            }
-            if (!tinyUrl) {
-                tinyUrl = urlStr;
-            }
-            if (ext) {
-                hideBaseMapLayerContainer();
-                hideAddressContainer();
-                var cellHeight = (isMobileDevice || isTablet) ? 81 : 60;
-                if (dojo['dom-geometry'].getMarginBox("divAppContainer").h > 0) {
-                    hideShareAppContainer();
-                } else {
-                    dojo.dom.byId('divAppContainer').style.height = cellHeight + "px";
-                    dojo['dom-class'].replace("divAppContainer", "showContainerHeight", "hideContainerHeight");
-                }
-            }
-        },
-        error: function () {
-            tinyUrl = urlStr;
+    //encodedURL = encodeURIComponent(urlStr);
+    // Attempt the shrinking of the URL
+    getTinyUrl = commonShare.getTinyLink(urlStr, mapSharingOptions.TinyURLServiceURL);
+    if (ext) {
+        hideBaseMapLayerContainer();
+        hideAddressContainer();
+        var cellHeight = (isMobileDevice || isTablet) ? 81 : 60;
+        if (dojo['dom-geometry'].getMarginBox("divAppContainer").h > 0) {
+            hideShareAppContainer();
+        } else {
+            dojo.dom.byId('divAppContainer').style.height = cellHeight + "px";
+            dojo['dom-class'].replace("divAppContainer", "showContainerHeight", "hideContainerHeight");
         }
-    });
+    }
 }
 
 //Open login page for facebook,tweet and open Email client with shared link for Email
@@ -1151,21 +1145,8 @@ function Share(site) {
         dojo['dom-class'].replace("divAppContainer", "hideContainerHeight", "showContainerHeight");
         dojo.dom.byId('divAppContainer').style.height = '0px';
     }
-    if (tinyUrl) {
-        switch (site) {
-        case "facebook":
-            window.open(dojo.string.substitute(responseObject.MapSharingOptions.FacebookShareURL, [tinyUrl]));
-            break;
-        case "twitter":
-            window.open(dojo.string.substitute(responseObject.MapSharingOptions.TwitterShareURL, [tinyUrl]));
-            break;
-        case "mail":
-            parent.location = dojo.string.substitute(responseObject.MapSharingOptions.ShareByMailLink, [tinyUrl]);
-            break;
-        }
-    } else {
-        alert(messages.getElementsByTagName("tinyURLEngine")[0].childNodes[0].nodeValue);
-    }
+ // Do the share
+    commonShare.share(getTinyUrl, mapSharingOptions, site);
 }
 
 //Get the query string value of the provided key
