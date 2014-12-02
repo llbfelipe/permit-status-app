@@ -72,5 +72,5 @@ limitations under the License.
 A copy of the license is available in the repository's
 [LICENSE.txt](LICENSE.txt) file.
 
-[](Esri Tags: State-Government State Government Permit Status)
+[](Esri Tags: ArcGISSolutions State-Government State Government Permit Status)
 [](Esri Language: JavaScript)

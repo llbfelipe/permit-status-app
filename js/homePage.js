@@ -352,7 +352,7 @@ function _mapOnLoad() {
     }
 
     if (!currentExtent) {
-        mapExtent = extent.split(',');
+        mapExtent = decodeURIComponent(extent).split(',');
         mapExtent = new esri.geometry.Extent(parseFloat(mapExtent[0]), parseFloat(mapExtent[1]), parseFloat(mapExtent[2]), parseFloat(mapExtent[3]), map.spatialReference);
         map.setExtent(mapExtent);
         if (!addressSearchFlag) {
