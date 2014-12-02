@@ -1,6 +1,6 @@
 ﻿/*global dojo */
+/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
 /*
- | Version 10.2
  | Copyright 2013 Esri
  |
  | Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,10 +57,7 @@ dojo.declare("js.config", null, {
 
     // Set splash window content - Message that appears when the application starts
     SplashScreen: {
-          Message: "Welcome to the <b>Permit Status Application</b> <br/> <hr/> <br/>The <b>Permit Status Application</b> enables constituents in the State, NGO's, 
-contractors <br/> and other entities to search for and discover <br/> information about permitted activities within the state.<br/></br> To locate a permit, simply 
-enter an address, location or permit information in the search box, or use your current location. The permit(s) and relevant information will be presented to the 
-user.",
+        Message: "Welcome to the <b>Permit Status Application</b> <br/> <hr/> <br/>The <b>Permit Status Application</b> enables constituents in the State, NGO's,contractors <br/> and other entities to search for and discover <br/> information about permitted activities within the state.<br/></br> To locate a permit, simply enter an address, location or permit information in the search box, or use your current location. The permit(s) and relevant information will be presented to the user.",
         isVisible: true
     },
 
@@ -96,27 +93,27 @@ user.",
     // Configure operational layers:
 
     // Choose if you want to use WebMap or Map Services for operational layers. If using WebMap, specify WebMapId within quotes, otherwise leave this empty and configure operational layers
-    WebMapId: "23a25ee9d1f94523aae807e0ce46292c",
+    WebMapId: "56a1493fad9a4231a1f9b8ea07d31644",
 
     // If you are using webmap then skip below section for configuring operational layers and move to 'SearchSettings'
 
-   
+
     // Configure settings for loading and performing query on the county layer. County layer will be queried only when the 'UseGeocoderService' is set to false
     // Title: Name of the layer as defined in the map service.
     // ServiceURL: URL of the layer. The URL should include the layer id.
-    // LoadAsServiceType: Supported service types are 'dynamic', 'feature', 'tiled' only. 
-    //                    Use this flag to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer. 
+    // LoadAsServiceType: Supported service types are 'dynamic', 'feature', 'tiled' only.
+    //                    Use this flag to specify if the operational layers should be added as dynamic map service layer or feature layer or tiled map service layer.
     // SearchExpression: Used while searching counties without using Geocoder service.
     // CountyDisplayField: Attribute that will be displayed in the search box when user searches for a particular county.
-    // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service. 
+    // UseGeocoderService: When this flag is set to true, then the Location search will be performed using configured geocode service.
     //                     When it is set to false then ServiceURL mentioned below will be used to perform location search.
 
     CountyLayerData: {
-        Title: "",
-        ServiceURL: "",
-        LoadAsServiceType: "",
-        SearchExpression: "",
-        CountyDisplayField: "",
+        Title: "County",
+        ServiceURL: "http://arcgis-gov-1244222493.us-west-2.elb.amazonaws.com/arcgis/rest/services/Permits/MapServer/1",
+        LoadAsServiceType: "dynamic",
+        SearchExpression: "UPPER(NAME) LIKE '${0}%'",
+        CountyDisplayField: "${NAME}",
         UseGeocoderService: true
     },
 
@@ -124,22 +121,30 @@ user.",
     // The Title and QueryLayerId fields should be the same as Title and QueryLayerId fields in InfoWindowSettings.
     // Title: Name of the layer as defined in the webmap/operational layers. In case of webmap implementations, it must match layer name specified in webmap and in case of operational layers it should be the same as service name
     // QueryLayerId: Layer index used for performing queries.
-    // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point. 
+    // ListDisplayText: Text to be displayed in the InfoWindow when there are multiple permits at a particular point.
     // ListFieldName: Attribute to be displayed in the InfoWindow when there are multiple permits at a particular point.
     // SearchDisplayFields: Attribute that will be displayed in the search box when user searches for a particular permit.
     // SearchExpression: Query to perform permit search.
 
     SearchSettings: [{
-        Title: "Permits",
-        QueryLayerId: "0",
+        Title: "SWFWMD",
+        QueryLayerId: "2",
         ListDisplayText: "Permit Number",
-        ListFieldName: "${PERMITID}",
-        SearchDisplayFields: "${PERMITID} / ${PERMITTYPE} / ${APPLICANT}",
-        SearchExpression: "UPPER(PERMITID) LIKE '${0}%' OR UPPER(PERMITTYPE) LIKE '${0}%' OR UPPER(APPLICANT) LIKE '${0}%' OR UPPER(SITEID) LIKE '${0}%'"
+        ListFieldName: "WUP_PERMIT_NBR",
+        SearchDisplayFields: "${WUP_PERMIT_NBR} / ${PERMITTEE_NAME}",
+        SearchExpression: "UPPER(WUP_PERMIT_NBR) LIKE '${0}%' OR UPPER(PERMITTEE_NAME) LIKE '${0}%' OR UPPER(WATER_USE_CLASS_DESC) LIKE '${0}%'"
     }],
 
- 
-    
+    HighlightFeaturesSymbology: {
+        FillSymbolColor: "125,125,125",
+        FillSymbolTransparency: "0.30",
+        LineSymbolColor: "0,255,255",
+        LineSymbolTransparency: "1",
+        MarkerSymbolColor: "0,255,255",
+        MarkerSymbolTransparency: "1",
+        MarkerSymbolSize: 25
+    },
+
 
     // ServiceUrl is the REST end point for the reference overlay layer
     // DisplayOnLoad setting is used to show or hide the reference overlay layer. Reference overlay will be shown when it is set to true
@@ -155,7 +160,7 @@ user.",
     // Flag to enable or disable auto-complete search feature for Permit search
     AutocompleteForPermit: true,
 
-    // When set to true, application will zoom to the extents/geometry of selected polygon; when set to false, application will zoom to configured �ZoomLevel� for selected polygon.
+    // When set to true, application will zoom to the extents/geometry of selected polygon; when set to false, application will zoom to configured ZoomLevel for selected polygon.
     ZoomToPolygonGeometry: true,
 
     // ------------------------------------------------------------------------------------------------------------------------
@@ -179,7 +184,7 @@ user.",
     // ------------------------------------------------------------------------------------------------------------------------
     // ADDRESS SEARCH SETTINGS
     // ------------------------------------------------------------------------------------------------------------------------
-       // Set locator settings such as locator symbol, size, display fields, match score
+    // Set locator settings such as locator symbol, size, display fields, match score
     // LocatorParameters: Parameters(text, outFields, maxLocations, bbox, outSR) used for address and location search.
     // AddressSearch: Candidates based on which the address search will be performed.
     // PlaceNameSearch: Attributes based on which the layers will be queried when a location search is performed.
@@ -212,10 +217,10 @@ user.",
             PlaceNameSearch: {
                 LocatorFieldValue: "POI",
                 FilterFieldName: 'Type',
-                FilterFieldValues: ['county', 'city', 'park', 'lake', 'mountain', 'state or province', 'state capital']
+                FilterFieldValues: ['County', 'City', 'Park', 'Lake', 'Mountain', 'State or Province', 'State Capital']
             },
             MaxResults: 200
-            }, {
+        }, {
             DisplayText: "Location",
             LocatorDefaultLocation: "Davidson County"
 
@@ -236,8 +241,7 @@ user.",
 
     // Set URL for TinyURL service, and URLs for social media
     MapSharingOptions: {
-        TinyURLServiceURL: "http://api.bit.ly/v3/shorten?login=esri&apiKey=R_65fd9891cd882e2a96b99d4bda1be00e&uri=${0}&format=json",
-        TinyURLResponseAttribute: "data.url",
+        TinyURLServiceURL: "https://api-ssl.bitly.com/v3/shorten?longUrl=${0}",
         FacebookShareURL: "http://www.facebook.com/sharer.php?u=${0}&t=Permit%20Status",
         TwitterShareURL: "http://mobile.twitter.com/compose/tweet?status=Permit%20Status ${0}",
         ShareByMailLink: "mailto:%20?subject=Check%20out%20this%20map!&body=${0}"

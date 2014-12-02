@@ -21,9 +21,8 @@
     <title>Permit Status</title>
     <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <link id="stylesheet" href='http://serverapi.arcgisonline.com/jsapi/arcgis/3.5/js/dojo/dojox/mobile/themes/iPhone/iPhone.css'
-        rel='stylesheet' />
-    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.5/js/esri/css/esri.css" />
+    <link rel="stylesheet" href="//js.arcgis.com/3.11/dojox/mobile/themes/iphone/iphone.css" />
+    <link rel="stylesheet" href="//js.arcgis.com/3.11/esri/css/esri.css" />
     <link href="styles/permitStatus.css" rel="stylesheet" type="text/css" />
     <link rel="Stylesheet" id="dynamicStyleSheet" />
     <script type="text/javascript">
@@ -37,15 +36,14 @@
                 }]
             };
     </script>
-    <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.5compact">
-    </script>
+    <script type="text/javascript" src="//js.arcgis.com/3.11/"></script>
+    <script type="text/javascript" src="js/utils.js"></script>
     <script type="text/javascript" src="js/baseMapGallery.js"></script>
     <script type="text/javascript" src="js/modernizr-2.5.3.js"></script>
     <script type="text/javascript" src="js/locator.js"></script>
-    <script type="text/javascript" src="js/utils.js"></script>
     <script type="text/javascript" src="js/homePage.js"></script>
 </head>
-<body onorientationchange="OrientationChanged();">
+<body onorientationchange="orientationChanged();">
     <div id="mapView" class="fullHeightWidth">
         <div id="map" class="fullHeightWidth">
         </div>
@@ -112,7 +110,7 @@
                             <td align="center" id="tdBaseMap">
                             </td>
                             <td align="center" class="tdHeader">
-                                <img src="images/imgsocialmedia.png" class="imgOptions" title="Share" onclick="ShareLink(true);" />
+                                <img src="images/imgsocialmedia.png" class="imgOptions" title="Share" onclick="shareLink(true);" />
                             </td>
                             <td align="center" id="help" class="tdHeader">
                                 <img src="images/help.png" title="Help" id="imgHelp" class="imgOptions" />
@@ -135,7 +133,7 @@
                                 </td>
                                 <td class="tdClose" align="right">
                                     <img src="images/close.png" class="imgOptions" title="Close" style="padding: 0px"
-                                        onclick="HideAddressContainer();" />
+                                        onclick="hideAddressContainer();" />
                                 </td>
                             </tr>
                         </table>
@@ -166,7 +164,7 @@
                                                     <td align="left" id="tdBreadCrumbs">
                                                     </td>
                                                     <td align="right">
-                                                        <img src="images/close.png" class="imgBreadCrumbs" title="Close" onclick="ClearBreadCrumbs();" />
+                                                        <img src="images/close.png" class="imgBreadCrumbs" title="Close" onclick="clearBreadCrumbs();" />
                                                     </td>
                                                 </tr>
                                             </table>
@@ -236,7 +234,7 @@
                                             onclick="Share('twitter')" />
                                     </td>
                                     <td class="tdHeaderIcons" align="center" id="tdMail">
-                                        <img title="Email" class="imgShare" id="imgMail" src="images/img_email.png" onclick="Share('mail')" />
+                                        <img title="Email" class="imgShare" id="imgMail" src="images/img_email.png" onclick="Share('email')" />
                                     </td>
                                 </tr>
                             </table>
