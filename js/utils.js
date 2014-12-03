@@ -326,7 +326,7 @@ function _setCustomMapExtent(selectedMapPoint, flag) {
         _setPermitDataHeight();
     }
     if (extent !== "") {
-        mapExtent = extent.split(',');
+        mapExtent = decodeURIComponent(extent).split(',');
         mapExtent = new esri.geometry.Extent(parseFloat(mapExtent[0]), parseFloat(mapExtent[1]), parseFloat(mapExtent[2]), parseFloat(mapExtent[3]), map.spatialReference);
         map.setExtent(mapExtent);
         extent = "";
@@ -376,7 +376,7 @@ function _setFeatureZoomLevel(geometry, selectedMapPoint) {
             map.infoWindow.show(screenPoint);
             hideProgressIndicator();
             if (extent !== "") {
-                mapExtent = extent.split(',');
+                mapExtent = decodeURIComponent(extent).split(',');
                 mapExtent = new esri.geometry.Extent(parseFloat(mapExtent[0]), parseFloat(mapExtent[1]), parseFloat(mapExtent[2]), parseFloat(mapExtent[3]), map.spatialReference);
                 map.setExtent(mapExtent);
                 extent = "";
