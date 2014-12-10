@@ -233,7 +233,7 @@ dojo.declare("js.config", null, {
     // ------------------------------------------------------------------------------------------------------------------------
 
     // Set geometry service URL
-    GeometryService: "http://50.18.115.76:6080/arcgis/rest/services/Utilities/Geometry/GeometryServer",
+    GeometryService: "http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer",
 
     // ------------------------------------------------------------------------------------------------------------------------
     // SETTINGS FOR MAP SHARING
