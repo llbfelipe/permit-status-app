@@ -93,7 +93,7 @@ dojo.declare("js.config", null, {
     // Configure operational layers:
 
     // Choose if you want to use WebMap or Map Services for operational layers. If using WebMap, specify WebMapId within quotes, otherwise leave this empty and configure operational layers
-    WebMapId: "56a1493fad9a4231a1f9b8ea07d31644",
+    WebMapId: "23a25ee9d1f94523aae807e0ce46292c",
 
     // If you are using webmap then skip below section for configuring operational layers and move to 'SearchSettings'
 
@@ -127,12 +127,12 @@ dojo.declare("js.config", null, {
     // SearchExpression: Query to perform permit search.
 
     SearchSettings: [{
-        Title: "SWFWMD",
-        QueryLayerId: "2",
+        Title: "Permits",
+        QueryLayerId: "0",
         ListDisplayText: "Permit Number",
-        ListFieldName: "WUP_PERMIT_NBR",
-        SearchDisplayFields: "${WUP_PERMIT_NBR} / ${PERMITTEE_NAME}",
-        SearchExpression: "UPPER(WUP_PERMIT_NBR) LIKE '${0}%' OR UPPER(PERMITTEE_NAME) LIKE '${0}%' OR UPPER(WATER_USE_CLASS_DESC) LIKE '${0}%'"
+        ListFieldName: "PERMITID",
+        SearchDisplayFields: "${PERMITID} / ${PERMITTYPE} / ${APPLICANT}",
+        SearchExpression: "UPPER(PERMITID) LIKE '${0}%' OR UPPER(PERMITTYPE) LIKE '${0}%' OR UPPER(APPLICANT) LIKE '${0}%' OR UPPER(SITEID) LIKE '${0}%'"
     }],
 
     HighlightFeaturesSymbology: {
