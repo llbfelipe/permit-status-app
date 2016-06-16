@@ -1,5 +1,7 @@
 # permit-status-app
 
+***This permit-status-app repo has been replaced by the [Permit Status App](http://links.esri.com/stategovernment/help/permitstatusonline), built using the [Finder application template](https://github.com/Esri/local-government-online-apps).  Applications built from this permit-status-app repo are in mature support.***
+
 The Permit Status application is a configuration of ArcGIS for Server and a JavaScript application that allows the public to locate permitted activities, and permit applications in their community.
 
 ![Image of Permit Status application](permit-status-app.png "Permit Status application")
