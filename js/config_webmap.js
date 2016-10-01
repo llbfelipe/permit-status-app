@@ -110,7 +110,7 @@ dojo.declare("js.config", null, {
 
     CountyLayerData: {
         Title: "County",
-        ServiceURL: "http://arcgis-gov-1244222493.us-west-2.elb.amazonaws.com/arcgis/rest/services/Permits/MapServer/1",
+        ServiceURL: "http://yourserver/arcgis/rest/services/Permits/MapServer/1",
         LoadAsServiceType: "dynamic",
         SearchExpression: "UPPER(NAME) LIKE '${0}%'",
         CountyDisplayField: "${NAME}",
